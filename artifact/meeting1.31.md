@@ -1,0 +1,19 @@
+# Meeting Notes 1.31
+- Meeting 
+  - every two or three week
+  - meet next Friday(2.7) (Di)
+  - zoom meeting
+  - take meeting notes, markdown format (ZiHao)
+- Github (SuDi)
+  - include notes, document, presentation...
+  - issue tracking page (what's need to be done)
+  - Structure
+    - code, artifact, requirement.
+- Slack app (GuanCheng)
+  - Set up
+- Toggle
+  - time tracking
+- Skills and Tech stacks
+  - Docker, DJango, mongoDB, angularJS etc.
+  - Methodology of risk management, Bottleneck, Agile, Devops, sprint, Techniques problems challenges, conflict
+- Come up with tech stacks tools or language( think about it., what’s the right way to do this.)
