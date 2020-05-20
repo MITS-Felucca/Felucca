@@ -12,3 +12,7 @@ sudo apt-get install -y mongodb-org
 
 sudo service mongod start
 sudo systemctl enable mongod.service
+
+# Install pip3 & pymongo
+sudo apt-get -y install python3-pip
+pip3 install pymongo
