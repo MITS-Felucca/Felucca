@@ -1,0 +1,16 @@
+# base pharos image
+FROM seipharos/pharos:latest
+
+# ignore complaints
+ENV DEBIAN_FRONTEND noninteractive
+
+# install python3 and flask inside
+RUN apt-get update &&\
+	apt-get install -y --no-install-recommends apt-utils &&\
+	apt-get -y install python3 &&\
+	apt-get -y install python3-pip &&\
+	pip3 install Flask
+
+# add microserver inside:
+RUN mkdir /backend
+ADD ./microserver.py /backend

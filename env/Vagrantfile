@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 VAGRANTFILE_API_VERSION = "2"
-VAGRANT_IP = "10.0.0.5"
+VAGRANT_IP = "100.0.0.5"
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -16,8 +16,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "hashicorp/bionic64"
+
+  # install docker and pull pharos image
   config.vm.provision "docker",
     images: ["seipharos/pharos"]
+
+  # build a new image with flask
+  config.vm.provision "file", source: "./docker", destination: "~/docker"
+  config.vm.provision "shell", inline: "docker build ./docker -t felucca/pharos:latest -f ./docker/DockerFile"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
