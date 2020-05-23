@@ -1,0 +1,2 @@
+class JobManager(object):
+    pass
