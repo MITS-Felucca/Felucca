@@ -8,9 +8,13 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update &&\
 	apt-get install -y --no-install-recommends apt-utils &&\
 	apt-get -y install python3 &&\
+	apt-get -y install net-tools &&\
 	apt-get -y install python3-pip &&\
+	pip3 install requests &&\
 	pip3 install Flask
 
 # add microserver inside:
 RUN mkdir /backend
-ADD ./microserver.py /backend
+RUN mkdir /test
+ADD ./container_server.py /backend
+ADD ./oo.exe /test
