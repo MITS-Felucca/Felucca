@@ -1,2 +1,4 @@
 .DS_Store
-/env/vagrant/
+/env/.vagrant/
+.pyc
+/__pycache__/
