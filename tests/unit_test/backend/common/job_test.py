@@ -1,11 +1,11 @@
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../felucca'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../felucca'))
 import unittest
 from datetime import datetime
-from common.job import Job
-from common.task import Task
+from backend.common.job import Job
+from backend.common.task import Task
 
 
 class TestJob(unittest.TestCase):
