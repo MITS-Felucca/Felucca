@@ -8,10 +8,11 @@ class Task(object):
         self.__tool_type = tool_type
         self.__command_line_input = command_line_input
         self.__job_id = None
-        self.__task_ids = None
+        self.__task_id = None
         self.__output = None
         self.__log = None
         self.__stdout = None
+        self.__stderr = None
 
     @property
     def job_id(self):
@@ -22,12 +23,12 @@ class Task(object):
         self.__job_id = val
 
     @property
-    def task_ids(self):
-        return self.__task_ids
+    def task_id(self):
+        return self.__task_id
     
-    @task_ids.setter
-    def task_ids(self, val):
-        self.__task_ids = val
+    @task_id.setter
+    def task_id(self, val):
+        self.__task_id = val
 
     @property
     def output(self):
@@ -54,6 +55,15 @@ class Task(object):
         self.__stdout = val
 
     @property
+    def stderr(self):
+        return self.__stderr
+    
+    @stderr.setter
+    def stderr(self, val):
+        self.__stderr = val
+
+
+    @property
     def executable_file(self):
         return self.__executable_file
 
@@ -65,7 +75,7 @@ class Task(object):
     def command_line_input(self):
         return self.__command_line_input
 
-    def set_result(self, output = None, log = None, stdout = None):
+    def set_result(self, output = None, log = None, stdout = None, stderr = None):
         """Set the result for finished task
         The execution manager will get three types of result
 
@@ -77,3 +87,4 @@ class Task(object):
         self.__output = output
         self.__log = log
         self.__stdout = stdout
+        self.__stderr = stderr
