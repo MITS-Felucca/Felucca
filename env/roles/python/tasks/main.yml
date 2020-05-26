@@ -4,6 +4,12 @@
     state: present
     update_cache: yes
 
+- name: Install docker
+  apt:
+    name: docker
+    state: present
+    update_cache: yes
+
 - name: Install pip3
   apt:
     name: python3-pip
