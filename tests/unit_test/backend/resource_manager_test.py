@@ -21,15 +21,19 @@ class TestResourceManager(unittest.TestCase):
         new_job.tasks = []
         job_id, tasks_id = self.manager.insert_new_job(new_job)
 
+        # Check job_id & tasks_id
+        self.assertTrue(isinstance(job_id, str))
+        self.assertEqual(len(tasks_id), 0)
+
         # Remove the nanoseconds in created_time as the precision in MongoDB doesn't store nanoseconds
         ms_without_ns = int(created_time.microsecond / 1000) * 1000
         created_time = created_time.replace(microsecond=ms_without_ns)
 
-        # Query the sample job using id
-        query_job = self.manager.jobs_collection.find_one({"_id": job_id})
-        self.assertEqual(query_job["name"], job_name)
-        self.assertEqual(query_job["comments"], job_comments)
-        self.assertEqual(query_job["created_time"], created_time)
+        # Rebuild the job object and check the contents
+        rebuilt_job = self.manager.get_job_by_id(job_id)
+        self.assertEqual(rebuilt_job.name, job_name)
+        self.assertEqual(rebuilt_job.comments, job_comments)
+        self.assertEqual(rebuilt_job.create_time, created_time)
 
         # Remove the inserted job & task after test
         self.manager.remove_job_by_id(job_id)
@@ -49,20 +53,26 @@ class TestResourceManager(unittest.TestCase):
         new_job.tasks = [new_task]
         job_id, tasks_id = self.manager.insert_new_job(new_job)
 
+        # Check job_id & tasks_id
+        self.assertTrue(isinstance(job_id, str))
+        self.assertEqual(len(tasks_id), 1)
+        self.assertTrue(isinstance(tasks_id[0], str))
+
         # Remove the nanoseconds in created_time as the precision in MongoDB doesn't store nanoseconds
         ms_without_ns = int(created_time.microsecond / 1000) * 1000
         created_time = created_time.replace(microsecond=ms_without_ns)
 
-        # Query the sample job using id
-        query_job = self.manager.jobs_collection.find_one({"_id": job_id})
-        self.assertEqual(query_job["name"], job_name)
-        self.assertEqual(query_job["comments"], job_comments)
-        self.assertEqual(query_job["created_time"], created_time)
+        # Rebuild the job object and check the contents
+        rebuilt_job = self.manager.get_job_by_id(job_id)
+        self.assertEqual(rebuilt_job.name, job_name)
+        self.assertEqual(rebuilt_job.comments, job_comments)
+        self.assertEqual(rebuilt_job.create_time, created_time)
 
-        # Query the sample task using job_id
-        query_task = self.manager.tasks_collection.find_one({"job_id": job_id})
-        self.assertEqual(query_task["command_line_input"], task_command_line_input)
-        self.assertEqual(query_task["tool_type"], task_tool_type)
+        # Rebuild the task object and check the contents of files
+        task_id = tasks_id[0]
+        rebuilt_task = self.manager.get_task_by_id(task_id)
+        self.assertEqual(rebuilt_task.command_line_input, task_command_line_input)
+        self.assertEqual(rebuilt_task.tool_type, task_tool_type)
 
         # Remove the inserted job & task after test
         self.manager.remove_job_by_id(job_id)
@@ -81,6 +91,11 @@ class TestResourceManager(unittest.TestCase):
         new_job = Job(job_name, job_comments, created_time)
         new_job.tasks = [new_task]
         job_id, tasks_id = self.manager.insert_new_job(new_job)
+
+        # Check job_id & tasks_id
+        self.assertTrue(isinstance(job_id, str))
+        self.assertEqual(len(tasks_id), 1)
+        self.assertTrue(isinstance(tasks_id[0], str))
 
         # Save the result of the task
         task_id = tasks_id[0]
@@ -105,19 +120,16 @@ class TestResourceManager(unittest.TestCase):
         ms_without_ns = int(created_time.microsecond / 1000) * 1000
         created_time = created_time.replace(microsecond=ms_without_ns)
 
-        # Query the sample job using id
-        query_job = self.manager.jobs_collection.find_one({"_id": job_id})
-        self.assertEqual(query_job["name"], job_name)
-        self.assertEqual(query_job["comments"], job_comments)
-        self.assertEqual(query_job["created_time"], created_time)
-
-        # Query the sample task using job_id
-        query_task = self.manager.tasks_collection.find_one({"job_id": job_id})
-        self.assertEqual(query_task["command_line_input"], task_command_line_input)
-        self.assertEqual(query_task["tool_type"], task_tool_type)
+        # Rebuild the job object and check the contents
+        rebuilt_job = self.manager.get_job_by_id(job_id)
+        self.assertEqual(rebuilt_job.name, job_name)
+        self.assertEqual(rebuilt_job.comments, job_comments)
+        self.assertEqual(rebuilt_job.create_time, created_time)
 
         # Rebuild the task object and check the contents of files
         rebuilt_task = self.manager.get_task_by_id(task_id)
+        self.assertEqual(rebuilt_task.command_line_input, task_command_line_input)
+        self.assertEqual(rebuilt_task.tool_type, task_tool_type)
         self.assertEqual(rebuilt_task.output["output.json"], output_json)
         self.assertEqual(rebuilt_task.log["facts"], facts)
         self.assertEqual(rebuilt_task.log["results"], results)

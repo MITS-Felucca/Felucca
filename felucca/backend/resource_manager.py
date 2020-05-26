@@ -1,22 +1,24 @@
 import datetime
 import gridfs
 import pymongo
+from bson import ObjectId
+from datetime import datetime
 from common.job import Job
 from common.task import Task
-from datetime import datetime
 
 class ResourceManager(object):
     """ResourceManager is responsible for accessing data in database.
     """
-    def setup(self):
+    
+    def __setup(self):
         """Initialize the connections to the MongoDB server
         """
 
-        self.client = pymongo.MongoClient()
-        self.db = self.client.felucca
-        self.jobs_collection = self.db.jobs
-        self.tasks_collection = self.db.tasks
-        self.fs = gridfs.GridFS(self.db)
+        self.__client = pymongo.MongoClient()
+        self.__db = self.__client.felucca
+        self.__jobs_collection = self.__db.jobs
+        self.__tasks_collection = self.__db.tasks
+        self.__fs = gridfs.GridFS(self.__db)
 
     def __insert_new_task(self, job_id, new_task):
         """Insert a task into the database
@@ -26,11 +28,8 @@ class ResourceManager(object):
             new_task (Task): The task which will be inserted
         
         Returns:
-            task_id (ObjectId): The id of the newly inserted task
+            task_id (String): The id of the newly inserted task
         """
-
-        # TODO: Add executable_filename in task (TBD)
-        # TODO: Use string for tool_type? So that we can easily display it to user (TBD)
 
         # Build the new task
         new_task_dict = {
@@ -46,9 +45,10 @@ class ResourceManager(object):
         }
 
         # Insert the new task
-        result = self.tasks_collection.insert_one(new_task_dict)
+        result = self.__tasks_collection.insert_one(new_task_dict)
         task_id = result.inserted_id
 
+        # Don't cast id to String for internal use
         return task_id
 
     def insert_new_job(self, new_job):
@@ -58,11 +58,11 @@ class ResourceManager(object):
             new_job (Job): The job which will be inserted
 
         Returns:
-            job_id: The ObjectId of the newly inserted job
-            tasks_id: A list of ids according to the tasks of the job, where the order remains the same
+            job_id (String): The id of the newly inserted job
+            tasks_id (List of String): A list of ids according to the tasks of the job, where the order remains the same
         """
 
-        self.setup()
+        self.__setup()
 
         # Build the new job
         new_job_dict = {
@@ -74,48 +74,51 @@ class ResourceManager(object):
         }
 
         # Insert the new job
-        result = self.jobs_collection.insert_one(new_job_dict)
+        result = self.__jobs_collection.insert_one(new_job_dict)
         job_id = result.inserted_id
 
         # Insert the related tasks
         tasks_id = []
         for task in new_job.tasks:
             task_id = self.__insert_new_task(job_id, task)
-            tasks_id.append(task_id)
+            tasks_id.append(str(task_id))
         
-        return job_id, tasks_id
+        return str(job_id), tasks_id
 
     def save_result(self, task_id, output, log, stdout, stderr):
         """Save the result of the task specified by task_id
 
         Args:
-            task_id (ObjectId): The id of the specific task
-            output (dict of mapping from string to bytes): Each entry in output is an output file with its name as the key
-            log (dict of mapping from string to bytes): Each entry in log is an log file with its name as the key
-            stdout (string): The stdout of the task
-            stderr (string): The stderr of the task
+            task_id (String): The id of the specific task
+            output (Dict of mapping from String to bytes): Each entry in output is an output file with its name as the key
+            log (Dict of mapping from String to bytes): Each entry in log is an log file with its name as the key
+            stdout (String): The stdout of the task
+            stderr (String): The stderr of the task
         """
         
-        self.setup()
+        self.__setup()
+
+        # Cast task_id from String to ObjectId first
+        task_id = ObjectId(task_id)
 
         # Insert all files into gridfs
         output_dict = {}
         for filename, output_file in output.items():
-            file_id = self.fs.put(output_file)
+            file_id = self.__fs.put(output_file)
             output_dict[filename] = file_id
         log_dict = {}
         for filename, log_file in log.items():
-            file_id = self.fs.put(log_file)
+            file_id = self.__fs.put(log_file)
             log_dict[filename] = file_id
 
         condition = {"_id": task_id}
-        task = self.tasks_collection.find_one(condition)
+        task = self.__tasks_collection.find_one(condition)
         task["output_files"] = output_dict
         task["log_files"] = log_dict
         task["stdout"] = stdout
         task["stderr"] = stderr
         task["is_finished"] = True
-        update_result = self.tasks_collection.update_one(condition, {"$set": task})
+        update_result = self.__tasks_collection.update_one(condition, {"$set": task})
 
         if update_result.modified_count is not 1:
             # TODO: Throw an exception when updating failed
@@ -125,29 +128,29 @@ class ResourceManager(object):
         """Return a Task object of the specific task
 
         Arg:
-            task_id (ObjectId): the id of the specific task
+            task_id (String): the id of the specific task
         
         Return:
             task: the Task object of the specific id
         """
 
-        self.setup()
+        self.__setup()
 
         # Find the task using id
-        condition = {"_id": task_id}
-        task_doc = self.tasks_collection.find_one(condition)
+        condition = {"_id": ObjectId(task_id)}
+        task_doc = self.__tasks_collection.find_one(condition)
 
         # Retrieve the output files and log files
         output_dict = {}
         for filename, file_id in task_doc["output_files"].items():
-            output_file = self.fs.get(file_id).read()
+            output_file = self.__fs.get(file_id).read()
             output_dict[filename] = output_file
         log_dict = {}
         for filename, file_id in task_doc["log_files"].items():
-            log_file = self.fs.get(file_id).read()
+            log_file = self.__fs.get(file_id).read()
             log_dict[filename] = log_file
         
-        # Rebuild the task object from the query result
+        # Rebuild the Task object from the query result
         task = Task(None, task_doc["tool_type"], task_doc["command_line_input"])
         task.job_id = task_doc["job_id"]
         task.task_id = task_id
@@ -157,22 +160,76 @@ class ResourceManager(object):
         task.stderr = task_doc["stderr"]
 
         return task
+    
+    def get_job_by_id(self, job_id):
+        """Return a Job object of the specific job
 
+        The member tasks of the job will be empty to simplify the process.
+        Use get_tasks_by_job_id instead to get the related tasks.
+
+        Arg:
+            job_id (String): the id of the specific job
+        
+        Return:
+            job (Job): the Job object of the specific id
+        """
+
+        self.__setup()
+
+        # Find the task using id
+        condition = {"_id": ObjectId(job_id)}
+        job_doc = self.__jobs_collection.find_one(condition)
+
+        # Rebuild the Job object from the query result
+        job = Job(job_doc["name"], job_doc["comments"], job_doc["created_time"])
+
+        return job
+    
+    def get_tasks_by_job_id(self, job_id):
+        """Return all the tasks belonging to the specific job
+
+        Arg:
+            job_id (String): the id of the specific job
+        
+        Return:
+            tasks: a list of Task objects
+        """
+
+        self.__setup()
+        
+        # Get ids of all tasks using job_id
+        condition = {"job_id": ObjectId(job_id)}
+        field = {"_id": 1}
+        tasks_doc_list = self.__tasks_collection.find(condition, field)
+
+        # Rebuild all tasks into Task objects
+        tasks_list = []
+        for task_doc in tasks_doc_list:
+            task = self.get_task_by_id(task_doc["_id"])
+            tasks_list.append(task)
+        
+        return tasks_list
     
     def remove_job_by_id(self, job_id):
         """Remove the specific job (Used in unit tests)
+
+        Arg:
+            job_id (String): the id of the specific job
         """
 
-        self.setup()
+        self.__setup()
         
-        delete_result = self.jobs_collection.delete_one({"_id": job_id})
+        delete_result = self.__jobs_collection.delete_one({"_id": ObjectId(job_id)})
         return delete_result.deleted_count
     
     def remove_tasks_by_job_id(self, job_id):
         """Remove the tasks related to the specific job (Used in unit tests)
+
+        Arg:
+            task_id (String): the id of the specific task
         """
 
-        self.setup()
+        self.__setup()
         
-        delete_result = self.tasks_collection.delete_many({"job_id": job_id})
+        delete_result = self.__tasks_collection.delete_many({"job_id": ObjectId(job_id)})
         return delete_result.deleted_count
