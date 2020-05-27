@@ -3,6 +3,7 @@ FROM seipharos/pharos:latest
 
 # ignore complaints
 ENV DEBIAN_FRONTEND noninteractive
+ENV FLASK_APP=/backend/container_server.py
 
 # install python3 and flask inside
 RUN apt-get update &&\
