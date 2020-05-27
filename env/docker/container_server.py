@@ -28,9 +28,9 @@ def task_execute():
         return
 
     # TODO: change status into enumerate class
-    status = 'Success'
+    status = 'Successful'
     if completed_process.returncode != 0:
-        status = 'Failure'
+        status = 'Failed'
 
     requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
                                                                           'status': status,
