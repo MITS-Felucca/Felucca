@@ -27,16 +27,16 @@ class ExecutionManager(object):
     def __init__(self):
         self.map_id_to_task_container = {}
 
-    def sumbit_task(self, task_id, command_line_input):
-        container_ip = self.tasks[task_id][1].ip
-        requests.post("http://%s:%s/task" % (container_ip, CONTAINER_PORT), data={"task_id": task_id,
-                                                                                  "command_line_input": command_line_input})
+    # def sumbit_task(self, task_id, command_line_input):
+    #     container_ip = self.map_id_to_task_container[task_id][1].ip
+    #     requests.post("http://%s:%s/task" % (container_ip, CONTAINER_PORT), data={"task_id": task_id,
+    #                                                                               "command_line_input": command_line_input})
 
     def save_result(self, task_id, status, stderr, stdout):
-        container = self.tasks[task_id][1]
+        container = self.map_id_to_task_container[task_id][1]
         container.kill()
-        output_path = self.tasks[task_id]["output_path"]
-        log_path = self.tasks[task_id]["log_path"]
+        output_path = self.map_id_to_task_container[task_id][0].output
+        log_path = self.map_id_to_task_container[task_id][0].log
         ResourceManager().save_result(task_id, output_path, log_path, stdout, stderr, status)
         JobManager().finish_task(task_id)
         self.tasks.pop(task_id, None)
@@ -71,18 +71,28 @@ class ExecutionManager(object):
         #f should be the path of executable file will be copied into the container
         
         if 'j' in dict:
+            dict['j'] = os.path.join("/tmp/output_j/",dict['j'])
+        else:
+            # TODO: Default
 
-            dict['j'] = os.path.join("/tmp",dict['j'])
         if 'F' in dict:
+            dict['F'] = os.path.join("/tmp/output_F/",dict['F'])
+        else:
+            # TODO: Default
 
-            dict['F'] = os.path.join("/tmp",dict['F'])
         if 'R' in dict:
+            dict['R'] = os.path.join("/tmp/output_R/",dict['R'])
+        else:
+            # TODO: Default
 
-            dict['R'] = os.path.join("/tmp",dict['R'])
         if 'f' in dict:
-
             dict['f'] = os.path.join("/tmp",dict['f'])
-            
+        else:
+            dict['f'] = os.path.join("/tmp/", task.executable_file)
+        
+        # TODO: log file
+
+
         exe_path_in_container = dict['f']
         
         new_command_line_input = ""
@@ -93,12 +103,8 @@ class ExecutionManager(object):
             elif dict[key] is not None:
                 new_command_line_input = new_command_line_input+"-"+key+" "+dict[key]+" "
                 
-        
-        
         task.command_line_input = new_command_line_input
         task.executable_file = exe_path_in_container
-        
-
         
     def copy_to_container(self,src,dst,container):
         
