@@ -1,14 +1,18 @@
+from status import Status
+
 class Job(object):
     """ Job object
     Job contain a bunch of tasks
     """
 
-    def __init__(self, name, comments, create_time):
+    def __init__(self, name, comments, created_time, finished_time=None, status=Status.Pending):
         self.__job_id = None
         self.__tasks = None
         self.__name = name
         self.__comments = comments
-        self.__create_time = create_time
+        self.__created_time = created_time
+        self.__finished_time = finished_time
+        self.__status = status
     
     @property
     def name(self):
@@ -19,8 +23,12 @@ class Job(object):
         return self.__comments
 
     @property
-    def create_time(self):
-        return self.__create_time
+    def created_time(self):
+        return self.__created_time
+    
+    @property
+    def finished_time(self):
+        return self.__finished_time
 
     @property
     def job_id(self):
@@ -37,3 +45,11 @@ class Job(object):
     @tasks.setter
     def tasks(self, val):
         self.__tasks = val
+
+    @property
+    def status(self):
+        return self.__status
+
+    @status.setter
+    def status(self, val):
+        self.__status = val
