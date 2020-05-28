@@ -4,6 +4,7 @@ import pymongo
 from bson import ObjectId
 from datetime import datetime
 from common.job import Job
+from common.status import Status
 from common.task import Task
 
 class ResourceManager(object):
@@ -40,7 +41,7 @@ class ResourceManager(object):
             "log_files": {},
             "stdout": "",
             "stderr": "",
-            "is_finished": False,
+            "status": Status.Pending.value, # Pending by default
             "finished_time": None,
         }
 
@@ -70,7 +71,7 @@ class ResourceManager(object):
             "comments": new_job.comments,
             "created_time": new_job.create_time,
             "finished_time": None,
-            "is_finished": False,
+            "status": Status.Pending.value, # Pending by default
         }
 
         # Insert the new job
@@ -117,11 +118,48 @@ class ResourceManager(object):
         task["log_files"] = log_dict
         task["stdout"] = stdout
         task["stderr"] = stderr
-        task["is_finished"] = True
         update_result = self.__tasks_collection.update_one(condition, {"$set": task})
 
         if update_result.modified_count is not 1:
-            # TODO: Throw an exception when updating failed
+            # TODO: Throw an exception for failed update
+            pass
+    
+    def update_job_status(self, job_id, new_status):
+        """Update the status of the specified job
+
+        Arg:
+            job_id (String): the id of the specified job
+            new_status (Status): the new status of the job
+        """
+
+        self.__setup()
+
+        condition = {"_id": job_id}
+        job = self.__jobs_collection.find_one(condition)
+        job["status"] = new_status.value
+        update_result = self.__jobs_collection.update_one(condition, {"$set": job})
+
+        if update_result.modified_count is not 1:
+            # TODO: Throw an exception for failed update
+            pass
+    
+    def update_job_status(self, task_id, new_status):
+        """Update the status of the specified task
+
+        Arg:
+            task_id (String): the id of the specified task
+            new_status (Status): the new status of the task
+        """
+
+        self.__setup()
+
+        condition = {"_id": task_id}
+        task = self.__tasks_collection.find_one(condition)
+        task["status"] = new_status.value
+        update_result = self.__tasks_collection.update_one(condition, {"$set": task})
+
+        if update_result.modified_count is not 1:
+            # TODO: Throw an exception for failed update
             pass
 
     def get_task_by_id(self, task_id):
