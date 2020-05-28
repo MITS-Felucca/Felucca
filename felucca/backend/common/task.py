@@ -1,9 +1,11 @@
+from status import Status
+
 class Task(object):
     """Task Object
     Task object represent a pharos executable task 
     """
 
-    def __init__(self, executable_file, tool_type, command_line_input):
+    def __init__(self, executable_file, tool_type, command_line_input, finished_time=None, status=Status.Pending):
         self.__executable_file = executable_file
         self.__tool_type = tool_type
         self.__command_line_input = command_line_input
@@ -13,6 +15,8 @@ class Task(object):
         self.__log = None
         self.__stdout = None
         self.__stderr = None
+        self.__status = status
+        self.__finished_time = finished_time
 
     @property
     def job_id(self):
@@ -61,7 +65,14 @@ class Task(object):
     @stderr.setter
     def stderr(self, val):
         self.__stderr = val
+    
+    @property
+    def status(self):
+        return self.__status
 
+    @status.setter
+    def status(self, val):
+        self.__status = val
 
     @property
     def executable_file(self):
@@ -74,6 +85,10 @@ class Task(object):
     @property
     def command_line_input(self):
         return self.__command_line_input
+    
+    @property
+    def finished_time(self):
+        return self.__finished_time
 
     def set_result(self, output = None, log = None, stdout = None, stderr = None):
         """Set the result for finished task
