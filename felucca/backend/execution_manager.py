@@ -1,5 +1,3 @@
-import sys
-sys.path.append(r'./common')
 import os
 import argparse
 import shlex
@@ -8,14 +6,32 @@ import docker
 from common.singleton import Singleton
 from threading import Thread
 
+
+
 @Singleton
 class ExecutionManager(object):
     
+    """Resource Manager is responsible for: 
+        
+        1. receive a task from Job Manager 
+        2. create a predifined conatiner and copy exe into container
+        3. parse the original cmd and change it to the cmd correspooding to the path inside the conatiner
+        4. execute the exe with phraos inside container
+        
+    """
     def __init__(self):
-        self.map_id2Task_container = {}
+        self.map_id_to_task_container = {}
         
     def commandline_path_parser(self,task):
+        
+        """change a task's field: 1)command_line_input 2) executable_file, to the cmd and path used inside the conatiner
+    
+        Args:
+            task (Task): The task object to be executed
+        
+        """
         command_line_input = task.command_line_input
+        
         parser = argparse.ArgumentParser()
          
         parser.add_argument('-ooanalyzer', dest="ooanalyzer",action = "store_true",default=False)
@@ -24,16 +40,17 @@ class ExecutionManager(object):
         parser.add_argument('-n','--new-method', dest="n", type = str)
         parser.add_argument('-F','--prolog-facts', dest="F", type = str)
         parser.add_argument('-f','--file', dest="f", type = str)
-        #command_line_input = "ooanalyzer --json output.json -F facts -R results --file oo.exe"
-        #print(command_line_input)
+
         if(command_line_input[0]!='-'):
             command_line_input = '-'+command_line_input
                 
         a = parser.parse_args(shlex.split(command_line_input))
 
         dict = vars(a)
+        
         #j F R should be replaced to a defined path
-        #f should be the path exe file will be copied into docker
+        #f should be the path of executable file will be copied into the container
+        
         if 'j' in dict:
 
             dict['j'] = os.path.join("/tmp",dict['j'])
@@ -65,7 +82,15 @@ class ExecutionManager(object):
 
         
     def copy_to_container(self,src,dst,container):
-
+        
+        """copy executable_file into the conatiner from src to dst
+    
+        Args:
+            src (str): The absolute path of executable file in the backend 
+            dst (str): The absolute path of executable file in the container 
+            container (Container): the docker container created to run this task 
+        
+        """
 
         os.chdir(os.path.dirname(src))
         srcname = os.path.basename(src)
@@ -73,52 +98,71 @@ class ExecutionManager(object):
         tar = tarfile.open(src + '.tar', mode='w')
         try:
             tar.add(srcname)
+        except Exception as e:
+            print(e)
         finally:
             tar.close()
     
         data = open(src + '.tar', 'rb').read()
         container_dir = os.path.dirname(dst)
-        print(f"container_dir:    {container_dir}")
         container.exec_run("mkdir "+container_dir)
         container.put_archive(container_dir, data)
         
     def set_map(self,task,container):
-        #self.map_id_container[task.task_ids] = container
-        #self.map_id_Task[task.task_ids] = task
         
-        self.map_id2Task_container[task.task_ids] = (task,container)
-        return(True);
+        """set the map kept in ExecutionManager with format: task_id -> tuple:( task(Task), container(Container) )
+    
+        Args:
+            task (Task): The task object to be executed
+            container (Container): the docker container created to run this task 
+        
+        """
+        
+        self.map_id_to_task_container[task.task_ids] = (task,container)
         
     def run_container_flask(self,container):
-        print(f"running: 'flask run --host=0.0.0.0' inside container shell")
-
-        #exec_log = container.exec_run("flask run --host=0.0.0.0" ,stdout=True,stderr=True,stream=True)
-        exec_log = container.exec_run("echo \" 666  \" " ,stdout=True,stderr=True,stream=True)
+        
+        """set the map kept in ExecutionManager with the format: task_id -> tuple:( task(Task), container(Container) )
+    
+        Args:
+            task (Task): The task object to be executed
+            container (Container): the docker container created to run this task 
+        
+        """
+        
+        exec_log = container.exec_run("flask run --host=0.0.0.0" ,stdout=True,stderr=True,stream=True)
 
         for line in exec_log[1]:
             print(line)
-            
-        return(True);    
+             
         
     def get_command_line_input(self, task_id):
+        
+        """return the command_line_input correspoding to the given task_id
+    
+        Args:
+            task_id (Task): The id of the task
+        
+        Returns:
+            command_line_input (str): The command_line used inside the container to run the executable file with phraos
+        """
+        
         task = self.map_id2Task_container[task_id][0]
         return(task.command_line_input)
         
     def submit_task(self,task):
-
-        #url = "https://www.googleapis.com/qpxExpress/v1/trips/search?key=mykeyhere"
+        """Job Manager call this method and submit a task. This method will launch the whole procedure (i.e. parse cmd, create conatiner, run exe with phraos and insert result into Resource Manager) of the Execution Manager
+    
+        Args:
+            task (Task): The task from Job Manager
+        
+        Returns:
+            if successful, return true to Job Manager
+        """
     
         exe_path_outside = task.executable_file
-        
-        
-        #print(f"\nexe_path_outside:\n{exe_path_outside}")
-        #print(f"\ntask.command_line_input:\n{task.command_line_input}")
-        
-        
+
         self.commandline_path_parser(task)#this will change task two attr: task.executable_file & task.command_line_input   to conatiner path version
-        
-        #print(f"\nadjusted_command_line_input:\n{task.command_line_input}")
-        #print(f"\nexe_path_inside:\n{task.executable_file}")
         
         client = docker.from_env()
     
@@ -127,17 +171,15 @@ class ExecutionManager(object):
         self.set_map(task,container)
         
         container.start()
-        #time.sleep(1) 
+
         t = Thread(target=self.run_container_flask, args=(container, ))
         t.start()
         
         self.copy_to_container(exe_path_outside,task.executable_file,container)
-        
+ 
         exec_log = container.exec_run("cat "+task.executable_file,stdout=True,stderr=True,stream=True)
-        
-        
+                
         for line in exec_log[1]:
             print(line)
-        
-        print('Container Status : {}'.format(container.status))
+  
         return(True);
