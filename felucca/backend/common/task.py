@@ -78,6 +78,10 @@ class Task(object):
     def executable_file(self):
         return self.__executable_file
 
+    @executable_file.setter
+    def executable_file(self,val):
+        self.__executable_file = val
+
     @property
     def tool_type(self):
         return self.__tool_type
@@ -89,6 +93,10 @@ class Task(object):
     @property
     def finished_time(self):
         return self.__finished_time
+
+    @command_line_input.setter
+    def command_line_input(self,val):
+        self.__command_line_input = val
 
     def set_result(self, output = None, log = None, stdout = None, stderr = None):
         """Set the result for finished task
