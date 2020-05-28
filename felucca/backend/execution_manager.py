@@ -122,10 +122,9 @@ class ExecutionManager(object):
         
     def run_container_flask(self,container):
         
-        """set the map kept in ExecutionManager with the format: task_id -> tuple:( task(Task), container(Container) )
+        """run the flask server inside the container, this server is responsible for the following network communication
     
         Args:
-            task (Task): The task object to be executed
             container (Container): the docker container created to run this task 
         
         """
