@@ -9,7 +9,6 @@ from threading import Thread
 
 from common.singleton import Singleton
 from resource_manager import ResourceManager
-from job_manager import JobManager
 from common.status import Status
 
 CONTAINER_PORT = '5000'
@@ -42,7 +41,7 @@ class ExecutionManager(object):
         container = self.id_to_task_container[task_id][1]
 
         # get result from container
-        container.exec_run("tar -cvf result.tar %s %s" % (", ".join(output_path), ", ".join(log_path)))
+        container.exec_run("tar -cvf result.tar %s %s" % (" ".join(output_path), " ".join(log_path)))
         bits, stat = container.get_archive("result.tar")
         path = "/vagrant/result/%s" % (str(task_id))
         folder = os.path.exists(path)
@@ -61,16 +60,18 @@ class ExecutionManager(object):
         result_tar1 = tarfile.open("%s/result.tar" % (path))
         result_tar1.extractall(path)
         result_tar1.close()
-        container.kill()
 
-        for paths in output_path:
-            paths = os.path.join(path, paths)
-        for paths in log_path:
-            paths = os.path.join(path, paths)
-        ResourceManager().save_result(task_id, os.path.join(path,output_path), os.path.join(path,log_path), stdout, stderr)
-        ResourceManager().update_task_status(task_id, Status(status))
-        JobManager().finish_task(task_id)
-        self.tasks.pop(task_id, None)
+        container.stop()
+        container.remove()
+
+        for index in range(len(output_path)):
+            output_path[index] = os.path.join(path, output_path[index][1:])
+        for index in range(len(log_path)):
+            log_path[index] = os.path.join(path, log_path[index][1:])
+        
+        ResourceManager().save_result(task_id, output_path, log_path, stdout, stderr)
+        ResourceManager().update_task_status(task_id, Status[status])
+        self.id_to_task_container.pop(task_id, None)
 
     def commandline_path_parser(self,task):
         
@@ -132,7 +133,6 @@ class ExecutionManager(object):
                 
         if 'f' not in dict:
             new_command_line_input = new_command_line_input+" task.executable_file"
-        
         
         task.command_line_input = new_command_line_input
 
@@ -203,6 +203,7 @@ class ExecutionManager(object):
             command_line_input (str): The command_line used inside the container to run the executable file with phraos
         """
         task = self.id_to_task_container[task_id][0]
+        print (task.command_line_input)
         return(task.command_line_input)
         
     def submit_task(self,task):

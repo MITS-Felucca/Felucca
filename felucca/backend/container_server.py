@@ -30,7 +30,7 @@ def task_execute():
     status = Status.Successful.name
     if completed_process.returncode != 0:
         status = Status.Failed.name
-
+        
     requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
                                                                           'status': status,
                                                                           'stderr': completed_process.stderr,

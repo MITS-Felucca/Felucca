@@ -1,4 +1,8 @@
-from status import Status
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../felucca/backend'))
+
+from common.status import Status
 
 
 class Task(object):
@@ -79,6 +83,10 @@ class Task(object):
     def executable_file(self):
         return self.__executable_file
 
+    @executable_file.setter
+    def executable_file(self,val):
+        self.__executable_file = val
+
     @property
     def tool_type(self):
         return self.__tool_type
@@ -86,6 +94,10 @@ class Task(object):
     @property
     def command_line_input(self):
         return self.__command_line_input
+
+    @command_line_input.setter
+    def command_line_input(self,val):
+        self.__command_line_input = val
     
     @property
     def finished_time(self):
