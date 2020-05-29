@@ -1,4 +1,4 @@
-from status import Status
+from common.status import Status
 
 class Task(object):
     """Task Object
