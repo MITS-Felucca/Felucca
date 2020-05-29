@@ -8,11 +8,10 @@ class Task(object):
         self.__tool_type = tool_type
         self.__command_line_input = command_line_input
         self.__job_id = None
-        self.__task_id = None
+        self.__task_ids = None
         self.__output = None
         self.__log = None
         self.__stdout = None
-        self.__stderr = None
 
     @property
     def job_id(self):
@@ -23,12 +22,12 @@ class Task(object):
         self.__job_id = val
 
     @property
-    def task_id(self):
-        return self.__task_id
+    def task_ids(self):
+        return self.__task_ids
     
-    @task_id.setter
-    def task_id(self, val):
-        self.__task_id = val
+    @task_ids.setter
+    def task_ids(self, val):
+        self.__task_ids = val
 
     @property
     def output(self):
@@ -55,18 +54,13 @@ class Task(object):
         self.__stdout = val
 
     @property
-    def stderr(self):
-        return self.__stderr
-    
-    @stderr.setter
-    def stderr(self, val):
-        self.__stderr = val
-
-
-    @property
     def executable_file(self):
         return self.__executable_file
-
+    
+    @executable_file.setter
+    def executable_file(self,val):
+        self.__executable_file = val
+        
     @property
     def tool_type(self):
         return self.__tool_type
@@ -74,8 +68,13 @@ class Task(object):
     @property
     def command_line_input(self):
         return self.__command_line_input
-
-    def set_result(self, output = None, log = None, stdout = None, stderr = None):
+    
+    @command_line_input.setter
+    def command_line_input(self,val):
+        self.__command_line_input = val
+        
+        
+    def set_result(self, output = None, log = None, stdout = None):
         """Set the result for finished task
         The execution manager will get three types of result
 
@@ -87,4 +86,3 @@ class Task(object):
         self.__output = output
         self.__log = log
         self.__stdout = stdout
-        self.__stderr = stderr
