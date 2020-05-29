@@ -197,7 +197,7 @@ class ResourceManager(object):
 
         return task
     
-    def get_job_by_id(self, job_id):
+    def get_job_by_id_without_tasks(self, job_id):
         """Return a Job object of the specific job
 
         The member tasks of the job will be empty to simplify the process.
@@ -245,6 +245,20 @@ class ResourceManager(object):
             tasks_list.append(task)
         
         return tasks_list
+    
+    def get_job_by_id(self, job_id):
+        """Return a Job object of the specific job with all its tasks
+
+        Arg:
+            job_id (String): the id of the specific job
+        
+        Return:
+            job (Job): the Job object of the specific id
+        """
+        job = get_job_by_id_without_tasks(job_id)
+        job.tasks = get_tasks_by_job_id(job_id)
+
+        return job
     
     def remove_job_by_id(self, job_id):
         """Remove the specific job (Used in unit tests)

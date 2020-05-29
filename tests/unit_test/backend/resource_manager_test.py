@@ -32,7 +32,7 @@ class TestResourceManager(unittest.TestCase):
         created_time = created_time.replace(microsecond=ms_without_ns)
 
         # Rebuild the job object and check the contents
-        rebuilt_job = self.manager.get_job_by_id(job_id)
+        rebuilt_job = self.manager.get_job_by_id_without_tasks(job_id)
         self.assertEqual(rebuilt_job.name, job_name)
         self.assertEqual(rebuilt_job.comments, job_comments)
         self.assertEqual(rebuilt_job.created_time, created_time)
@@ -65,7 +65,7 @@ class TestResourceManager(unittest.TestCase):
         created_time = created_time.replace(microsecond=ms_without_ns)
 
         # Rebuild the job object and check the contents
-        rebuilt_job = self.manager.get_job_by_id(job_id)
+        rebuilt_job = self.manager.get_job_by_id_without_tasks(job_id)
         self.assertEqual(rebuilt_job.name, job_name)
         self.assertEqual(rebuilt_job.comments, job_comments)
         self.assertEqual(rebuilt_job.created_time, created_time)
@@ -154,7 +154,7 @@ class TestResourceManager(unittest.TestCase):
         self.manager.update_task_status(task_id, Status.Successful)
 
         # Rebuild the job object and check the status
-        rebuilt_job = self.manager.get_job_by_id(job_id)
+        rebuilt_job = self.manager.get_job_by_id_without_tasks(job_id)
         self.assertEqual(rebuilt_job.status, Status.Failed)
 
         # Rebuild the task object and check the status
