@@ -1,54 +1,50 @@
+import os
+import sys
 import unittest
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../felucca/backend'))
+
 from datetime import datetime
+from threading import Thread
+
 from time import sleep
-from backend.common.job import Job
-from backend.common.status import Status
-from backend.common.task import Task
-from backend.job_manager import JobManager
-from backend.resource_manager import ResourceManager
-from backend.server import app
+from common.job import Job
+from common.status import Status
+from common.task import Task
+from job_manager import JobManager
+from resource_manager import ResourceManager
+from server import app
 
 
 TASK_DICT = {
     # basic argument testing ooanalyer
-    1: "ooanalyzer -j output.json -f /vagrant/tests/integration_test/oo.exe",
-    2: "ooanalyzer -F facts -f /vagrant/tests/integration_test/oo.exe",
-    3: "ooanalyzer -R results -f /vagrant/tests/integration_test/oo.exe",
-    4: "ooanalyzer -F facts -R results -f /vagrant/tests/integration_test/oo.exe",
-    5: "ooanalyzer -j output.json -F facts -R results -f /vagrant/tests/integration_test/oo.exe",
-    6: "ooanalyzer -j output.json -F facts -n 000 -R results -f /vagrant/tests/integration_test/oo.exe",
-    7: "ooanalyzer -f /vagrant/tests/integration_test/oo.exe -j output.json -R facts -n 000 -F results",
-    8: "ooanalyzer -R output.json -j facts -n 000 -f /vagrant/tests/integration_test/oo.exe -R results",
+    1: "ooanalyzer -j output.json -f /vagrant/docker/oo.exe",
+    2: "ooanalyzer -F facts -f /vagrant/docker/oo.exe",
+    3: "ooanalyzer -R results -f /vagrant/docker/oo.exe",
+    4: "ooanalyzer -F facts -R results -f /vagrant/docker/oo.exe",
+    5: "ooanalyzer -j output.json -F facts -R results -f /vagrant/docker/oo.exe",
+    6: "ooanalyzer -j output.json -F facts -n 000 -R results -f /vagrant/docker/oo.exe",
+    7: "ooanalyzer -f /vagrant/docker/oo.exe -j output.json -R facts -n 000 -F results",
+    8: "ooanalyzer -R output.json -j facts -n 000 -f /vagrant/docker/oo.exe -R results",
+    9: "ooanalyzer -R output.json -j facts -n address -f /vagrant/docker/oo.exe -R results",
 
     # extra space
-    9: "ooanalyzer -j output.json -F facts -R results      -f /vagrant/tests/integration_test/oo.exe",
-    10: "ooanalyzer -j output.json -F     facts -R results      -f /vagrant/tests/integration_test/oo.exe",
-    11: "  ooanalyzer -j output.json -F     facts -R results      -f /vagrant/tests/integration_test/oo.exe",
+    10: "ooanalyzer -j output.json -F facts -R results      -f /vagrant/docker/oo.exe",
+    11: "ooanalyzer -j output.json -F     facts -R results      -f /vagrant/docker/oo.exe",
+    12: "  ooanalyzer -j output.json -F     facts -R results      -f /vagrant/docker/oo.exe",
 
     # parent directory
-    12: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/tests/integration_test/oo.exe",
-    13: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/tests/../tests/integration_test/oo.exe",
-
-    # invalid command line
-    14: 15213,
-    15: "My heart is in the work.",
-    16: 15213,
-
-    # file not found
-    17: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/tests/integration_test/ooo.exe",
-    18: "ooanalyzer -j output.json -F facts -R results -f ../../vagrant/tests/integration_test/ooo.exe",
-    19: "ooanalyzer -j output.json -F facts -R results -f /../../../oo.exe"}
+    13: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/docker/oo.exe",
+    14: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/docker/../docker/oo.exe"
+}
 
 
-class IntegrationTest(unittest.TestCase):
+class BackEndTest(unittest.TestCase):
     def __init__(self, test_name, location, tool_type, command_line_input):
-        super(IntegrationTest, self).__init__(test_name)
+        super(BackEndTest, self).__init__(test_name)
         self.location = location
         self.tool_type = tool_type
         self.command_line_input = command_line_input
-
-    def setUp(self):
-        app.run(host='0.0.0.0', debug=True)
 
     def test_basic_arguments(self):
         now = datetime.now()
@@ -70,8 +66,8 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(tasks_id, fetched_tasks_id)
 
         task_metadata = ResourceManager().get_task_by_id(tasks_id[0])
-        self.assertEqual(task_metadata.command_line_input, command_line_input)
-        self.assertEqual(task_metadata.tool_type, tool_type)
+        self.assertEqual(task_metadata.command_line_input, self.command_line_input)
+        self.assertEqual(task_metadata.tool_type, self.tool_type)
         self.assertEqual(task_metadata.status, Status.Pending)
 
         # magic sleep number
@@ -84,16 +80,16 @@ class IntegrationTest(unittest.TestCase):
 
         # test after finish
 
-        with open("../../sample_output/output.json", "rb") as f:
+        with open("../sample_output/output.json", "rb") as f:
             output_json_bytes = f.read()
-        with open("../../sample_output/facts", "rb") as f:
+        with open("../sample_output/facts", "rb") as f:
             facts_bytes = f.read()
-        with open("../../sample_output/results", "rb") as f:
+        with open("../sample_output/results", "rb") as f:
             results_bytes = f.read()
 
         task_metadata = ResourceManager().get_task_by_id(tasks_id[0])
-        self.assertEqual(task_metadata.command_line_input, command_line_input)
-        self.assertEqual(task_metadata.tool_type, tool_type)
+        self.assertEqual(task_metadata.command_line_input, self.command_line_input)
+        self.assertEqual(task_metadata.tool_type, self.tool_type)
         self.assertEqual(task_metadata.status, Status.Successful)
         self.assertEqual(task_metadata.output["output.json"], output_json_bytes)
         self.assertEqual(task_metadata.log["facts"], facts_bytes)
@@ -106,9 +102,21 @@ class IntegrationTest(unittest.TestCase):
         ResourceManager().remove_job_by_id(job_id)
         ResourceManager().remove_tasks_by_job_id(job_id)
 
+
+def start_flask():
+    app.run(host='0.0.0.0', debug=True)
+
+
 if __name__ == '__main__':
+    thread = Thread(target=start_flask(), args=())
+    thread.start()
+
     suite = unittest.TestSuite()
-    suite.addTest(IntegrationTest())
+    for i in range(1, 15):
+        suite.addTest(BackEndTest('test_basic_arguments', '/vagrant/docker/oo.exe', 'ooanalyzer', TASK_DICT[i]))
+
+    runner = unittest.TextTestRunner()
+    runner.run(suite)
 
 
 
