@@ -2,9 +2,9 @@ import json
 import os
 import requests
 import subprocess
-
 from flask import Flask
 from threading import Thread
+from common.status import Status
 
 SERVER_IP = '172.17.0.1'
 SERVER_PORT = '5000'
@@ -23,14 +23,13 @@ def task_execute():
         completed_process = subprocess.run(command_line_input, shell=True, capture_output=True)
     except Exception as e:
         requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
-                                                                              'status': 'Error',
+                                                                              'status': Status.Error.name,
                                                                               'stderr': str(e)})
         return
 
-    # TODO: change status into enumerate class
-    status = 'Successful'
+    status = Status.Successful.name
     if completed_process.returncode != 0:
-        status = 'Failed'
+        status = Status.Failed.name
 
     requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
                                                                           'status': status,
