@@ -138,6 +138,7 @@ class ResourceManager(object):
             job_id (String): the id of the job
             new_status (Status): the new status of the job
         """
+        self.__setup()
         condition = {"_id": ObjectId(job_id)}
         job = self.__jobs_collection.find_one(condition)
         job["status"] = new_status.value
@@ -154,6 +155,7 @@ class ResourceManager(object):
             task_id (String): the id of the task
             new_status (Status): the new status of the task
         """
+        self.__setup()
         condition = {"_id": ObjectId(task_id)}
         task = self.__tasks_collection.find_one(condition)
         task["status"] = new_status.value
@@ -259,8 +261,8 @@ class ResourceManager(object):
         Return:
             job (Job): the Job object of the specific id
         """
-        job = get_job_by_id_without_tasks(job_id)
-        job.tasks = get_tasks_by_job_id(job_id)
+        job = self.get_job_by_id_without_tasks(job_id)
+        job.tasks = self.get_tasks_by_job_id(job_id)
 
         return job
     

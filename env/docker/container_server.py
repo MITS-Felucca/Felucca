@@ -4,7 +4,7 @@ import requests
 import subprocess
 from flask import Flask
 from threading import Thread
-from common.status import Status
+from status import Status
 
 SERVER_IP = '172.17.0.1'
 SERVER_PORT = '5000'
