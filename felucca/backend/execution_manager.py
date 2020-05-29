@@ -6,7 +6,6 @@ import docker
 import requests
 import sys
 from threading import Thread
-
 from common.singleton import Singleton
 from resource_manager import ResourceManager
 from job_manager import JobManager
@@ -69,43 +68,43 @@ class ExecutionManager(object):
         
         #j F R should be replaced to a defined path
         #f should be the path of executable file will be copied into the container
-        
-        # must have
-        if 'j' in dict:
-            dict['j'] = os.path.join("/tmp/output_j/",dict['j'])
-        else:
-            # TODO: Default
+        output = []
+        log = []
+        if dict['j'] is not None :
+            dict['j'] = os.path.join("/tmp",dict['j'])
+            output.append(dict['j'])
 
-        if 'F' in dict:
-            dict['F'] = os.path.join("/tmp/output_F/",dict['F'])
-        else:
-            # TODO: Default
+        if dict['F'] is not None :
+            dict['F'] = os.path.join("/tmp",dict['F'])
+            log.append(dict['F'])
 
-        if 'R' in dict:
-            dict['R'] = os.path.join("/tmp/output_R/",dict['R'])
-        else:
-            # TODO: Default
+        if dict['R'] is not None :
+            dict['R'] = os.path.join("/tmp",dict['R'])
+            log.append(dict['R'])
 
-        if 'f' in dict:
+        if dict['f'] is not None :
+            dict['f'] = os.path.basename(dict['f'])
             dict['f'] = os.path.join("/tmp",dict['f'])
+            task.executable_file = dict['f']
         else:
-            dict['f'] = os.path.join("/tmp/", task.executable_file)
-        
-        # TODO: log file
+            task.executable_file = os.path.join("/tmp", os.path.basename(task.executable_file))
 
-
-        exe_path_in_container = dict['f']
-        
+        print(task.executable_file)
         new_command_line_input = ""
         
         for key in dict:
             if type(dict[key])==bool:
                 new_command_line_input = new_command_line_input+key+" "
             elif dict[key] is not None:
-                new_command_line_input = new_command_line_input + "-" + key + " "+dict[key]+" "
+                new_command_line_input = new_command_line_input+"-"+key+" "+dict[key]+" "
                 
+        if 'f' not in dict:
+            new_command_line_input = new_command_line_input+" task.executable_file"
+        
+        
         task.command_line_input = new_command_line_input
-        task.executable_file = exe_path_in_container
+
+        task.set_result(output=output,log=log)
         
     def copy_to_container(self,src,dst,container):
         
@@ -144,7 +143,7 @@ class ExecutionManager(object):
         
         """
         
-        self.map_id_to_task_container[task.task_ids] = (task,container)
+        self.map_id_to_task_container[task.task_id] = (task,container)
         
     def run_container_flask(self,container):
         
@@ -172,7 +171,7 @@ class ExecutionManager(object):
             command_line_input (str): The command_line used inside the container to run the executable file with phraos
         """
         
-        task = self.map_id2Task_container[task_id][0]
+        task = self.map_id_to_task_container[task_id][0]
         return(task.command_line_input)
         
     def submit_task(self,task):
@@ -191,7 +190,7 @@ class ExecutionManager(object):
         
         client = docker.from_env()
     
-        container = client.containers.create("felucca/pharos",command="/bin/bash",tty=True,stdin_open=True,auto_remove=False)
+        container = client.containers.create("felucca/pharos",command="/bin/bash",environment = [f"TASK_ID={task.task_id}"],tty=True,stdin_open=True,auto_remove=False)
         
         self.set_map(task,container)
         
@@ -202,8 +201,8 @@ class ExecutionManager(object):
         
         self.copy_to_container(exe_path_outside,task.executable_file,container)
  
-        exec_log = container.exec_run("cat "+task.executable_file,stdout=True,stderr=True,stream=True)
-                
+        #exec_log = container.exec_run(task.executable_file,stdout=True,stderr=True,stream=True)
+        exec_log = container.exec_run(task.command_line_input,stdout=True,stderr=True,stream=True)
         for line in exec_log[1]:
             print(line)
   
