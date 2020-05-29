@@ -41,8 +41,8 @@ class ResourceManager(object):
             "log_files": {},
             "stdout": "",
             "stderr": "",
-            "status": Status.Pending.value, # Pending by default
-            "finished_time": None,
+            "status": new_task.status.value,
+            "finished_time": new_task.finished_time,
         }
 
         # Insert the new task
@@ -69,9 +69,9 @@ class ResourceManager(object):
         new_job_dict = {
             "name": new_job.name,
             "comments": new_job.comments,
-            "created_time": new_job.create_time,
-            "finished_time": None,
-            "status": Status.Pending.value, # Pending by default
+            "created_time": new_job.created_time,
+            "finished_time": new_job.finished_time,
+            "status": new_job.status.value,
         }
 
         # Insert the new job
@@ -91,8 +91,8 @@ class ResourceManager(object):
 
         Args:
             task_id (String): The id of the specific task
-            output (Dict of mapping from String to bytes): Each entry in output is an output file with its name as the key
-            log (Dict of mapping from String to bytes): Each entry in log is an log file with its name as the key
+            output (Dict of mapping from String to String): Each entry in output is the path of an output file with its name as the key
+            log (Dict of mapping from String to bytes): Each entry in log is the path of an log file with its name as the key
             stdout (String): The stdout of the task
             stderr (String): The stderr of the task
         """
@@ -104,12 +104,14 @@ class ResourceManager(object):
 
         # Insert all files into gridfs
         output_dict = {}
-        for filename, output_file in output.items():
-            file_id = self.__fs.put(output_file)
+        for filename, output_file_path in output.items():
+            with open(output_file_path, "rb") as f:
+                file_id = self.__fs.put(f)
             output_dict[filename] = file_id
         log_dict = {}
-        for filename, log_file in log.items():
-            file_id = self.__fs.put(log_file)
+        for filename, log_file_path in log.items():
+            with open(log_file_path, "rb") as f:
+                file_id = self.__fs.put(f)
             log_dict[filename] = file_id
 
         condition = {"_id": task_id}
@@ -118,48 +120,43 @@ class ResourceManager(object):
         task["log_files"] = log_dict
         task["stdout"] = stdout
         task["stderr"] = stderr
+        task["is_finished"] = True
         update_result = self.__tasks_collection.update_one(condition, {"$set": task})
 
         if update_result.modified_count is not 1:
-            # TODO: Throw an exception for failed update
+            # TODO: Throw an exception when updating failed
             pass
     
     def update_job_status(self, job_id, new_status):
-        """Update the status of the specified job
+        """Update the status of a job
 
         Arg:
-            job_id (String): the id of the specified job
+            job_id (String): the id of the job
             new_status (Status): the new status of the job
         """
-
-        self.__setup()
-
-        condition = {"_id": job_id}
+        condition = {"_id": ObjectId(job_id)}
         job = self.__jobs_collection.find_one(condition)
         job["status"] = new_status.value
         update_result = self.__jobs_collection.update_one(condition, {"$set": job})
 
         if update_result.modified_count is not 1:
-            # TODO: Throw an exception for failed update
+            # TODO: Throw an exception when updating failed
             pass
     
-    def update_job_status(self, task_id, new_status):
-        """Update the status of the specified task
+    def update_task_status(self, task_id, new_status):
+        """Update the status of a task
 
         Arg:
-            task_id (String): the id of the specified task
+            task_id (String): the id of the task
             new_status (Status): the new status of the task
         """
-
-        self.__setup()
-
-        condition = {"_id": task_id}
+        condition = {"_id": ObjectId(task_id)}
         task = self.__tasks_collection.find_one(condition)
         task["status"] = new_status.value
         update_result = self.__tasks_collection.update_one(condition, {"$set": task})
 
         if update_result.modified_count is not 1:
-            # TODO: Throw an exception for failed update
+            # TODO: Throw an exception when updating failed
             pass
 
     def get_task_by_id(self, task_id):
@@ -196,6 +193,7 @@ class ResourceManager(object):
         task.log = log_dict
         task.stdout = task_doc["stdout"]
         task.stderr = task_doc["stderr"]
+        task.status = Status(task_doc["status"])
 
         return task
     
@@ -214,12 +212,12 @@ class ResourceManager(object):
 
         self.__setup()
 
-        # Find the task using id
+        # Find the job using id
         condition = {"_id": ObjectId(job_id)}
         job_doc = self.__jobs_collection.find_one(condition)
 
         # Rebuild the Job object from the query result
-        job = Job(job_doc["name"], job_doc["comments"], job_doc["created_time"])
+        job = Job(job_doc["name"], job_doc["comments"], job_doc["created_time"], status=Status(job_doc["status"]))
 
         return job
     
@@ -270,4 +268,5 @@ class ResourceManager(object):
         self.__setup()
         
         delete_result = self.__tasks_collection.delete_many({"job_id": ObjectId(job_id)})
+
         return delete_result.deleted_count
