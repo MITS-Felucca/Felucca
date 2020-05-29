@@ -6,6 +6,7 @@ import docker
 import requests
 import sys
 from threading import Thread
+
 from common.singleton import Singleton
 from resource_manager import ResourceManager
 from job_manager import JobManager
@@ -14,35 +15,56 @@ CONTAINER_PORT = '5000'
 
 @Singleton
 class ExecutionManager(object):
-    
-    """Resource Manager is responsible for: 
+    """Execution Manager is responsible for: 
         
         1. receive a task from Job Manager 
-        2. create a predifined conatiner and copy exe into container
-        3. parse the original cmd and change it to the cmd correspooding to the path inside the conatiner
-        4. execute the exe with phraos inside container
+        2. create a predefined container and copy exe into container
+        3. parse the original cmd and change it to the cmd correspooding to the path inside the container
+        4. execute the exe with pharos inside container
         
     """
-    def __init__(self):
-        self.map_id_to_task_container = {}
 
-    # def sumbit_task(self, task_id, command_line_input):
-    #     container_ip = self.map_id_to_task_container[task_id][1].ip
-    #     requests.post("http://%s:%s/task" % (container_ip, CONTAINER_PORT), data={"task_id": task_id,
-    #                                                                               "command_line_input": command_line_input})
+    def __init__(self):
+        self.id_to_task_container = {}
 
     def save_result(self, task_id, status, stderr, stdout):
-        container = self.map_id_to_task_container[task_id][1]
+        """save the result from container to the database
+
+        Args:
+            task_id (int): the result under this task_id
+            status (STATUS): the task status
+            stderr (byte[]): the output in std error
+            stdout (byte[]): the output in std out
+        """
+        output_path = self.id_to_task_container[task_id][0].output
+        log_path = self.id_to_task_container[task_id][0].log
+        container = self.id_to_task_container[task_id][1]
+
+        # get result from container
+        container.exec_run("tar -cvf result.tar %s %s" % (", ".join(output_path), ", ".join(log_path)))
+        bits, stat = container.get_archive("result.tar")
+        path = "/tmp/%s" % (str(task_id))
+        folder = os.path.exists(path)
+        if not folder:
+            os.makedirs(path)
+        file = open("%s/result.tar" % (path), "wb")
+        for chunk in bits:
+            file.write(chunk)
+        file.close()
+
+        # extract result tar file
+        result_tar = tarfile.open("%s/result.tar" % (path))
+        result_tar.extractall(path)
+        result_tar.close()
+
         container.kill()
-        output_path = self.map_id_to_task_container[task_id][0].output
-        log_path = self.map_id_to_task_container[task_id][0].log
-        ResourceManager().save_result(task_id, output_path, log_path, stdout, stderr, status)
+        ResourceManager().save_result(task_id, os.path.join(path,output_path), os.path.join(path,log_path), stdout, stderr, status)
         JobManager().finish_task(task_id)
         self.tasks.pop(task_id, None)
 
     def commandline_path_parser(self,task):
         
-        """change a task's field: 1)command_line_input 2) executable_file, to the cmd and path used inside the conatiner
+        """change a task's field: 1)command_line_input 2) executable_file, to the cmd and path used inside the container
     
         Args:
             task (Task): The task object to be executed
@@ -59,8 +81,8 @@ class ExecutionManager(object):
         parser.add_argument('-F','--prolog-facts', dest="F", type = str)
         parser.add_argument('-f','--file', dest="f", type = str)
 
-        if(command_line_input[0]!='-'):
-            command_line_input = '-'+command_line_input
+        if command_line_input[0] != '-' :
+            command_line_input = '-' + command_line_input
                 
         a = parser.parse_args(shlex.split(command_line_input))
 
@@ -78,6 +100,7 @@ class ExecutionManager(object):
             dict['F'] = os.path.join("/tmp",dict['F'])
             log.append(dict['F'])
 
+        # result
         if dict['R'] is not None :
             dict['R'] = os.path.join("/tmp",dict['R'])
             log.append(dict['R'])
@@ -108,7 +131,7 @@ class ExecutionManager(object):
         
     def copy_to_container(self,src,dst,container):
         
-        """copy executable_file into the conatiner from src to dst
+        """copy executable_file into the container from src to dst
     
         Args:
             src (str): The absolute path of executable file in the backend 
@@ -143,7 +166,7 @@ class ExecutionManager(object):
         
         """
         
-        self.map_id_to_task_container[task.task_id] = (task,container)
+        self.id_to_task_container[task.task_id] = (task,container)
         
     def run_container_flask(self,container):
         
@@ -171,11 +194,11 @@ class ExecutionManager(object):
             command_line_input (str): The command_line used inside the container to run the executable file with phraos
         """
         
-        task = self.map_id_to_task_container[task_id][0]
+        task = self.id_to_task_container[task_id][0]
         return(task.command_line_input)
         
     def submit_task(self,task):
-        """Job Manager call this method and submit a task. This method will launch the whole procedure (i.e. parse cmd, create conatiner, run exe with phraos and insert result into Resource Manager) of the Execution Manager
+        """Job Manager call this method and submit a task. This method will launch the whole procedure (i.e. parse cmd, create container, run exe with phraos and insert result into Resource Manager) of the Execution Manager
     
         Args:
             task (Task): The task from Job Manager
@@ -186,7 +209,7 @@ class ExecutionManager(object):
     
         exe_path_outside = task.executable_file
 
-        self.commandline_path_parser(task)#this will change task two attr: task.executable_file & task.command_line_input   to conatiner path version
+        self.commandline_path_parser(task)#this will change task two attr: task.executable_file & task.command_line_input   to container path version
         
         client = docker.from_env()
     
