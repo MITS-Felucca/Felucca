@@ -102,14 +102,10 @@ class TestResourceManager(unittest.TestCase):
         task_id = tasks_id[0]
         stdout = b"sample stdout"
         stderr = b"sample stderr"
-        output_file_dict = {
-            "output.json": "../../sample_output/output.json",
-        }
-        log_file_dict = {
-            "facts": "../../sample_output/facts",
-            "results": "../../sample_output/results",
-        }
-        self.manager.save_result(task_id, output_file_dict, log_file_dict, stdout, stderr)
+        output_file_list = ["../../sample_output/output.json"]
+        log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
+
+        self.manager.save_result(task_id, output_file_list, log_file_list, stdout, stderr)
 
         # Rebuild the task object and check the contents of files
         rebuilt_task = self.manager.get_task_by_id(task_id)

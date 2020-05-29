@@ -1,5 +1,6 @@
 import datetime
 import gridfs
+import os
 import pymongo
 from bson import ObjectId
 from datetime import datetime
@@ -91,8 +92,8 @@ class ResourceManager(object):
 
         Args:
             task_id (String): The id of the specific task
-            output (Dict of mapping from String to String): Each entry in output is the path of an output file with its name as the key
-            log (Dict of mapping from String to bytes): Each entry in log is the path of an log file with its name as the key
+            output (List of String): Each entry in output is the path of an output file
+            log (List of String): Each entry in log is the path of an log file
             stdout (String): The stdout of the task
             stderr (String): The stderr of the task
         """
@@ -104,14 +105,17 @@ class ResourceManager(object):
 
         # Insert all files into gridfs
         output_dict = {}
-        for filename, output_file_path in output.items():
+        for output_file_path in output:
             with open(output_file_path, "rb") as f:
                 file_id = self.__fs.put(f)
+            filename = os.path.basename(os.path.normpath(output_file_path))
             output_dict[filename] = file_id
+
         log_dict = {}
-        for filename, log_file_path in log.items():
+        for log_file_path in log:
             with open(log_file_path, "rb") as f:
                 file_id = self.__fs.put(f)
+            filename = os.path.basename(os.path.normpath(log_file_path))
             log_dict[filename] = file_id
 
         condition = {"_id": task_id}
