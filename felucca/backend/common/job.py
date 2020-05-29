@@ -1,5 +1,6 @@
 from status import Status
 
+
 class Job(object):
     """ Job object
     Job contain a bunch of tasks

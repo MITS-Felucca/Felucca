@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Status(Enum):
     Undefined = 0
     Pending = 1

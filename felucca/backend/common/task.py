@@ -1,5 +1,6 @@
 from status import Status
 
+
 class Task(object):
     """Task Object
     Task object represent a pharos executable task 
