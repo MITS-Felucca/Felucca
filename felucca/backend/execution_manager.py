@@ -81,7 +81,7 @@ class ExecutionManager(object):
             task (Task): The task object to be executed
         
         """
-        command_line_input = task.command_line_input
+        command_line_input =task.command_line_input.lstrip()
         
         parser = argparse.ArgumentParser()
          
