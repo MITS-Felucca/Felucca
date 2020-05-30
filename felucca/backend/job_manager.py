@@ -41,7 +41,7 @@ class JobManager(object):
         :return: Returned Nothing.
         """
         job_id = self.task_id_to_job_id[task_id]
-        print('received task: %s belongs to %s\n' % (job_id, task_id))
+        print('received task: %s belongs to %s\n' % (task_id, job_id))
         del self.job_metadata[job_id]
         del self.task_id_to_job_id[task_id]
 

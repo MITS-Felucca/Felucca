@@ -10,14 +10,17 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def hello():
     return "Hello World!"
 
+
 @app.route("/test")
 def test():
     now = datetime.now()
-    task = Task("/vagrant/Felucca/tests/oo.exe", "meaningless", "ooanalyzer -j output.json -R results -F facts -f /vagrant/Felucca/tests/oo.exe")
+    task = Task("/vagrant/Felucca/tests/sample_output/oo.exe", "meaningless",
+                "ooanalyzer -j output.json -R results -F facts -f /vagrant/Felucca/tests/sample_output/oo.exe")
     dummy_job = Job("Test Job", "OOanalyer Job", now)
     dummy_job.tasks = [task]
     job_id, tasks_id = JobManager().submit_job(dummy_job)
@@ -42,7 +45,7 @@ def test():
     print(task.stderr)
     print(task.output)
     print(task.log)
-    
+
     print("=======================")
     task = ResourceManager().get_task_by_id(tasks_id[0])
     print(task.command_line_input)
@@ -52,7 +55,8 @@ def test():
     print(task.stderr)
     print(task.output)
     print(task.log)
-    return {"status" : "ok"}
+    return {"status": "ok"}
+
 
 @app.route("/result", methods=['POST'])
 def get_result():
@@ -64,9 +68,11 @@ def get_result():
     JobManager().finish_task(request.form['task_id'])
     return {'is_received': True}
 
+
 @app.route("/task/<task_id>", methods=['GET'])
 def get_task(task_id):
     return {'command_line_input': ExecutionManager().get_command_line_input(task_id)}
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
