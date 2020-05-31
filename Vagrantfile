@@ -22,7 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     images: ["seipharos/pharos"]
 
   # build a new image with flask
-  config.vm.provision "file", source: "./docker", destination: "~/docker"
+  config.vm.provision "file", source: "./env/docker", destination: "~/docker"
   config.vm.provision "shell", inline: "docker build ./docker -t felucca/pharos:latest -f ./docker/DockerFile"
 
   # Disable automatic box update checking. If you disable this, then
@@ -78,13 +78,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
-  config.vm.provision :shell, path: 'mongodb.sh'
+  # config.vm.provision :shell, path: 'mongodb.sh'
 
   # Install python flask
   # config.vm.network "forwarded_port", guest: 5000, host: 5000
   config.vm.network :private_network, ip: VAGRANT_IP
   config.vm.provision "ansible_local" do |a|
-    a.playbook = "setup.yml"
+    a.playbook = "env/setup.yml"
 
   # Install temporary testing library
   config.vm.provision :shell, inline: "pip3 install docker && pip3 install pymongo && pip3 install flask"
