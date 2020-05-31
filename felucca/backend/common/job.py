@@ -1,4 +1,8 @@
-from status import Status
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../felucca/backend'))
+
+from common.status import Status
 
 class Job(object):
     """ Job object

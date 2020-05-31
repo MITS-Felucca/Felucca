@@ -1,5 +1,5 @@
 .DS_Store
 /env/.vagrant/
-.pyc
-/__pycache__/
 .idea/
+*.pyc
+*/__pycache__/

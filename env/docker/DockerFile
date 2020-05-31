@@ -18,4 +18,5 @@ RUN apt-get update &&\
 RUN mkdir /backend
 RUN mkdir /test
 ADD ./container_server.py /backend
+ADD ./status.py /backend
 ADD ./oo.exe /test
