@@ -22,22 +22,21 @@ TASK_DICT = {
     # basic argument testing ooanalyer
     1: "ooanalyzer -j output.json -f /vagrant/docker/oo.exe",
     2: "ooanalyzer -F facts -f /vagrant/docker/oo.exe",
-    3: "ooanalyzer -R results -f /vagrant/docker/oo.exe",
-    4: "ooanalyzer -F facts -R results -f /vagrant/docker/oo.exe",
-    5: "ooanalyzer -j output.json -F facts -R results -f /vagrant/docker/oo.exe",
-    6: "ooanalyzer -j output.json -F facts -n 000 -R results -f /vagrant/docker/oo.exe",
-    7: "ooanalyzer -f /vagrant/docker/oo.exe -j output.json -R results -n 000 -F facts",
-    8: "ooanalyzer -R results -j output.json -n 000 -f /vagrant/docker/oo.exe -F facts",
-    9: "ooanalyzer -F facts -j output.json -n address -f /vagrant/docker/oo.exe -R results",
+    3: "ooanalyzer -F facts -R results -f /vagrant/docker/oo.exe",
+    4: "ooanalyzer -j output.json -F facts -R results -f /vagrant/docker/oo.exe",
+    5: "ooanalyzer -j output.json -F facts -n 000 -R results -f /vagrant/docker/oo.exe",
+    6: "ooanalyzer -f /vagrant/docker/oo.exe -j output.json -R results -n 000 -F facts",
+    7: "ooanalyzer -R results -j output.json -n 000 -f /vagrant/docker/oo.exe -F facts",
+    8: "ooanalyzer -F facts -j output.json -n address -f /vagrant/docker/oo.exe -R results",
 
     # extra space
-    10: "ooanalyzer -j output.json -F facts -R results      -f /vagrant/docker/oo.exe",
-    11: "ooanalyzer -j output.json -F     facts -R results      -f /vagrant/docker/oo.exe",
-    12: "  ooanalyzer -j output.json -F     facts -R results      -f /vagrant/docker/oo.exe",
+    9: "ooanalyzer -j output.json -F facts -R results      -f /vagrant/docker/oo.exe",
+    10: "ooanalyzer -j output.json -F     facts -R results      -f /vagrant/docker/oo.exe",
+    11: "  ooanalyzer -j output.json -F     facts -R results      -f /vagrant/docker/oo.exe",
 
     # parent directory
-    13: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/docker/oo.exe",
-    14: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/docker/../docker/oo.exe"
+    12: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/docker/oo.exe",
+    13: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/docker/../docker/oo.exe"
 }
 
 class BackEndTest(unittest.TestCase):
@@ -96,11 +95,6 @@ class BackEndTest(unittest.TestCase):
 
         print("Checking output...")
 
-        with open("/vagrant/Felucca/tests/sample_output/facts", "rb") as f:
-            facts_bytes = f.read()
-        with open("/vagrant/Felucca/tests/sample_output/results", "rb") as f:
-            results_bytes = f.read()
-
         fetched_tasks = ResourceManager().get_tasks_by_job_id(self.job_id)
         self.assertEqual(len(fetched_tasks), 1)
         self.assertEqual(fetched_tasks[0].command_line_input, self.command_line_input)
@@ -150,7 +144,7 @@ if __name__ == '__main__':
     sleep(2.0)
 
     suite = unittest.TestSuite()
-    for i in range(1, 15):
+    for i in range(1, 14):
         suite.addTest(BackEndTest('test_basic_arguments', '/vagrant/docker/oo.exe', 'ooanalyzer', TASK_DICT[i], i))
 
     runner = unittest.TextTestRunner()
