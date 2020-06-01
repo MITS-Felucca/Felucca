@@ -5,5 +5,5 @@
     venv_path: /home/vagrant/env/venv
     requirements_path: /vagrant/env/requirements.txt
   roles:
-    - {role: python}
-    - {role: mongodb}
+    - role: python
+    - role: mongodb

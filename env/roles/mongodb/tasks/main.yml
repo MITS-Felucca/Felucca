@@ -14,7 +14,6 @@
     apt:
       name: mongodb-org
       update_cache: yes
-      become: yes
   - name: Start MongoDB service
     service:
       name: mongod
