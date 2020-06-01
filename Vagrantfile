@@ -86,7 +86,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "ansible_local" do |a|
     a.playbook = "env/setup.yml"
 
-  # Install temporary testing library
-  config.vm.provision :shell, inline: "pip3 install docker && pip3 install pymongo && pip3 install flask"
   end
 end
