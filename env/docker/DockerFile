@@ -17,6 +17,6 @@ RUN apt-get update &&\
 # add microserver inside:
 RUN mkdir /backend
 RUN mkdir /test
-ADD ./container_server.py /backend
-ADD ./status.py /backend
-ADD ./oo.exe /test
+ADD /vagrant/felucca/backend/container_server.py /backend
+ADD /vagrant/felucca/backend/common /backend
+ADD /vagrant/tests/sample_output/oo.exe /test

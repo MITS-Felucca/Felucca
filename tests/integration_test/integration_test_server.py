@@ -3,8 +3,7 @@ import sys
 import json
 import unittest
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../felucca/backend'))
-
+sys.path.append(os.path.join(os.path.dirname(__file__), '/vagrant/felucca/backend'))
 from datetime import datetime
 from flask import request
 from threading import Thread
@@ -20,23 +19,23 @@ from server import app
 
 TASK_DICT = {
     # basic argument testing ooanalyer
-    1: "ooanalyzer -j output.json -f /vagrant/docker/oo.exe",
-    2: "ooanalyzer -F facts -f /vagrant/docker/oo.exe",
-    3: "ooanalyzer -F facts -R results -f /vagrant/docker/oo.exe",
-    4: "ooanalyzer -j output.json -F facts -R results -f /vagrant/docker/oo.exe",
-    5: "ooanalyzer -j output.json -F facts -n 000 -R results -f /vagrant/docker/oo.exe",
-    6: "ooanalyzer -f /vagrant/docker/oo.exe -j output.json -R results -n 000 -F facts",
-    7: "ooanalyzer -R results -j output.json -n 000 -f /vagrant/docker/oo.exe -F facts",
-    8: "ooanalyzer -F facts -j output.json -n address -f /vagrant/docker/oo.exe -R results",
+    1: "ooanalyzer -j output.json -f /vagrant/tests/sample_output/oo.exe",
+    2: "ooanalyzer -F facts -f /vagrant/tests/sample_output/oo.exe",
+    3: "ooanalyzer -F facts -R results -f /vagrant/tests/sample_output/oo.exe",
+    4: "ooanalyzer -j output.json -F facts -R results -f /vagrant/tests/sample_output/oo.exe",
+    5: "ooanalyzer -j output.json -F facts -n 000 -R results -f /vagrant/tests/sample_output/oo.exe",
+    6: "ooanalyzer -f /vagrant/tests/sample_output/oo.exe -j output.json -R results -n 000 -F facts",
+    7: "ooanalyzer -R results -j output.json -n 000 -f /vagrant/tests/sample_output/oo.exe -F facts",
+    8: "ooanalyzer -F facts -j output.json -n address -f /vagrant/tests/sample_output/oo.exe -R results",
 
     # extra space
-    9: "ooanalyzer -j output.json -F facts -R results      -f /vagrant/docker/oo.exe",
-    10: "ooanalyzer -j output.json -F     facts -R results      -f /vagrant/docker/oo.exe",
-    11: "  ooanalyzer -j output.json -F     facts -R results      -f /vagrant/docker/oo.exe",
+    9: "ooanalyzer -j output.json -F facts -R results      -f /vagrant/tests/sample_output/oo.exe",
+    10: "ooanalyzer -j output.json -F     facts -R results      -f /vagrant/tests/sample_output/oo.exe",
+    11: "  ooanalyzer -j output.json -F     facts -R results      -f /vagrant/tests/sample_output/oo.exe",
 
     # parent directory
-    12: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/docker/oo.exe",
-    13: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/docker/../docker/oo.exe"
+    12: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/tests/sample_output/oo.exe",
+    13: "ooanalyzer -j output.json -F facts -R results -f /vagrant/../vagrant/tests/../tests/sample_output/oo.exe"
 }
 
 class BackEndTest(unittest.TestCase):
@@ -145,13 +144,8 @@ if __name__ == '__main__':
 
     suite = unittest.TestSuite()
     for i in range(1, 14):
-        suite.addTest(BackEndTest('test_basic_arguments', '/vagrant/docker/oo.exe', 'ooanalyzer', TASK_DICT[i], i))
+        suite.addTest(BackEndTest('test_basic_arguments', '/vagrant/tests/sample_output/oo.exe', 'ooanalyzer', TASK_DICT[i], i))
 
     runner = unittest.TextTestRunner()
     runner.run(suite)
-
-    terminate = request.environ.get('werkzeug.server.shutdown')
-    if terminate is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    terminate()
 
