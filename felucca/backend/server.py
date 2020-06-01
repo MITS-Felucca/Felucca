@@ -19,8 +19,8 @@ def hello():
 @app.route("/test")
 def test():
     now = datetime.now()
-    task = Task("/vagrant/tests/sample_output/oo.exe", "meaningless",
-                "ooanalyzer -j output.json -R results -F facts -f /vagrant/tests/sample_output/oo.exe")
+    task = Task("../../tests/sample_output/oo.exe", "meaningless",
+                "ooanalyzer -j output.json -R results -F facts -f ../../tests/sample_output/oo.exe")
     dummy_job = Job("Test Job", "OOanalyer Job", now)
     dummy_job.tasks = [task]
     job_id, tasks_id = JobManager().submit_job(dummy_job)
