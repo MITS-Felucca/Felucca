@@ -11,7 +11,7 @@
     update_cache: yes
 
 - name: Install docker
-  apt:
+  pip:
     name: docker
     state: present
     update_cache: yes
@@ -28,8 +28,3 @@
     virtualenv_python: python3.6
     requirements: "{{ requirements_path }}"
 
-- name: Install docker
-  apt:
-    name: docker
-    state: present
-    update_cache: yes
