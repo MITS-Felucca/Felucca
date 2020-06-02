@@ -10,12 +10,6 @@
     state: present
     update_cache: yes
 
-- name: Install docker
-  pip:
-    name: docker
-    state: present
-    update_cache: yes
-
 - name: Install 'virtualenv' package
   pip:
     name: virtualenv
