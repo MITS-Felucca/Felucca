@@ -78,7 +78,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
-  # config.vm.provision :shell, path: 'mongodb.sh'
+  config.vm.provision :shell, path: 'env/mongodb.sh', run: "always"
 
   # Install python flask
   # config.vm.network "forwarded_port", guest: 5000, host: 5000
