@@ -22,7 +22,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     images: ["seipharos/pharos"]
 
   # build a new image with flask
-  config.vm.provision "file", source: "./env/docker", destination: "~/docker"
+  config.vm.provision "file", source: "./DockerFile", destination: "~/docker/DockerFile"
+  config.vm.provision "file", source: "./felucca/backend/container_server.py", destination: "~/docker/container_server.py"
+  config.vm.provision "file", source: "./felucca/backend/common/status.py", destination: "~/docker/status.py"
+    config.vm.provision "file", source: "./tests/sample_output/oo.exe", destination: "~/docker/oo.exe"
   config.vm.provision "shell", inline: "docker build ./docker -t felucca/pharos:latest -f ./docker/DockerFile"
 
   # Disable automatic box update checking. If you disable this, then
