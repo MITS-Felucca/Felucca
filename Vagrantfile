@@ -25,7 +25,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "file", source: "./DockerFile", destination: "~/docker/DockerFile"
   config.vm.provision "file", source: "./felucca/backend/container_server.py", destination: "~/docker/container_server.py"
   config.vm.provision "file", source: "./felucca/backend/common/status.py", destination: "~/docker/status.py"
-    config.vm.provision "file", source: "./tests/sample_output/oo.exe", destination: "~/docker/oo.exe"
+  config.vm.provision "file", source: "./tests/sample_output/oo.exe", destination: "~/docker/oo.exe"
   config.vm.provision "shell", inline: "docker build ./docker -t felucca/pharos:latest -f ./docker/DockerFile"
 
   # Disable automatic box update checking. If you disable this, then
@@ -83,7 +83,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # SHELL
 
   # Install python flask
-  # config.vm.network "forwarded_port", guest: 5000, host: 5000
+  config.vm.network "forwarded_port", guest: 5000, host: 5000
+  config.vm.network "forwarded_port", guest: 4200, host: 4200
   config.vm.network :private_network, ip: VAGRANT_IP
   config.vm.provision "ansible_local" do |a|
     a.playbook = "env/setup.yml"
