@@ -11,7 +11,7 @@ class Logger:
         self.logger.setLevel(logging.DEBUG)
 
         log_path = os.path.dirname(os.path.abspath(__file__))
-        logname = log_path + '/' + 'log.txt'  # 指定输出的日志文件名
+        logname = log_path + '/' + 'log.txt'  
         fh = logging.FileHandler(logname, mode='w', encoding='utf-8')
         fh.setLevel(logging.DEBUG)
 
