@@ -7,3 +7,4 @@
   roles:
     - role: python
     - role: mongodb
+    - role: angularjs

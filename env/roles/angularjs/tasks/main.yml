@@ -1,0 +1,24 @@
+- name: Adding nodejs packages
+  get_url:
+    url: https://deb.nodesource.com/setup_12.x
+    dest: /tmp/
+    mode: 0755
+
+- name: Add the setup
+  shell: /tmp/setup_12.x
+
+- name: Install nodejs
+  apt:
+    name: nodejs
+    state: present
+
+- name: Remove the setup
+  file:
+    path: /tmp/setup_12.x
+    state: absent
+
+- name: Install angualrjs
+  npm:
+    name: "@angular/cli"
+    global: yes
+    state: present
