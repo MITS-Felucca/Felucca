@@ -1,6 +1,7 @@
 from common.singleton import Singleton
 from resource_manager import ResourceManager
 from execution_manager import ExecutionManager
+from logger import Logger
 
 @Singleton
 class JobManager(object):
@@ -14,13 +15,16 @@ class JobManager(object):
     def __init__(self):
         self.job_metadata = {}
         self.task_id_to_job_id = {}
-
+    
     def submit_job(self, new_job):
         """Submit a job to Resource manager to get job_id and task_ids, then submit first task.
 
         :param new_job: a new job instance submitted by front_end
         :return: Returned Nothing.
         """
+        logger = Logger().get_log
+        logger.debug(f"receive job in submit_job")
+        logger.debug(f"insert new job to ResourceManager")
         job_id, tasks_id = ResourceManager().insert_new_job(new_job)
         new_job.job_id = job_id
 
@@ -30,6 +34,7 @@ class JobManager(object):
         self.task_id_to_job_id[new_job.tasks[0].task_id] = new_job.job_id
 
         # only submit first task in this dummy implementation
+        logger.debug(f"submit task to ExecutionManager, task_id={new_job.tasks[0].task_id}")
         ExecutionManager().submit_task(new_job.tasks[0])
 
         return job_id, tasks_id
@@ -40,11 +45,15 @@ class JobManager(object):
         :param task_id: task_id of finished task
         :return: Returned Nothing.
         """
-        job_id = self.task_id_to_job_id[task_id]
-        print('received task: %s belongs to %s\n' % (task_id, job_id))
-        del self.job_metadata[job_id]
-        del self.task_id_to_job_id[task_id]
-
+        logger = Logger().get_log
+        logger.debug(f"finish_task")
+        try:
+            job_id = self.task_id_to_job_id[task_id]
+            print('received task: %s belongs to %s\n' % (task_id, job_id))
+            del self.job_metadata[job_id]
+            del self.task_id_to_job_id[task_id]
+        except Exception as e:
+            logger.error(f"something wrong in finish_task, Exception: {e}")
 
 
     pass

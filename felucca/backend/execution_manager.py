@@ -10,7 +10,7 @@ from threading import Thread
 from common.singleton import Singleton
 from resource_manager import ResourceManager
 from common.status import Status
-
+from logger import Logger
 CONTAINER_PORT = '5000'
 
 @Singleton
@@ -36,6 +36,8 @@ class ExecutionManager(object):
             stderr (byte[]): the output in std error
             stdout (byte[]): the output in std out
         """
+        logger = Logger().get_log
+        logger.debug(f"start save_result")
         output_path = self.id_to_task_container[task_id][0].output
         log_path = self.id_to_task_container[task_id][0].log
         container = self.id_to_task_container[task_id][1]
@@ -68,8 +70,9 @@ class ExecutionManager(object):
             output_path[index] = os.path.join(path, output_path[index][1:])
         for index in range(len(log_path)):
             log_path[index] = os.path.join(path, log_path[index][1:])
-        
+        logger.debug(f"save result to ResourceManager")
         ResourceManager().save_result(task_id, output_path, log_path, stdout, stderr)
+        logger.debug(f"invoke ResourceManager update_task_status")
         ResourceManager().update_task_status(task_id, Status[status])
         self.id_to_task_container.pop(task_id, None)
 
@@ -138,6 +141,12 @@ class ExecutionManager(object):
 
         task.set_result(output=output,log=log)
         
+        print(task.command_line_input)
+        print(task.executable_file)
+        print(task.log)
+        print(task.output)
+        
+        
     def copy_to_container(self,src,dst,container):
         
         """copy executable_file into the container from src to dst
@@ -148,7 +157,7 @@ class ExecutionManager(object):
             container (Container): the docker container created to run this task 
         
         """
-
+        logger = Logger().get_log
         os.chdir(os.path.dirname(src))
         srcname = os.path.basename(src)
 
@@ -156,7 +165,7 @@ class ExecutionManager(object):
         try:
             tar.add(srcname)
         except Exception as e:
-            print(e)
+            logger.error(f"copy_to_container fails, Exception: {e}")
         finally:
             tar.close()
     
@@ -164,6 +173,10 @@ class ExecutionManager(object):
         container_dir = os.path.dirname(dst)
         container.exec_run("mkdir "+container_dir)
         container.put_archive(container_dir, data)
+        
+        path = src + '.tar'
+        if(os.path.exists(path)):
+            os.remove(path)
         
     def set_map(self,task,container):
         
@@ -185,12 +198,13 @@ class ExecutionManager(object):
             container (Container): the docker container created to run this task 
         
         """
-        
+        logger = Logger().get_log
+        logger.debug(f"start run container_server")
         exec_log = container.exec_run("flask run --host=0.0.0.0" ,stdout=True,stderr=True,stream=True)
-
+        
         for line in exec_log[1]:
             print(line)
-             
+        
         
     def get_command_line_input(self, task_id):
         
@@ -203,7 +217,7 @@ class ExecutionManager(object):
             command_line_input (str): The command_line used inside the container to run the executable file with phraos
         """
         task = self.id_to_task_container[task_id][0]
-        print (task.command_line_input)
+        
         return(task.command_line_input)
         
     def submit_task(self,task):
@@ -215,7 +229,8 @@ class ExecutionManager(object):
         Returns:
             if successful, return true to Job Manager
         """
-    
+        logger = Logger().get_log
+        logger.debug(f"receive task: task_id = {task.task_id}, job_id = {task.job_id}")
         exe_path_outside = task.executable_file
 
         self.commandline_path_parser(task)#this will change task two attr: task.executable_file & task.command_line_input   to container path version
@@ -223,7 +238,7 @@ class ExecutionManager(object):
         client = docker.from_env()
     
         container = client.containers.create("felucca/pharos",command="/bin/bash",environment = [f"TASK_ID={task.task_id}"],tty=True,stdin_open=True,auto_remove=False)
-        
+        logger.debug(f"successfully create a container : {container.name}")
         self.set_map(task,container)
         
         container.start()
@@ -232,5 +247,5 @@ class ExecutionManager(object):
         t.start()
         
         self.copy_to_container(exe_path_outside,task.executable_file,container)
-  
+        logger.debug(f"successfully copy exe into container({container.name})")
         return(True);
