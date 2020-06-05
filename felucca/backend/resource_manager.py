@@ -35,6 +35,8 @@ class ResourceManager(object):
         """
 
         # Build the new task
+        logger = Logger().get
+        
         new_task_dict = {
             "tool_type": 0,
             "command_line_input": new_task.command_line_input,
@@ -50,7 +52,7 @@ class ResourceManager(object):
         # Insert the new task
         result = self.__tasks_collection.insert_one(new_task_dict)
         task_id = result.inserted_id
-
+        logger.debug(f"insert the new task:{task_id}")
         # Don't cast id to String for internal use
         return task_id
 
@@ -64,8 +66,8 @@ class ResourceManager(object):
             job_id (String): The id of the newly inserted job
             tasks_id (List of String): A list of ids according to the tasks of the job, where the order remains the same
         """
-        logger = Logger().get_log
-        logger.debug(f"receive new job in insert_new_job")
+        logger = Logger().get
+        logger.debug(f"receive new job{new_job} in insert_new_job")
         self.__setup()
         
         # Build the new job
@@ -99,8 +101,8 @@ class ResourceManager(object):
             stdout (String): The stdout of the task
             stderr (String): The stderr of the task
         """
-        logger = Logger().get_log
-        logger.debug(f"start save_result")
+        logger = Logger().get
+        logger.debug(f"start save_result task_id:{task_id}, output:{output}, log:{log}, stdout:{stdout}, stderr:{stderr}")
         
         
         self.__setup()
@@ -145,7 +147,7 @@ class ResourceManager(object):
             job_id (String): the id of the job
             new_status (Status): the new status of the job
         """
-        logger = Logger().get_log
+        logger = Logger().get
         logger.debug(f"start update_job_status")
         self.__setup()
         try:
@@ -154,7 +156,7 @@ class ResourceManager(object):
             job["status"] = new_status.value
             update_result = self.__jobs_collection.update_one(condition, {"$set": job})
             if update_result.modified_count != 1:
-                logger.error(f"update job status failed")
+                raise Exception("update_result.modified_count != 1")
             pass
         except Exception as e:
             logger.error(f"something wrong in update_job_status, Exception: {e}")
@@ -167,8 +169,8 @@ class ResourceManager(object):
             task_id (String): the id of the task
             new_status (Status): the new status of the task
         """
-        logger = Logger().get_log
-        logger.debug(f"start update_task_status")
+        logger = Logger().get
+        logger.debug(f"start update_task_status, task_id:{task_id}, new_status:{new_status}")
         self.__setup()
         try:
             condition = {"_id": ObjectId(task_id)}
@@ -176,7 +178,7 @@ class ResourceManager(object):
             task["status"] = new_status.value
             update_result = self.__tasks_collection.update_one(condition, {"$set": task})
             if update_result.modified_count != 1:
-                logger.error(f"update task status failed")
+                raise Exception("update_result.modified_count != 1")
             pass
         except Exception as e:
             logger.error(f"something wrong in update_task_status, Exception: {e}")
@@ -190,7 +192,8 @@ class ResourceManager(object):
         Return:
             task: the Task object of the specific id
         """
-        logger = Logger().get_log
+        logger = Logger().get
+        logger.debug(f"start get_task_by_id, task_id:{task_id}")
         self.__setup()
         try:
             # Find the task using id
@@ -216,6 +219,7 @@ class ResourceManager(object):
             task.stdout = task_doc["stdout"]
             task.stderr = task_doc["stderr"]
             task.status = Status(task_doc["status"])
+            logger.debug(f"get_task_by_id successfully, task_id:{task_id}")
             return task
         except Exception as e:
             logger.error(f"something wrong in get_task_by_id, Exception: {e}")
@@ -233,7 +237,8 @@ class ResourceManager(object):
         Return:
             job (Job): the Job object of the specific id
         """
-        logger = Logger().get_log
+        logger = Logger().get
+        logger.debug(f"start get_job_by_id_without_tasks, job_id:{job_id}")
         self.__setup()
         try:
             # Find the job using id
@@ -256,7 +261,8 @@ class ResourceManager(object):
         Return:
             tasks: a list of Task objects
         """
-        logger = Logger().get_log
+        logger = Logger().get
+        logger.debug(f"start get_tasks_by_job_id, job_id:{job_id}")
         self.__setup()
         try:
             # Get ids of all tasks using job_id
@@ -269,7 +275,7 @@ class ResourceManager(object):
             for task_doc in tasks_doc_list:
                 task = self.get_task_by_id(task_doc["_id"])
                 tasks_list.append(task)
-            
+            logger.debug(f"Get ids of all tasks using job_id successfully, tasks_list:{tasks_list}")
             return tasks_list
         except Exception as e:
             logger.error(f"something wrong in get_tasks_by_job_id, Exception: {e}")
@@ -283,7 +289,8 @@ class ResourceManager(object):
         Return:
             job (Job): the Job object of the specific id
         """
-        logger = Logger().get_log
+        logger = Logger().get
+        logger.debug(f"start get_job_by_id, job_id:{job_id}")
         try:
             job = self.get_job_by_id_without_tasks(job_id)
             job.tasks = self.get_tasks_by_job_id(job_id)
@@ -298,7 +305,8 @@ class ResourceManager(object):
         Arg:
             job_id (String): the id of the specific job
         """
-        logger = Logger().get_log
+        logger = Logger().get
+        logger.debug(f"remove job by id, job_id:{job_id}")
         self.__setup()
         try:
             delete_result = self.__jobs_collection.delete_one({"_id": ObjectId(job_id)})
@@ -312,7 +320,8 @@ class ResourceManager(object):
         Arg:
             task_id (String): the id of the specific task
         """
-        logger = Logger().get_log
+        logger = Logger().get
+        logger.debug(f"remove tasks by id, job_id:{job_id}")
         self.__setup()
         try:
             delete_result = self.__tasks_collection.delete_many({"job_id": ObjectId(job_id)})

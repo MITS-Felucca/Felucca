@@ -22,10 +22,11 @@ class JobManager(object):
         :param new_job: a new job instance submitted by front_end
         :return: Returned Nothing.
         """
-        logger = Logger().get_log
+        logger = Logger().get
         logger.debug(f"receive job in submit_job")
-        logger.debug(f"insert new job to ResourceManager")
+
         job_id, tasks_id = ResourceManager().insert_new_job(new_job)
+        logger.debug(f"insert new job to ResourceManager finished, get job_id:{job_id}, tasks_id:{tasks_id}")
         new_job.job_id = job_id
 
         for task, task_id in zip(new_job.tasks, tasks_id):
@@ -45,15 +46,16 @@ class JobManager(object):
         :param task_id: task_id of finished task
         :return: Returned Nothing.
         """
-        logger = Logger().get_log
-        logger.debug(f"finish_task")
+        logger = Logger().get
+        
         try:
             job_id = self.task_id_to_job_id[task_id]
             print('received task: %s belongs to %s\n' % (task_id, job_id))
             del self.job_metadata[job_id]
             del self.task_id_to_job_id[task_id]
+            logger.debug(f"finish_task{task_id}")
         except Exception as e:
             logger.error(f"something wrong in finish_task, Exception: {e}")
 
-
+        
     pass

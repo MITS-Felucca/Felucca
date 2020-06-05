@@ -3,8 +3,6 @@ import argparse
 import shlex
 import tarfile
 import docker
-import requests
-import sys
 from threading import Thread
 
 from common.singleton import Singleton
@@ -36,8 +34,8 @@ class ExecutionManager(object):
             stderr (byte[]): the output in std error
             stdout (byte[]): the output in std out
         """
-        logger = Logger().get_log
-        logger.debug(f"start save_result")
+        logger = Logger().get
+        logger.debug(f"start save_result: task_id: {task_id} status: {status}")
         output_path = self.id_to_task_container[task_id][0].output
         log_path = self.id_to_task_container[task_id][0].log
         container = self.id_to_task_container[task_id][1]
@@ -70,9 +68,8 @@ class ExecutionManager(object):
             output_path[index] = os.path.join(path, output_path[index][1:])
         for index in range(len(log_path)):
             log_path[index] = os.path.join(path, log_path[index][1:])
-        logger.debug(f"save result to ResourceManager")
+            
         ResourceManager().save_result(task_id, output_path, log_path, stdout, stderr)
-        logger.debug(f"invoke ResourceManager update_task_status")
         ResourceManager().update_task_status(task_id, Status[status])
         self.id_to_task_container.pop(task_id, None)
 
@@ -141,11 +138,6 @@ class ExecutionManager(object):
 
         task.set_result(output=output,log=log)
         
-        print(task.command_line_input)
-        print(task.executable_file)
-        print(task.log)
-        print(task.output)
-        
         
     def copy_to_container(self,src,dst,container):
         
@@ -157,7 +149,7 @@ class ExecutionManager(object):
             container (Container): the docker container created to run this task 
         
         """
-        logger = Logger().get_log
+        logger = Logger().get
         os.chdir(os.path.dirname(src))
         srcname = os.path.basename(src)
 
@@ -165,7 +157,7 @@ class ExecutionManager(object):
         try:
             tar.add(srcname)
         except Exception as e:
-            logger.error(f"copy_to_container fails, Exception: {e}")
+            logger.error(f"copy_to_container fails, container:{container.name}, Exception: {e}")
         finally:
             tar.close()
     
@@ -198,8 +190,8 @@ class ExecutionManager(object):
             container (Container): the docker container created to run this task 
         
         """
-        logger = Logger().get_log
-        logger.debug(f"start run container_server")
+        logger = Logger().get
+        logger.debug(f"start run container_server{container.name}")
         exec_log = container.exec_run("flask run --host=0.0.0.0" ,stdout=True,stderr=True,stream=True)
         
         for line in exec_log[1]:
@@ -229,7 +221,7 @@ class ExecutionManager(object):
         Returns:
             if successful, return true to Job Manager
         """
-        logger = Logger().get_log
+        logger = Logger().get
         logger.debug(f"receive task: task_id = {task.task_id}, job_id = {task.job_id}")
         exe_path_outside = task.executable_file
 
