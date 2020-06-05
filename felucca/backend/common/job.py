@@ -57,3 +57,9 @@ class Job(object):
     @status.setter
     def status(self, val):
         self.__status = val
+    
+    @classmethod
+    def from_json(json):
+        """
+        """
+        pass

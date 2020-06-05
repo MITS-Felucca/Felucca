@@ -43,9 +43,14 @@ class TestResourceManager(unittest.TestCase):
     
     def test_insert_job_with_single_task(self):
         # Create a sample task
-        task_command_line_input = "ooanalyzer -j output.json -F facts -R results -f oo.exe"
+        task_arguments = {
+            "-j": "output.json",
+            "-F": "facts",
+            "-R": "results",
+            "-f": "oo.exe",
+        }
         task_tool_type = 0
-        new_task = Task(None, task_tool_type, task_command_line_input)
+        new_task = Task({}, task_tool_type, task_arguments)
 
         # Create a sample job
         job_name = "Test_job"
@@ -74,7 +79,7 @@ class TestResourceManager(unittest.TestCase):
         # Rebuild the task object and check the contents of files
         task_id = tasks_id[0]
         rebuilt_task = self.manager.get_task_by_id(task_id)
-        self.assertEqual(rebuilt_task.command_line_input, task_command_line_input)
+        self.assertEqual(rebuilt_task.arguments, task_arguments)
         self.assertEqual(rebuilt_task.tool_type, task_tool_type)
         self.assertEqual(rebuilt_task.status, Status.Pending)
 
@@ -84,9 +89,14 @@ class TestResourceManager(unittest.TestCase):
     
     def test_save_result(self):
         # Create a sample task
-        task_command_line_input = "ooanalyzer -j output.json -F facts -R results -f oo.exe"
+        task_arguments = {
+            "-j": "output.json",
+            "-F": "facts",
+            "-R": "results",
+            "-f": "oo.exe",
+        }
         task_tool_type = 0
-        new_task = Task(None, task_tool_type, task_command_line_input)
+        new_task = Task({}, task_tool_type, task_arguments)
 
         # Create a sample job
         job_name = "Test_job"
@@ -109,7 +119,7 @@ class TestResourceManager(unittest.TestCase):
 
         # Rebuild the task object and check the contents of files
         rebuilt_task = self.manager.get_task_by_id(task_id)
-        self.assertEqual(rebuilt_task.command_line_input, task_command_line_input)
+        self.assertEqual(rebuilt_task.arguments, task_arguments)
         self.assertEqual(rebuilt_task.tool_type, task_tool_type)
         with open("../../sample_output/output.json", "rb") as f:
             output_json_bytes = f.read()
@@ -130,9 +140,14 @@ class TestResourceManager(unittest.TestCase):
     
     def test_update_task_status(self):
         # Create a sample task
-        task_command_line_input = "ooanalyzer -j output.json -F facts -R results -f oo.exe"
+        task_arguments = {
+            "-j": "output.json",
+            "-F": "facts",
+            "-R": "results",
+            "-f": "oo.exe",
+        }
         task_tool_type = 0
-        new_task = Task(None, task_tool_type, task_command_line_input)
+        new_task = Task({}, task_tool_type, task_arguments)
 
         # Create a sample job
         job_name = "Test_job"

@@ -39,7 +39,8 @@ class ResourceManager(object):
         
         new_task_dict = {
             "tool_type": 0,
-            "command_line_input": new_task.command_line_input,
+            # "command_line_input": new_task.command_line_input,
+            "arguments": new_task.arguments,
             "job_id": job_id,
             "output_files": {},
             "log_files": {},
@@ -66,8 +67,7 @@ class ResourceManager(object):
             job_id (String): The id of the newly inserted job
             tasks_id (List of String): A list of ids according to the tasks of the job, where the order remains the same
         """
-        logger = Logger().get()
-        logger.debug(f"receive new job{new_job} in insert_new_job")
+        
         self.__setup()
         
         # Build the new job
@@ -88,6 +88,9 @@ class ResourceManager(object):
         for task in new_job.tasks:
             task_id = self.__insert_new_task(job_id, task)
             tasks_id.append(str(task_id))
+        
+        logger = Logger().get()
+        logger.debug(f"insert new job{new_job} of id {str(job_id)} in insert_new_job")
         
         return str(job_id), tasks_id
 
@@ -211,7 +214,7 @@ class ResourceManager(object):
                 log_dict[filename] = log_file
             
             # Rebuild the Task object from the query result
-            task = Task(None, task_doc["tool_type"], task_doc["command_line_input"])
+            task = Task({}, task_doc["tool_type"], task_doc["arguments"])
             task.job_id = task_doc["job_id"]
             task.task_id = task_id
             task.output = output_dict

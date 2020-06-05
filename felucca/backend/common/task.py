@@ -10,10 +10,12 @@ class Task(object):
     Task object represent a pharos executable task 
     """
 
-    def __init__(self, executable_file, tool_type, command_line_input, finished_time=None, status=Status.Pending):
-        self.__executable_file = executable_file
+    def __init__(self, files={}, tool_type=0, arguments={}, finished_time=None, status=Status.Pending):
+        # self.__executable_file = executable_file
+        self.__files = files
         self.__tool_type = tool_type
-        self.__command_line_input = command_line_input
+        # self.__command_line_input = command_line_input
+        self.__arguments = arguments
         self.__job_id = None
         self.__task_id = None
         self.__output = None
@@ -80,24 +82,24 @@ class Task(object):
         self.__status = val
 
     @property
-    def executable_file(self):
-        return self.__executable_file
+    def files(self):
+        return self.__files
 
-    @executable_file.setter
-    def executable_file(self,val):
-        self.__executable_file = val
+    @files.setter
+    def files(self,val):
+        self.__files = val
 
     @property
     def tool_type(self):
         return self.__tool_type
 
     @property
-    def command_line_input(self):
-        return self.__command_line_input
+    def arguments(self):
+        return self.__arguments
 
-    @command_line_input.setter
-    def command_line_input(self,val):
-        self.__command_line_input = val
+    @arguments.setter
+    def arguments(self,val):
+        self.__arguments = val
     
     @property
     def finished_time(self):
@@ -116,3 +118,10 @@ class Task(object):
         self.__log = log
         self.__stdout = stdout
         self.__stderr = stderr
+    
+    @classmethod
+    def from_json(json):
+        """
+        """
+        task = Task()
+        return task

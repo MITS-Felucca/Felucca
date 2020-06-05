@@ -12,11 +12,11 @@ class TestJob(unittest.TestCase):
     def setUp(self):
         self.task1 = Task("task1_file", "task1_tool_type", "task1_cmd")
         self.task2 = Task("task1_file", "task1_tool_type", "task1_cmd")
-        self.now = datetime.now();
+        self.now = datetime.now()
         self.job = Job("MyJob","pharos job",self.now)
 
     def test_create_time(self):
-        self.assertEqual(self.job.create_time, self.now)
+        self.assertEqual(self.job.created_time, self.now)
 
     def test_tasks(self):
         self.job.tasks = [self.task1, self.task2]
