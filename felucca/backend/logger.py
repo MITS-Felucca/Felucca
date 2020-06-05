@@ -52,6 +52,5 @@ class Logger:
             self.logger.addHandler(fh)
             self.logger.addHandler(sh)
             
-    @property
     def get(self):
         return self.logger

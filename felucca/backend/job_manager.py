@@ -22,7 +22,7 @@ class JobManager(object):
         :param new_job: a new job instance submitted by front_end
         :return: Returned Nothing.
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"receive job in submit_job")
 
         job_id, tasks_id = ResourceManager().insert_new_job(new_job)
@@ -46,7 +46,7 @@ class JobManager(object):
         :param task_id: task_id of finished task
         :return: Returned Nothing.
         """
-        logger = Logger().get
+        logger = Logger().get()
         
         try:
             job_id = self.task_id_to_job_id[task_id]

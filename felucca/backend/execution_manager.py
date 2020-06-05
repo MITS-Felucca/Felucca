@@ -34,7 +34,7 @@ class ExecutionManager(object):
             stderr (byte[]): the output in std error
             stdout (byte[]): the output in std out
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"start save_result: task_id: {task_id} status: {status}")
         output_path = self.id_to_task_container[task_id][0].output
         log_path = self.id_to_task_container[task_id][0].log
@@ -149,7 +149,7 @@ class ExecutionManager(object):
             container (Container): the docker container created to run this task 
         
         """
-        logger = Logger().get
+        logger = Logger().get()
         os.chdir(os.path.dirname(src))
         srcname = os.path.basename(src)
 
@@ -190,7 +190,7 @@ class ExecutionManager(object):
             container (Container): the docker container created to run this task 
         
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"start run container_server{container.name}")
         exec_log = container.exec_run("flask run --host=0.0.0.0" ,stdout=True,stderr=True,stream=True)
         
@@ -221,7 +221,7 @@ class ExecutionManager(object):
         Returns:
             if successful, return true to Job Manager
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"receive task: task_id = {task.task_id}, job_id = {task.job_id}")
         exe_path_outside = task.executable_file
 

@@ -35,7 +35,7 @@ class ResourceManager(object):
         """
 
         # Build the new task
-        logger = Logger().get
+        logger = Logger().get()
         
         new_task_dict = {
             "tool_type": 0,
@@ -66,7 +66,7 @@ class ResourceManager(object):
             job_id (String): The id of the newly inserted job
             tasks_id (List of String): A list of ids according to the tasks of the job, where the order remains the same
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"receive new job{new_job} in insert_new_job")
         self.__setup()
         
@@ -101,7 +101,7 @@ class ResourceManager(object):
             stdout (String): The stdout of the task
             stderr (String): The stderr of the task
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"start save_result task_id:{task_id}, output:{output}, log:{log}, stdout:{stdout}, stderr:{stderr}")
         
         
@@ -147,7 +147,7 @@ class ResourceManager(object):
             job_id (String): the id of the job
             new_status (Status): the new status of the job
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"start update_job_status")
         self.__setup()
         try:
@@ -169,7 +169,7 @@ class ResourceManager(object):
             task_id (String): the id of the task
             new_status (Status): the new status of the task
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"start update_task_status, task_id:{task_id}, new_status:{new_status}")
         self.__setup()
         try:
@@ -192,7 +192,7 @@ class ResourceManager(object):
         Return:
             task: the Task object of the specific id
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"start get_task_by_id, task_id:{task_id}")
         self.__setup()
         try:
@@ -237,7 +237,7 @@ class ResourceManager(object):
         Return:
             job (Job): the Job object of the specific id
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"start get_job_by_id_without_tasks, job_id:{job_id}")
         self.__setup()
         try:
@@ -261,7 +261,7 @@ class ResourceManager(object):
         Return:
             tasks: a list of Task objects
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"start get_tasks_by_job_id, job_id:{job_id}")
         self.__setup()
         try:
@@ -289,7 +289,7 @@ class ResourceManager(object):
         Return:
             job (Job): the Job object of the specific id
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"start get_job_by_id, job_id:{job_id}")
         try:
             job = self.get_job_by_id_without_tasks(job_id)
@@ -305,7 +305,7 @@ class ResourceManager(object):
         Arg:
             job_id (String): the id of the specific job
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"remove job by id, job_id:{job_id}")
         self.__setup()
         try:
@@ -320,7 +320,7 @@ class ResourceManager(object):
         Arg:
             task_id (String): the id of the specific task
         """
-        logger = Logger().get
+        logger = Logger().get()
         logger.debug(f"remove tasks by id, job_id:{job_id}")
         self.__setup()
         try:
