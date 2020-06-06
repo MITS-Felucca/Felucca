@@ -1,9 +1,9 @@
 export enum Status {
-  Undefined = 0,
-  Pending = 1,
-  Running = 2,
-  Successful = 3,
-  Error = 4,
-  Failed = 5,
-  Killed = 6
+  Undefined = 'Undefined',
+  Pending = 'Pending',
+  Running = 'Running',
+  Successful = 'Successful',
+  Error = 'Error',
+  Failed = 'Failed',
+  Killed = 'Killed'
 }

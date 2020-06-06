@@ -1,3 +1,59 @@
 <div>
-job-info {{id}} works!
+  <h2> Job Details </h2>
+  <ul class='job-detail'>
+    <li><label>Job name:</label> {{job.jobName}}</li>
+    <li><label>Job Comment:</label> {{job.comment}}</li>
+    <li><label>Job Creation Time:</label> {{job.createdTime | date: 'medium'}}</li>
+    <li><label>Number of Tasks:</label> {{job.taskNumber}}</li>
+    <li><label>Status:</label> {{job.status}}</li>
+  </ul>
+  <h3> Tasks </h3>
+  <table>
+    <tr>
+      <td>ID</td>
+      <td>Command Line Input</td>
+      <td>Input Files</td>
+      <td>Output Files</td>
+      <td>Log Files</td>
+      <td>Standard Output</td>
+      <td>Standard Error</td>
+      <td>Finish Time</td>
+      <td>Status</td>
+    </tr>
+    <tr *ngFor="let task of tasks; index as i">
+      <td>{{i + 1}}</td>
+      <td>{{task.commandInput}}</td>
+      <td>
+        <ul>
+          <li *ngFor="let filename of task.inputFilename">
+            {{filename}}
+          </li>
+        </ul>
+      </td>
+
+      <td>
+        <ul>
+          <li *ngFor="let filename of task.outputFilename">
+            {{filename}}
+          </li>
+        </ul>
+      </td>
+
+      <td>
+        <ul>
+          <li *ngFor="let filename of task.logFilename">
+            {{filename}}
+          </li>
+        </ul>
+      </td>
+
+      <td>{{task.stdout}}</td>
+
+      <td>{{task.stderr}}</td>
+
+      <td>{{task.finishTime | date: 'medium'}}</td>
+
+      <td>{{task.status}} </td>
+    </tr>
+  </table>
 </div>

@@ -5,7 +5,7 @@ import { JobInfoComponent } from './job-info/job-info.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/job-list', pathMatch: 'full' },
-  { path: 'job-info/:jobId', component: JobInfoComponent }
+  { path: 'job-info/:jobID', component: JobInfoComponent }
 ];
 
 @NgModule({

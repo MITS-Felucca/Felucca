@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+
+import { Job } from '../job';
+import { Task } from '../task';
 import { JobService } from '../job.service';
 import { TaskService } from '../task.service';
 
@@ -9,7 +12,10 @@ import { TaskService } from '../task.service';
   styleUrls: ['./job-info.component.css']
 })
 export class JobInfoComponent implements OnInit {
-  id: string
+  job: Job;
+  tasks: Task[];
+  jobID: string;
+
   constructor(
     private route: ActivatedRoute,
     private jobService: JobService,
@@ -17,11 +23,16 @@ export class JobInfoComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.getId()
+    this.jobID = this.route.snapshot.paramMap.get('jobID');
+    this.getJob();
+    this.getTasks();
   }
 
-  getId(): void {
-    this.id = this.route.snapshot.paramMap.get('job_id');
+  getJob(): void {
+    this.job = this.jobService.getJob(this.jobID);
   }
 
+  getTasks(): void {
+    this.tasks = this.taskService.getTasks(this.jobID);
+  }
 }
