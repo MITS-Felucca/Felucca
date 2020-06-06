@@ -9,6 +9,7 @@ export class TaskService {
   constructor() { }
 
   getTasks(id: string): Task[] {
+    // TODO call real back end API
     return [
       {
         commandInput: 'ooanalyzer ..',
