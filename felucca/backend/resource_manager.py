@@ -12,13 +12,17 @@ from logger import Logger
 class ResourceManager(object):
     """ResourceManager is responsible for accessing data in database.
     """
+
+    def __init__(self, db_name="felucca"):
+        self.db_name = db_name
     
     def __setup(self):
         """Initialize the connections to the MongoDB server
         """
 
         self.__client = pymongo.MongoClient()
-        self.__db = self.__client.felucca
+        # self.__db = self.__client.felucca
+        self.__db = self.__client[self.db_name]
         self.__jobs_collection = self.__db.jobs
         self.__tasks_collection = self.__db.tasks
         self.__fs = gridfs.GridFS(self.__db)
@@ -116,15 +120,15 @@ class ResourceManager(object):
             # Insert all files into gridfs
             output_dict = {}
             for output_file_path in output:
-                with open(output_file_path, "rb") as f:
-                    file_id = self.__fs.put(f)
+                with open(output_file_path, "r") as f:
+                    file_id = self.__fs.put(f.read().encode("utf-8"))
                 filename = os.path.basename(os.path.normpath(output_file_path))
                 output_dict[filename] = file_id
     
             log_dict = {}
             for log_file_path in log:
-                with open(log_file_path, "rb") as f:
-                    file_id = self.__fs.put(f)
+                with open(log_file_path, "r") as f:
+                    file_id = self.__fs.put(f.read().encode("utf-8"))
                 filename = os.path.basename(os.path.normpath(log_file_path))
                 log_dict[filename] = file_id
     
@@ -204,21 +208,24 @@ class ResourceManager(object):
             task_doc = self.__tasks_collection.find_one(condition)
     
             # Retrieve the output files and log files
-            output_dict = {}
-            for filename, file_id in task_doc["output_files"].items():
-                output_file = self.__fs.get(file_id).read()
-                output_dict[filename] = output_file
-            log_dict = {}
-            for filename, file_id in task_doc["log_files"].items():
-                log_file = self.__fs.get(file_id).read()
-                log_dict[filename] = log_file
+            # Transform the dict into list of filenames
+            output_list = []
+            for filename in task_doc["output_files"].keys():
+                # output_file = self.__fs.get(file_id).read()
+                # output_dict[filename] = output_file
+                output_list.append(filename)
+            log_list = []
+            for filename in task_doc["log_files"].keys():
+                # log_file = self.__fs.get(file_id).read()
+                # log_dict[filename] = log_file
+                log_list.append(filename)
             
             # Rebuild the Task object from the query result
             task = Task({}, task_doc["tool_type"], task_doc["arguments"])
-            task.job_id = task_doc["job_id"]
+            task.job_id = str(task_doc["job_id"])
             task.task_id = task_id
-            task.output = output_dict
-            task.log = log_dict
+            task.output = output_list
+            task.log = log_list
             task.stdout = task_doc["stdout"]
             task.stderr = task_doc["stderr"]
             task.status = Status(task_doc["status"])
@@ -250,6 +257,7 @@ class ResourceManager(object):
     
             # Rebuild the Job object from the query result
             job = Job(job_doc["name"], job_doc["comments"], job_doc["created_time"], status=Status(job_doc["status"]))
+            job.job_id = job_id
     
             return job
         except Exception as e:
@@ -278,7 +286,7 @@ class ResourceManager(object):
             for task_doc in tasks_doc_list:
                 task = self.get_task_by_id(task_doc["_id"])
                 tasks_list.append(task)
-            logger.debug(f"Get ids of all tasks using job_id successfully, tasks_list:{tasks_list}")
+            logger.debug(f"Get all tasks using job_id successfully, tasks_list:{tasks_list}")
             return tasks_list
         except Exception as e:
             logger.error(f"something wrong in get_tasks_by_job_id, Exception: {e}")
@@ -301,6 +309,112 @@ class ResourceManager(object):
             return job
         except Exception as e:
             logger.error(f"something wrong in get_job_by_id, Exception: {e}")
+    
+    def get_all_jobs_without_tasks(self):
+        """Return all jobs as Job objects without their tasks
+        Return:
+            job_list (List of Job): the Job objects
+        """
+        self.__setup()
+
+        logger = Logger().get()
+        logger.debug(f"start get_all_jobs_without_tasks")
+
+        # Get ids of all jobs
+        field = {"_id": 1}
+        all_job_ids = self.__jobs_collection.find(projection=field)
+
+        # Rebuild all jobs
+        job_list = []
+        for job_doc in all_job_ids:
+            # print(job_doc["_id"])
+            job = self.get_job_by_id_without_tasks(str(job_doc["_id"]))
+            job_list.append(job)
+
+        return job_list
+
+    def get_all_jobs_with_tasks(self):
+        """Return all jobs as Job objects with their tasks
+        Return:
+            job_list (List of Job): the Job objects
+        """
+        self.__setup()
+
+        logger = Logger().get()
+        logger.debug(f"start get_all_jobs_with_tasks")
+
+        # Get ids of all jobs
+        field = {"_id": 1}
+        all_job_ids = self.__jobs_collection.find(projection=field)
+
+        # Rebuild all jobs
+        job_list = []
+        for job_doc in all_job_ids:
+            job = self.get_job_by_id_without_tasks(job_doc["_id"])
+            job.tasks = self.get_tasks_by_job_id(job_doc["_id"])
+            job_list.append(job)
+
+        return job_list
+    
+    def get_output_file(self, task_id, filename):
+        """Return an output file of a task
+
+        Arg:
+            task_id (String): the id of the task
+            filename (String): the name of the file
+        Return:
+            file (String): the content of the file
+        """
+        self.__setup()
+
+        logger = Logger().get()
+        logger.debug(f"start get_output_file {filename} from {task_id}")
+
+        try:
+            # Find the task using id
+            condition = {"_id": ObjectId(task_id)}
+            field = {"output_files": 1}
+            task_doc = self.__tasks_collection.find_one(condition, field)
+            if task_doc is None:
+                raise Exception(f"The task of {task_id} does not exist.")
+
+            # Find the file in the task
+            if filename not in task_doc["output_files"]:
+                raise Exception(f"The file named {filename} of task {task_id} does not exist.")
+            file_id = task_doc["output_files"][filename]
+            return self.__fs.get(file_id).read().decode('utf-8')
+        except Exception as e:
+            logger.error(e)
+    
+    def get_log_file(self, task_id, filename):
+        """Return an log file of a task
+
+        Arg:
+            task_id (String): the id of the task
+            filename (String): the name of the file
+        Return:
+            file (String): the content of the file
+        """
+        self.__setup()
+
+        logger = Logger().get()
+        logger.debug(f"start get_log_file {filename} from {task_id}")
+
+        try:
+            # Find the task using id
+            condition = {"_id": ObjectId(task_id)}
+            field = {"log_files": 1}
+            task_doc = self.__tasks_collection.find_one(condition, field)
+            if task_doc is None:
+                raise Exception(f"The task of {task_id} does not exist.")
+
+            # Find the file in the task
+            if filename not in task_doc["log_files"]:
+                raise Exception(f"The file named {filename} of task {task_id} does not exist.")
+            file_id = task_doc["log_files"][filename]
+            return self.__fs.get(file_id).read().decode('utf-8')
+        except Exception as e:
+            logger.error(e)
     
     def remove_job_by_id(self, job_id):
         """Remove the specific job (Used in unit tests)
@@ -332,3 +446,26 @@ class ResourceManager(object):
             return delete_result.deleted_count
         except Exception as e:
             logger.error(f"something wrong in remove_tasks_by_job_id, Exception: {e}")
+    
+    def remove_all_jobs_and_tasks(self):
+        """Remove all the jobs and tasks (Only used in unit tests)
+        """
+        self.__setup()
+        
+        logger = Logger().get()
+        logger.debug("remove all jobs and tasks")
+        if self.db_name != "test":
+            logger.error("Cannot remove all jobs and tasks unless current db is \"test\"")
+            return
+
+        try:
+            # Get ids of all jobs
+            field = {"_id": 1}
+            all_job_ids = self.__jobs_collection.find(projection=field)
+
+            # Remove all jobs & tasks
+            for job_doc in all_job_ids:
+                self.remove_job_by_id(str(job_doc["_id"]))
+                self.remove_tasks_by_job_id(str(job_doc["_id"]))
+        except Exception as e:
+            logger.error(f"something wrong in remove_all_jobs, Exception: {e}")
