@@ -9,10 +9,10 @@ export class TaskService {
   constructor() { }
 
   getTasks(id: string): Task[] {
-    // TODO call real back end API
     return [
       {
-        commandInput: 'ooanalyzer ..',
+        arguments: {'tool': 'ooanalyzer', '-f': 'o1.exe',
+        '-j': 'output.json', '-R': 'result', '-F': 'facts'},
         inputFilename: ['o1.exe'],
         outputFilename: ['output.json'],
         logFilename: ['facts', 'results'],
@@ -23,7 +23,8 @@ export class TaskService {
         taskID: '1'
       },
       {
-        commandInput: 'ooanalyzer ..',
+        arguments: {'tool': 'ooanalyzer', '-f': 'o1.exe',
+        '-j': 'output.json', '-s': 'sig.json', '-F': 'facts'},
         inputFilename: ['oo.exe', 'sig.json'],
         outputFilename: ['output.json', 'output2.json'],
         logFilename: ['facts'],
@@ -34,7 +35,7 @@ export class TaskService {
         taskID: '2'
       },
       {
-        commandInput: 'ooanalyzer ..',
+        arguments: {'tool': 'ooanalyzer', '-f': 'oo.exe'},
         inputFilename: ['oo.exe'],
         outputFilename: [],
         logFilename: [],

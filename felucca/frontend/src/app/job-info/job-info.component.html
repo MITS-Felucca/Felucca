@@ -22,7 +22,13 @@
     </tr>
     <tr *ngFor="let task of tasks; index as i">
       <td>{{i + 1}}</td>
-      <td>{{task.commandInput}}</td>
+      <td>
+        <ul>
+          <li *ngFor="let argument of task.arguments | keyvalue">
+            {{argument.key}} : {{argument.value}}
+          </li>
+        </ul>
+      </td>
       <td>
         <ul>
           <li *ngFor="let filename of task.inputFilename">
