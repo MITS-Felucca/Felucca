@@ -151,6 +151,7 @@ class Task(object):
         
         return task
     
+    @classmethod
     def to_json(cls,task):
         
         """form a json output from a task instance
