@@ -120,8 +120,20 @@ class Task(object):
         self.__stderr = stderr
     
     @classmethod
-    def from_json(json):
+    def from_json(cls,task_dict):
+        """construct a task instance from a task_dict
+        This class method will be invoked by Job.form_json()
+
+        Args:
+            task_dict (dict): element in input json's list: input json["Tasks"]
+        
+        Returns:
+            task (Task): Task object
         """
-        """
-        task = Task()
+        
+        Files = task_dict["Files"]
+        tool_id = task_dict["Tool_ID"]
+        argument = task_dict["Arguments"]
+        task = Task(Files,tool_id,argument)
+        
         return task

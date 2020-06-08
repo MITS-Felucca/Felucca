@@ -1,7 +1,8 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../felucca/backend'))
-
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../felucca/backend/common'))
+from task import Task
 from common.status import Status
 
 class Job(object):
@@ -59,7 +60,25 @@ class Job(object):
         self.__status = val
     
     @classmethod
-    def from_json(json):
+    def from_json(cls,json):
+        
+        """construct a job instance from a input json with predefined format
+
+        Args:
+            json (dict):json from frontend
+        
+        Returns:
+            job (Job): Job object
         """
-        """
-        pass
+    
+        job_name = json["Job_Name"]
+        job_comments = json["Job_Comment"]
+        created_time = json["Created_Time"]
+        job = Job(job_name,job_comments,created_time)
+        job.tasks = []
+        
+        for task_dict in json["Tasks"]:
+            task = Task.from_json(task_dict)
+            job.tasks.append(task)
+            
+        return(job)
