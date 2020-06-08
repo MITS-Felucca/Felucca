@@ -1,0 +1,37 @@
+<div>
+  <form (ngSubmit) = "onSubmit()" [formGroup]="form">
+  <h4> New Task </h4>
+  <div>
+    <label>Tool Name:</label> {{toolName}}
+  </div>
+  <table>
+    <tr>
+      <td> Flag </td>
+      <td> Comment </td>
+      <td> input </td>
+    </tr>
+    <tr *ngFor="let argument of arguments | keyvalue">
+      <td> {{argument.key}} 
+        <span *ngIf="argument.value[1]">
+          ({{argument.value[1]}})
+        </span>
+      </td>
+      <td> {{argument.value[2]}} </td>
+      <td [ngSwitch]="argument.value[0]">
+        <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFile" type="file">
+        <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
+        <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFlag" type="checkbox">
+        <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputText" type="Text">
+      </td>
+    </tr>
+  </table>
+
+  <div class="form-row">
+      <button type="submit" [disabled]="!form.valid">Save</button>
+    </div>
+  </form>
+
+  <div *ngIf="payload">
+    <strong>Saved the following values</strong><br>{{payload}}
+  </div>
+</div>

@@ -11,7 +11,7 @@ export class TaskService {
   getTasks(id: string): Task[] {
     return [
       {
-        arguments: {'tool': 'ooanalyzer', '-f': 'o1.exe',
+        arguments: {'tool': 'ooanalyzer', '-f': 'o1.exe', 
         '-j': 'output.json', '-R': 'result', '-F': 'facts'},
         inputFilename: ['o1.exe'],
         outputFilename: ['output.json'],
@@ -21,9 +21,9 @@ export class TaskService {
         stderr: 'stderr',
         status: Status.Successful,
         taskID: '1'
-      },
+      }, 
       {
-        arguments: {'tool': 'ooanalyzer', '-f': 'o1.exe',
+        arguments: {'tool': 'ooanalyzer', '-f': 'o1.exe', 
         '-j': 'output.json', '-s': 'sig.json', '-F': 'facts'},
         inputFilename: ['oo.exe', 'sig.json'],
         outputFilename: ['output.json', 'output2.json'],

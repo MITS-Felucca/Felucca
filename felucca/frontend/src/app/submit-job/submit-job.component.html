@@ -1,0 +1,44 @@
+<div>
+  <h2> Job Submission </h2>
+  <div>
+    <label>Name:
+      <input [(ngModel)] = "name" placeholder="Name"/>
+    </label>
+  </div>
+  <div>
+    <label>Comment:
+      <input [(ngModel)] = "comment" placeholder="Comment"/>
+    </label>
+  </div>
+  <div *ngIf='tasks.length > 0'>
+    <h4>Tasks:</h4>
+    <table>
+      <tr>
+        <td>Task ID</td>
+        <td>Tool Name</td>
+        <td>Arguments</td>
+      </tr>
+
+      <tr *ngFor='let task of tasks; index as i'> 
+        <td>{{i + 1}}</td>
+        <td>{{task.toolName}}</td>
+        <td>
+        <ul>
+          <li *ngFor="let argument of task.arguments | keyvalue">
+            {{argument.key}} : {{argument.value}}
+          </li>
+        </ul>
+      </td>
+      </tr>
+    </table>
+  </div>
+  <div>
+      <label>Choose a tool to add: </label>
+      <div>
+        <select [(ngModel)]="chosenTool" (change)="displayAddTaskPage()">
+          <option *ngFor="let toolName of toolNames"> {{toolName}}</option>
+        </select>
+      </div>
+      <app-submit-task *ngIf="isAdding" [toolName]="chosenTool" (submission)="submitTask($event)"></app-submit-task>
+  </div>
+</div>
