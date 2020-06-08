@@ -150,3 +150,31 @@ class Task(object):
         task = Task({},tool_id,argument)
         
         return task
+    
+    def to_json(cls,task):
+        
+        """form a json output from a task instance
+
+        Args:
+            task (Task): a job instance
+        
+        Returns:
+            task_dict (dict): dict format of task correspoding to the predefined format, the format is as follow:
+            
+            
+        Tasks :{Argument(no path, dict) | Output[] | Log[] | Stdout : String | Stderr | Finished_Time : long(seconds since epoch) | Status: String | ID : String }
+
+        """
+        task_dict = {}
+
+        task_dict["Arguments"] = task.arguments
+        task_dict["Output"] = list(task.output.keys())
+        task_dict["Log"] = list(task.log.keys())
+        task_dict["Stdout"] = task.stdout
+        task_dict["Stderr"] = task.stderr
+        task_dict["Finished_Time"] = task.finished_time
+        task_dict["Status"] = task.status
+        task_dict["ID"] = task.task_id
+
+        
+        return task_dict
