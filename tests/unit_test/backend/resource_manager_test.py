@@ -1,3 +1,5 @@
+import filecmp
+import json
 import os
 import sys
 import unittest
@@ -21,9 +23,9 @@ class TestResourceManager(unittest.TestCase):
 
         # Create a sample job
         job_name = "Test_job"
-        job_comments = "Just for test"
+        job_comment = "Just for test"
         created_time = datetime.now()
-        new_job = Job(job_name, job_comments, created_time)
+        new_job = Job(job_name, job_comment, created_time)
         new_job.tasks = []
         job_id, tasks_id = self.manager.insert_new_job(new_job)
 
@@ -38,7 +40,7 @@ class TestResourceManager(unittest.TestCase):
         # Rebuild the job object and check the contents
         rebuilt_job = self.manager.get_job_by_id_without_tasks(job_id)
         self.assertEqual(rebuilt_job.name, job_name)
-        self.assertEqual(rebuilt_job.comments, job_comments)
+        self.assertEqual(rebuilt_job.comment, job_comment)
         self.assertEqual(rebuilt_job.created_time, created_time)
         self.assertEqual(rebuilt_job.status, Status.Pending)
 
@@ -62,9 +64,9 @@ class TestResourceManager(unittest.TestCase):
 
         # Create a sample job
         job_name = "Test_job"
-        job_comments = "Just for test"
+        job_comment = "Just for test"
         created_time = datetime.now()
-        new_job = Job(job_name, job_comments, created_time)
+        new_job = Job(job_name, job_comment, created_time)
         new_job.tasks = [new_task]
         job_id, tasks_id = self.manager.insert_new_job(new_job)
 
@@ -80,7 +82,7 @@ class TestResourceManager(unittest.TestCase):
         # Rebuild the job object and check the contents
         rebuilt_job = self.manager.get_job_by_id_without_tasks(job_id)
         self.assertEqual(rebuilt_job.name, job_name)
-        self.assertEqual(rebuilt_job.comments, job_comments)
+        self.assertEqual(rebuilt_job.comment, job_comment)
         self.assertEqual(rebuilt_job.created_time, created_time)
         self.assertEqual(rebuilt_job.status, Status.Pending)
 
@@ -112,9 +114,9 @@ class TestResourceManager(unittest.TestCase):
 
         # Create a sample job
         job_name = "Test_job"
-        job_comments = "Just for test"
+        job_comment = "Just for test"
         created_time = datetime.now()
-        new_job = Job(job_name, job_comments, created_time)
+        new_job = Job(job_name, job_comment, created_time)
         new_job.tasks = [new_task]
 
         # Insert the sample job with the sample task
@@ -171,9 +173,9 @@ class TestResourceManager(unittest.TestCase):
 
         # Create a sample job
         job_name = "Test_job"
-        job_comments = "Just for test"
+        job_comment = "Just for test"
         created_time = datetime.now()
-        new_job = Job(job_name, job_comments, created_time)
+        new_job = Job(job_name, job_comment, created_time)
         new_job.tasks = [new_task]
 
         # Insert the sample job with the sample task
@@ -208,10 +210,10 @@ class TestResourceManager(unittest.TestCase):
         job_list = []
         for i in range(3):
             job_name = "Test_job%d" % i
-            job_comments = "Just for test%d" % i
+            job_comment = "Just for test%d" % i
             created_time = datetime.now()
             created_time = created_time.replace(microsecond=int(created_time.microsecond / 1000) * 1000)
-            new_job = Job(job_name, job_comments, created_time)
+            new_job = Job(job_name, job_comment, created_time)
             new_job.tasks = []
             job_list.append(new_job)
             self.manager.insert_new_job(new_job)
@@ -221,7 +223,7 @@ class TestResourceManager(unittest.TestCase):
             original_job = job_list[i]
             rebuilt_job = rebuilt_jobs[i]
             self.assertEqual(original_job.name, rebuilt_job.name)
-            self.assertEqual(original_job.comments, rebuilt_job.comments)
+            self.assertEqual(original_job.comment, rebuilt_job.comment)
             self.assertEqual(original_job.created_time, rebuilt_job.created_time)
             self.assertEqual(original_job.status, rebuilt_job.status)
 
@@ -244,9 +246,9 @@ class TestResourceManager(unittest.TestCase):
 
         # Create a sample job
         job_name = "Test_job"
-        job_comments = "Just for test"
+        job_comment = "Just for test"
         created_time = datetime.now()
-        new_job = Job(job_name, job_comments, created_time)
+        new_job = Job(job_name, job_comment, created_time)
         new_job.tasks = [new_task]
 
         # Insert the sample job with the sample task
@@ -279,6 +281,39 @@ class TestResourceManager(unittest.TestCase):
 
         # Remove the inserted jobs
         self.manager.remove_all_jobs_and_tasks()
+    
+    def test_save_new_job_and_tasks(self):
+        # Remove previous jobs & tasks
+        self.manager.remove_all_jobs_and_tasks()
+
+        # Read the input json and store it
+        with open("../../sample_output/input.json", "r") as f:
+            input_json = json.loads(f.read())
+        print(input_json)
+        print(type(input_json))
+        job = self.manager.save_new_job_and_tasks(input_json)
+
+        # Check the job attributes
+        self.assertEqual(job.name, input_json["Job_Name"])
+        self.assertEqual(job.comment, input_json["Job_Comment"])
+
+        # Check the task attributes
+        task = job.tasks[0]
+        task_json = input_json["Tasks"][0]
+        self.assertEqual(task.tool_type, task_json["Tool_ID"])
+        self.assertEqual(task.arguments, task_json["Arguments"])
+
+        # Check the stored file
+        print(task.files)
+        for filename, path in task.files.items():
+            with open(path, "rb") as f:
+                saved_file = f.read()
+            self.assertEqual(saved_file, bytes.fromhex(task_json["Files"][filename]))
+            os.remove(path)
+        
+        # Remove the directory
+        os.rmdir(os.path.join("/tmp/Felucca", task.task_id))
+
 
 
 if __name__ == '__main__':

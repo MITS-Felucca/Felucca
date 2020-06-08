@@ -10,11 +10,11 @@ class Job(object):
     Job contain a bunch of tasks
     """
 
-    def __init__(self, name, comments, created_time, finished_time=None, status=Status.Pending):
+    def __init__(self, name, comment, created_time=None, finished_time=None, status=Status.Pending):
         self.__job_id = None
         self.__tasks = None
         self.__name = name
-        self.__comments = comments
+        self.__comment = comment
         self.__created_time = created_time
         self.__finished_time = finished_time
         self.__status = status
@@ -24,16 +24,24 @@ class Job(object):
         return self.__name
     
     @property
-    def comments(self):
-        return self.__comments
+    def comment(self):
+        return self.__comment
 
     @property
     def created_time(self):
         return self.__created_time
     
+    @created_time.setter
+    def created_time(self, val):
+        self.__created_time = val
+    
     @property
     def finished_time(self):
         return self.__finished_time
+    
+    @finished_time.setter
+    def finished_time(self, val):
+        self.__finished_time = val
 
     @property
     def job_id(self):
@@ -62,19 +70,19 @@ class Job(object):
     @classmethod
     def from_json(cls,json):
         
-        """construct a job instance from a input json with predefined format
+        """Construct a job instance from an input json with predefined format
 
         Args:
-            json (dict):json from frontend
+            json (dict): json from frontend
         
         Returns:
             job (Job): Job object
         """
     
         job_name = json["Job_Name"]
-        job_comments = json["Job_Comment"]
-        created_time = json["Created_Time"]
-        job = Job(job_name,job_comments,created_time)
+        job_comment = json["Job_Comment"]
+        # created_time = json["Created_Time"]
+        job = Job(job_name, job_comment)
         job.tasks = []
         
         for task_dict in json["Tasks"]:

@@ -57,6 +57,27 @@ def test():
     print(task.log)
     return {"status": "ok"}
 
+@app.route("/job", methods=['POST'])
+def submit_job():
+    """Test command: curl -H "Content-Type: application/json" --request POST -d @/vagrant/tests/sample_output/input.json http://localhost:5000/job"
+    """
+    request_json = request.get_json()
+    job = ResourceManager().save_new_job_and_tasks(request_json)
+    # TODO: submit job through JobManager
+    # JobManager().submit_job(job)
+    return {"status": "ok"}
+
+
+@app.route("/job/<id>", methods=['GET'])
+def get_job(id):
+    # TODO: return job info
+    print(id)
+    return {"message": f"You are asking for job info of id {id}"}
+
+@app.route("/job-list", methods=['GET'])
+def get_job_list():
+    # TODO: Return a list of jobs in json
+    pass
 
 @app.route("/result", methods=['POST'])
 def get_result():
@@ -67,6 +88,7 @@ def get_result():
                                    None if status == 'Error' else request.form['stdout'])
     JobManager().finish_task(request.form['task_id'])
     return {'is_received': True}
+
 
 
 @app.route("/task/<task_id>", methods=['GET'])

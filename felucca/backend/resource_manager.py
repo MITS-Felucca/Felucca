@@ -77,7 +77,7 @@ class ResourceManager(object):
         # Build the new job
         new_job_dict = {
             "name": new_job.name,
-            "comments": new_job.comments,
+            "comment": new_job.comment,
             "created_time": new_job.created_time,
             "finished_time": new_job.finished_time,
             "status": new_job.status.value,
@@ -97,6 +97,53 @@ class ResourceManager(object):
         logger.debug(f"insert new job{new_job} of id {str(job_id)} in insert_new_job")
         
         return str(job_id), tasks_id
+    
+    def save_new_job_and_tasks(self, new_job_dict):
+        """Turn the newly submitted job with its tasks from dict to objects and save them
+        The input files will be saved to a temporary directory named by task_id
+
+        Args:
+            new_job_dict (dict): the json file from Front-end
+        Return:
+            job (Job): built job instance with its tasks
+        """
+        logger = Logger().get()
+        logger.debug("start save_new_job_and_tasks")
+
+        # Build the job & task from json
+        job = Job.from_json(new_job_dict)
+        job.created_time = datetime.now()
+
+        # Save the job & tasks
+        job_id, tasks_id = self.insert_new_job(job)
+        job.job_id = job_id
+        for i in range(len(job.tasks)):
+            job.tasks[i].job_id = job_id
+            job.tasks[i].task_id = tasks_id[i]
+        
+        # Save the input files of tasks
+        for i in range(len(new_job_dict["Tasks"])):
+            task = job.tasks[i]
+            file_dict = {}
+            print(type(new_job_dict["Tasks"][i]))
+
+            # Create the unique directory for each task
+            task_file_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
+            print(os.path.dirname(task_file_path))
+            if not os.path.exists(task_file_path):
+                try:
+                    os.makedirs(task_file_path)
+                except OSError as e:
+                    logger.error(f"Failed to create directory {task_file_path} with exception {e}")
+
+            for filename, content in new_job_dict["Tasks"][i]["Files"].items():
+                file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
+                with open(file_path, "wb") as f:
+                    f.write(bytes.fromhex(content))
+                file_dict[filename] = file_path
+            task.files = file_dict
+
+        return job
 
     def save_result(self, task_id, output, log, stdout, stderr):
         """Save the result of the task specified by task_id
@@ -256,7 +303,7 @@ class ResourceManager(object):
             job_doc = self.__jobs_collection.find_one(condition)
     
             # Rebuild the Job object from the query result
-            job = Job(job_doc["name"], job_doc["comments"], job_doc["created_time"], status=Status(job_doc["status"]))
+            job = Job(job_doc["name"], job_doc["comment"], job_doc["created_time"], status=Status(job_doc["status"]))
             job.job_id = job_id
     
             return job
@@ -424,6 +471,10 @@ class ResourceManager(object):
         """
         logger = Logger().get()
         logger.debug(f"remove job by id, job_id:{job_id}")
+        if self.db_name != "test":
+            logger.error("Cannot remove job unless current db is \"test\"!")
+            return
+
         self.__setup()
         try:
             delete_result = self.__jobs_collection.delete_one({"_id": ObjectId(job_id)})
@@ -439,6 +490,10 @@ class ResourceManager(object):
         """
         logger = Logger().get()
         logger.debug(f"remove tasks by id, job_id:{job_id}")
+        if self.db_name != "test":
+            logger.error("Cannot remove tasks unless current db is \"test\"!")
+            return
+
         self.__setup()
         try:
             delete_result = self.__tasks_collection.delete_many({"job_id": ObjectId(job_id)})
@@ -455,7 +510,7 @@ class ResourceManager(object):
         logger = Logger().get()
         logger.debug("remove all jobs and tasks")
         if self.db_name != "test":
-            logger.error("Cannot remove all jobs and tasks unless current db is \"test\"")
+            logger.error("Cannot remove all jobs and tasks unless current db is \"test\"!")
             return
 
         try:

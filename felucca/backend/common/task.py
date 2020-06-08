@@ -23,6 +23,7 @@ class Task(object):
         self.__stdout = None
         self.__stderr = None
         self.__status = status
+        self.__start_time = None
         self.__finished_time = finished_time
 
     @property
@@ -102,8 +103,20 @@ class Task(object):
         self.__arguments = val
     
     @property
+    def start_time(self):
+        return self.__start_time
+    
+    @start_time.setter
+    def start_time(self,val):
+        self.__start_time = val
+
+    @property
     def finished_time(self):
         return self.__finished_time
+    
+    @finished_time.setter
+    def finished_time(self,val):
+        self.__finished_time = val
 
     def set_result(self, output = None, log = None, stdout = None, stderr = None):
         """Set the result for finished task
@@ -131,9 +144,9 @@ class Task(object):
             task (Task): Task object
         """
         
-        Files = task_dict["Files"]
+        # Files = task_dict["Files"]
         tool_id = task_dict["Tool_ID"]
         argument = task_dict["Arguments"]
-        task = Task(Files,tool_id,argument)
+        task = Task({},tool_id,argument)
         
         return task

@@ -19,7 +19,7 @@ class TestJob(unittest.TestCase):
     def test_job(self):
         
         self.assertEqual(self.job.name, self.json_data["Job_Name"])
-        self.assertEqual(self.job.comments, self.json_data["Job_Comment"])
+        self.assertEqual(self.job.comment, self.json_data["Job_Comment"])
         self.assertEqual(self.job.created_time, self.json_data["Created_Time"])
 
     def test_tasks(self):
