@@ -8,10 +8,11 @@ import { JobInfoComponent } from './job-info/job-info.component';
 import { JobListComponent } from './job-list/job-list.component';
 import { JobService } from './job.service';
 import { TaskService } from './task.service';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 @NgModule({
-  imports:      [ BrowserModule, FormsModule, AppRoutingModule ],
+  imports:      [ BrowserModule, FormsModule, AppRoutingModule, NgbModule ],
   declarations: [ AppComponent, JobInfoComponent, JobListComponent ],
   bootstrap:    [ AppComponent ],
   providers: [JobService, TaskService]
