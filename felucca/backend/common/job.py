@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../felucca/backend'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../felucca/backend/common'))
 from task import Task
@@ -107,7 +108,13 @@ class Job(object):
         job_json = {}
         job_json["Name"] = job.name
         job_json["Comment"] = job.comment
-        job_json["Created_Time"] = job.created_time
+        
+        if job.finished_time is None:
+            job_json["Created_Time"] = 0
+        else:
+            job_json["Created_Time"] = time.mktime(job.created_time.timetuple())
+        
+        
         job_json["Task_Number"] = len(job.tasks)
         job_json["Status"] = job.status
         job_json["ID"] = job.job_id

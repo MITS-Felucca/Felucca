@@ -61,7 +61,7 @@ def test():
 def test_new_execution():
     """this is used for testing new execution manager after reconstrction
 
-    Test command: curl http://0.0.0.0:5000/test_new_execution, to use this, we should put the input.json at the "backend" folder in advance 
+    Test command: curl “http://0.0.0.0:5000/test_new_execution", to use this, we should put the input.json at the "backend" folder in advance 
     """
     with open("input.json",'r') as f:
         json_data = json.load(f)
@@ -73,7 +73,9 @@ def test_new_execution():
 
     file_dict = {}
     folder_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
-    os.makedirs(folder_path)
+
+    if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
     
     for filename, content in json_data["Tasks"][0]["Files"].items():
         file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")

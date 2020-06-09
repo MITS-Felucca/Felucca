@@ -41,26 +41,33 @@ class ExecutionManager(object):
         container = self.id_to_task_container[task_id][1]
 
         # get result from container
-        container.exec_run("tar -cvf result.tar %s %s" % (" ".join(output_path), " ".join(log_path)))
-        bits, stat = container.get_archive("result.tar")
-        path = "/vagrant/result/%s" % (task_id)
-        folder = os.path.exists(path)
-        if not folder:
+        container.exec_run("tar -cvf result.docker %s %s" % (" ".join(output_path), " ".join(log_path)))
+        bits, stat = container.get_archive("result.docker")
+        
+
+        path = f"/tmp/Felucca/result/{task_id}"
+        print(path)
+        if not os.path.exists(path):
             os.makedirs(path)
-        file = open(os.path.join(path,"result.tar"), "wb") 
+            
+        file = open(f"{path}/result", "wb+") 
         for chunk in bits:
             file.write(chunk)
         file.close()
 
         # extract result tar file
-        result_tar = tarfile.open("%s/result.tar" % (path))
+        result_tar = tarfile.open(f"{path}/result","r")
+        result_tar.extractall(path)
+        result_tar.close()
+        result_tar = tarfile.open(f"{path}/result.docker","r")
         result_tar.extractall(path)
         result_tar.close()
         
-        result_tar1 = tarfile.open("%s/result.tar" % (path))
-        result_tar1.extractall(path)
-        result_tar1.close()
-
+        #delete temp tar file after extraction
+        os.remove(f"{path}/result")
+        os.remove(f"{path}/result.docker")
+        
+        #stop and remove this container
         container.stop()
         container.remove()
 
@@ -74,13 +81,7 @@ class ExecutionManager(object):
         ResourceManager().update_task_status(task_id, Status[status])
         self.id_to_task_container.pop(task_id, None)
         
-        #delete local exe file and folder
-        logger.debug(f"delete every file in /tmp/Felucca")
-        for root, dirs, files in os.walk("/tmp/Felucca", topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
+        
         
         
 
@@ -128,10 +129,10 @@ class ExecutionManager(object):
         """
         logger = Logger().get()
         
-        for key in task.files:
-            src = task.files[key]
+        for filename, path in task.files.items():
+            src = path
             dst = src
-            #dst = os.path.join(f"/tmp/Felucca/{task.task_id}/",key)
+
             os.chdir(os.path.dirname(src))
             srcname = os.path.basename(src)
     
@@ -148,6 +149,9 @@ class ExecutionManager(object):
             container.exec_run("mkdir -p "+container_dir)
             container.put_archive(container_dir, data)
             
+            #delete local tar and exe file
+            if(os.path.exists(path)):
+                os.remove(path)
             path = src + '.tar'
             if(os.path.exists(path)):
                 os.remove(path)
@@ -161,7 +165,7 @@ class ExecutionManager(object):
             container (Container): the docker container created to run this task 
         
         """
-        self.id_to_task_container[str(task.task_id)] = (task,container)
+        self.id_to_task_container[task.task_id] = (task,container)
         
     def run_container_flask(self,container):
         
@@ -195,8 +199,10 @@ class ExecutionManager(object):
         
         if task.tool_type == 1:
             command_line_input = command_line_input +"ooanalyzer"
-        for key in task.arguments:
-            command_line_input = command_line_input + " " + key + " " + task.arguments[key]
+        #for key in task.arguments:
+        for key, value in task.arguments.items():
+            command_line_input = command_line_input + " " + key + " " + value
+            
         logger.debug(f"for task({task.task_id}),the command_line_input is {command_line_input}")
         return(command_line_input)
         

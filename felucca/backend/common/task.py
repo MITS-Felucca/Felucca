@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../felucca/backend'))
 
 from common.status import Status
@@ -145,9 +146,9 @@ class Task(object):
         """
         
         # Files = task_dict["Files"]
-        tool_id = task_dict["Tool_ID"]
+        tool_type = task_dict["Tool_ID"]
         argument = task_dict["Arguments"]
-        task = Task({},tool_id,argument)
+        task = Task({},tool_type,argument)
         
         return task
     
@@ -173,7 +174,10 @@ class Task(object):
         task_dict["Log"] = list(task.log.keys())
         task_dict["Stdout"] = task.stdout
         task_dict["Stderr"] = task.stderr
-        task_dict["Finished_Time"] = task.finished_time
+        if task.finished_time is None:
+            task_dict["Finished_Time"] = 0
+        else:
+            task_dict["Finished_Time"] = time.mktime(task.finished_time.timetuple())
         task_dict["Status"] = task.status
         task_dict["ID"] = task.task_id
 
