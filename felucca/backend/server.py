@@ -7,7 +7,7 @@ from resource_manager import ResourceManager
 from common.task import Task
 from common.job import Job
 from datetime import datetime
-
+import json,os
 app = Flask(__name__)
 
 
@@ -56,6 +56,37 @@ def test():
     print(task.output)
     print(task.log)
     return {"status": "ok"}
+
+@app.route("/test_new_execution")
+def test_new_execution():
+    """this is used for testing new execution manager after reconstrction
+
+    Test command: curl http://0.0.0.0:5000/test_new_execution, to use this, we should put the input.json at the "backend" folder in advance 
+    """
+    with open("input.json",'r') as f:
+        json_data = json.load(f)
+    job = Job.from_json(json_data)
+    job.job_id = "this_is_a_test_job_id"
+    task = job.tasks[0]
+    task.task_id = "this_is_a_test_task_id2"
+    
+
+    file_dict = {}
+    folder_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
+    os.makedirs(folder_path)
+    
+    for filename, content in json_data["Tasks"][0]["Files"].items():
+        file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
+        
+        
+        with open(file_path, "wb") as f:
+            f.write(bytes.fromhex(content))
+        file_dict[filename] = file_path
+    task.files = file_dict
+    ExecutionManager().submit_task(task)
+           
+    return ("test2 finished\n")
+
 
 @app.route("/job", methods=['POST'])
 def submit_job():

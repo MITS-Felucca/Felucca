@@ -31,7 +31,7 @@ class JobManager(object):
 
         # for task, task_id in zip(new_job.tasks, tasks_id):
         #     task.task_id = task_id
-        self.job_metadata[job_id] = new_job
+        #self.job_metadata[job_id] = new_job
         for task in new_job.tasks:
             self.task_id_to_job_id[task.task_id] = new_job.job_id
         # self.task_id_to_job_id[new_job.tasks[0].task_id] = new_job.job_id

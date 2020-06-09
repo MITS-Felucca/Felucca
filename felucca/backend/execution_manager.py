@@ -1,14 +1,12 @@
 import os
-import argparse
-import shlex
 import tarfile
 import docker
 from threading import Thread
-
 from common.singleton import Singleton
 from resource_manager import ResourceManager
 from common.status import Status
 from logger import Logger
+
 CONTAINER_PORT = '5000'
 
 @Singleton
@@ -34,6 +32,8 @@ class ExecutionManager(object):
             stderr (byte[]): the output in std error
             stdout (byte[]): the output in std out
         """
+        
+        
         logger = Logger().get()
         logger.debug(f"start save_result: task_id: {task_id} status: {status}")
         output_path = self.id_to_task_container[task_id][0].output
@@ -43,7 +43,7 @@ class ExecutionManager(object):
         # get result from container
         container.exec_run("tar -cvf result.tar %s %s" % (" ".join(output_path), " ".join(log_path)))
         bits, stat = container.get_archive("result.tar")
-        path = "/vagrant/result/%s" % (str(task_id))
+        path = "/vagrant/result/%s" % (task_id)
         folder = os.path.exists(path)
         if not folder:
             os.makedirs(path)
@@ -64,6 +64,7 @@ class ExecutionManager(object):
         container.stop()
         container.remove()
 
+                
         for index in range(len(output_path)):
             output_path[index] = os.path.join(path, output_path[index][1:])
         for index in range(len(log_path)):
@@ -72,103 +73,84 @@ class ExecutionManager(object):
         ResourceManager().save_result(task_id, output_path, log_path, stdout, stderr)
         ResourceManager().update_task_status(task_id, Status[status])
         self.id_to_task_container.pop(task_id, None)
+        
+        #delete local exe file and folder
+        logger.debug(f"delete every file in /tmp/Felucca")
+        for root, dirs, files in os.walk("/tmp/Felucca", topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+        
+        
 
     def commandline_path_parser(self,task):
         
-        """change a task's field: 1)command_line_input 2) executable_file, to the cmd and path used inside the container
+        """change a task's arguments corresponding to the exe path inside tge container
+        For input file, the absolute path is the same as input file outside the container, i.e. "/tmp/Felucca/{task.task_id}/{input_filename}"
+        For output file path, the absolute path is "/tmp/Felucca/{task.task_id}/{output_filename}"
     
         Args:
             task (Task): The task object to be executed
         
         """
-        command_line_input =task.command_line_input.lstrip()
-        
-        parser = argparse.ArgumentParser()
-         
-        parser.add_argument('-ooanalyzer', dest="ooanalyzer",action = "store_true",default=False)
-        parser.add_argument('-j','--json', dest="j", type = str)
-        parser.add_argument('-R','--prolog-results ', dest="R", type = str)
-        parser.add_argument('-n','--new-method', dest="n", type = str)
-        parser.add_argument('-F','--prolog-facts', dest="F", type = str)
-        parser.add_argument('-f','--file', dest="f", type = str)
+        #change the input file path
+        logger = Logger().get()
+        task.output = []
+        task.log = []
+        for task_key in task.arguments:
+            if task_key in ["-f","-s"]:
+                for file_key in task.files:
+                    if file_key == task.arguments[task_key]:
+                        task.arguments[task_key] = task.files[file_key]
+                        break
+           
+            elif task_key in ["-R","-F"]:
+                task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
 
-        if command_line_input[0] != '-' :
-            command_line_input = '-' + command_line_input
+                task.log.append(task.arguments[task_key])
                 
-        a = parser.parse_args(shlex.split(command_line_input))
+            elif task_key in ["-j"]:
+                task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
 
-        dict = vars(a)
+                task.output.append(task.arguments[task_key])
+        logger.debug(f"for task({task.task_id}),the task.arguments is {task.arguments}")
+    
+    def copy_to_container(self,task,container):
         
-        #j F R should be replaced to a defined path
-        #f should be the path of executable file will be copied into the container
-        output = []
-        log = []
-        if dict['j'] is not None :
-            dict['j'] = os.path.join("/tmp",dict['j'])
-            output.append(dict['j'])
-
-        if dict['F'] is not None :
-            dict['F'] = os.path.join("/tmp",dict['F'])
-            log.append(dict['F'])
-
-        # result
-        if dict['R'] is not None :
-            dict['R'] = os.path.join("/tmp",dict['R'])
-            log.append(dict['R'])
-
-        if dict['f'] is not None :
-            dict['f'] = os.path.basename(dict['f'])
-            dict['f'] = os.path.join("/tmp",dict['f'])
-            task.executable_file = dict['f']
-        else:
-            task.executable_file = os.path.join("/tmp", os.path.basename(task.executable_file))
-
-        new_command_line_input = ""
-        
-        for key in dict:
-            if type(dict[key])==bool:
-                new_command_line_input = new_command_line_input+key+" "
-            elif dict[key] is not None:
-                new_command_line_input = new_command_line_input+"-"+key+" "+dict[key]+" "
-                
-        if 'f' not in dict:
-            new_command_line_input = new_command_line_input+" task.executable_file"
-        
-        task.command_line_input = new_command_line_input
-
-        task.set_result(output=output,log=log)
-        
-        
-    def copy_to_container(self,src,dst,container):
-        
-        """copy executable_file into the container from src to dst
+        """copy executable_file into the container
+            this method will copy the input file from "task.files[key]" at backend to "task.files[key]" ( i.e. the same dst becasue this path is unique for each task) inside the given conatiner
     
         Args:
-            src (str): The absolute path of executable file in the backend 
-            dst (str): The absolute path of executable file in the container 
+            task (Task): task object which conatiner the absolute exe file path currently (i.e. each task.files[key])
             container (Container): the docker container created to run this task 
         
         """
         logger = Logger().get()
-        os.chdir(os.path.dirname(src))
-        srcname = os.path.basename(src)
-
-        tar = tarfile.open(src + '.tar', mode='w')
-        try:
-            tar.add(srcname)
-        except Exception as e:
-            logger.error(f"copy_to_container fails, container:{container.name}, Exception: {e}")
-        finally:
-            tar.close()
-    
-        data = open(src + '.tar', 'rb').read()
-        container_dir = os.path.dirname(dst)
-        container.exec_run("mkdir "+container_dir)
-        container.put_archive(container_dir, data)
         
-        path = src + '.tar'
-        if(os.path.exists(path)):
-            os.remove(path)
+        for key in task.files:
+            src = task.files[key]
+            dst = src
+            #dst = os.path.join(f"/tmp/Felucca/{task.task_id}/",key)
+            os.chdir(os.path.dirname(src))
+            srcname = os.path.basename(src)
+    
+            tar = tarfile.open(src + '.tar', mode='w')
+            try:
+                tar.add(srcname)
+            except Exception as e:
+                logger.error(f"copy_to_container fails, container:{container.name}, Exception: {e}")
+            finally:
+                tar.close()
+        
+            data = open(src + '.tar', 'rb').read()
+            container_dir = os.path.dirname(dst)
+            container.exec_run("mkdir -p "+container_dir)
+            container.put_archive(container_dir, data)
+            
+            path = src + '.tar'
+            if(os.path.exists(path)):
+                os.remove(path)
         
     def set_map(self,task,container):
         
@@ -179,8 +161,7 @@ class ExecutionManager(object):
             container (Container): the docker container created to run this task 
         
         """
-        
-        self.id_to_task_container[task.task_id] = (task,container)
+        self.id_to_task_container[str(task.task_id)] = (task,container)
         
     def run_container_flask(self,container):
         
@@ -208,9 +189,16 @@ class ExecutionManager(object):
         Returns:
             command_line_input (str): The command_line used inside the container to run the executable file with phraos
         """
+        logger = Logger().get()
         task = self.id_to_task_container[task_id][0]
+        command_line_input = ""
         
-        return(task.command_line_input)
+        if task.tool_type == 1:
+            command_line_input = command_line_input +"ooanalyzer"
+        for key in task.arguments:
+            command_line_input = command_line_input + " " + key + " " + task.arguments[key]
+        logger.debug(f"for task({task.task_id}),the command_line_input is {command_line_input}")
+        return(command_line_input)
         
     def submit_task(self,task):
         """Job Manager call this method and submit a task. This method will launch the whole procedure (i.e. parse cmd, create container, run exe with phraos and insert result into Resource Manager) of the Execution Manager
@@ -223,9 +211,8 @@ class ExecutionManager(object):
         """
         logger = Logger().get()
         logger.debug(f"receive task: task_id = {task.task_id}, job_id = {task.job_id}")
-        exe_path_outside = task.executable_file
 
-        self.commandline_path_parser(task)#this will change task two attr: task.executable_file & task.command_line_input   to container path version
+        self.commandline_path_parser(task)#this will change task.arguments to the path corresponding to the path inside the container
         
         client = docker.from_env()
     
@@ -238,6 +225,8 @@ class ExecutionManager(object):
         t = Thread(target=self.run_container_flask, args=(container, ))
         t.start()
         
-        self.copy_to_container(exe_path_outside,task.executable_file,container)
+        #self.copy_to_container(task,task.executable_file,container)
+        self.copy_to_container(task,container)
         logger.debug(f"successfully copy exe into container({container.name})")
+        
         return(True);
