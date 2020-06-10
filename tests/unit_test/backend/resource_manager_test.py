@@ -1,3 +1,4 @@
+import base64
 import filecmp
 import json
 import os
@@ -124,8 +125,8 @@ class TestResourceManager(unittest.TestCase):
 
         # Save the result of the task
         task_id = tasks_id[0]
-        stdout = b"sample stdout"
-        stderr = b"sample stderr"
+        stdout = "sample stdout"
+        stderr = "sample stderr"
         output_file_list = ["../../sample_output/output.json"]
         log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
 
@@ -203,16 +204,13 @@ class TestResourceManager(unittest.TestCase):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
 
-        all_jobs = self.manager.get_all_jobs_without_tasks()
-        for job in all_jobs:
-            self.manager.remove_job_by_id(job.job_id)
         # Create and insert three sample jobs
         job_list = []
         for i in range(3):
             job_name = "Test_job%d" % i
             job_comment = "Just for test%d" % i
             created_time = datetime.now()
-            created_time = created_time.replace(microsecond=int(created_time.microsecond / 1000) * 1000)
+            created_time = created_time.replace(microsecond=0)
             new_job = Job(job_name, job_comment, created_time)
             new_job.tasks = []
             job_list.append(new_job)
@@ -256,8 +254,8 @@ class TestResourceManager(unittest.TestCase):
 
         # Save the result of the task
         task_id = tasks_id[0]
-        stdout = b"sample stdout"
-        stderr = b"sample stderr"
+        stdout = "sample stdout"
+        stderr = "sample stderr"
         output_file_list = ["../../sample_output/output.json"]
         log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
 
@@ -265,19 +263,19 @@ class TestResourceManager(unittest.TestCase):
 
         # Retrive the output file
         file = self.manager.get_output_file(task_id, "output.json")
-        with open("../../sample_output/output.json", "r") as f:
+        with open("../../sample_output/output.json", "rb") as f:
             output_json = f.read()
-        self.assertEqual(file, output_json)
+        self.assertEqual(base64.b64decode(file.encode('utf-8')), output_json)
 
         # Retrive the log files
         facts_file = self.manager.get_log_file(task_id, "facts")
         results_file = self.manager.get_log_file(task_id, "results")
-        with open("../../sample_output/facts", "r") as f:
+        with open("../../sample_output/facts", "rb") as f:
             facts = f.read()
-        with open("../../sample_output/results", "r") as f:
+        with open("../../sample_output/results", "rb") as f:
             results = f.read()
-        self.assertEqual(facts_file, facts)
-        self.assertEqual(results_file, results)
+        self.assertEqual(base64.b64decode(facts_file.encode('utf-8')), facts)
+        self.assertEqual(base64.b64decode(results_file.encode('utf-8')), results)
 
         # Remove the inserted jobs
         self.manager.remove_all_jobs_and_tasks()
@@ -289,7 +287,6 @@ class TestResourceManager(unittest.TestCase):
         # Read the input json and store it
         with open("../../sample_output/input.json", "r") as f:
             input_json = json.loads(f.read())
-        print(input_json)
         print(type(input_json))
         job = self.manager.save_new_job_and_tasks(input_json)
 
@@ -308,12 +305,27 @@ class TestResourceManager(unittest.TestCase):
         for filename, path in task.files.items():
             with open(path, "rb") as f:
                 saved_file = f.read()
-            self.assertEqual(saved_file, bytes.fromhex(task_json["Files"][filename]))
+            self.assertEqual(saved_file, base64.b64decode(task_json["Files"][filename].encode('utf-8')))
+            # self.assertEqual(saved_file, bytes.fromhex(task_json["Files"][filename]))
             os.remove(path)
         
         # Remove the directory
         os.rmdir(os.path.join("/tmp/Felucca", task.task_id))
 
+    def test_insert_sample_jobs(self):
+        """This method is used to insert some sample jobs & tasks in the database.
+        So that we can get a non-empty job list through get_job_list().
+
+        Uncomment the last line to clean all jobs & tasks after use.
+        """
+        # Read the input json and store it
+        with open("../../sample_output/input.json", "r") as f:
+            input_json = json.loads(f.read())
+        for i in range(3):
+            self.manager.save_new_job_and_tasks(input_json)
+        
+        # Remove previous jobs & tasks
+        self.manager.remove_all_jobs_and_tasks()
 
 
 if __name__ == '__main__':

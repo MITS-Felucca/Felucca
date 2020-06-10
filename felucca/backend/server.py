@@ -1,3 +1,7 @@
+import json
+import os
+from datetime import datetime
+from flask import abort
 from flask import Flask
 from flask import request
 from time import sleep
@@ -6,10 +10,10 @@ from job_manager import JobManager
 from resource_manager import ResourceManager
 from common.task import Task
 from common.job import Job
-from datetime import datetime
-import json,os
-app = Flask(__name__)
 
+app = Flask(__name__)
+db_name = "test"
+# db_name = "felucca"
 
 @app.route("/")
 def hello():
@@ -89,28 +93,55 @@ def test_new_execution():
            
     return ("test2 finished\n")
 
+@app.route("/clean-all", methods=['GET'])
+def clean_all():
+    """Remove all jobs and tasks in database "test"
+    Command: curl --request GET http://localhost:5000/clean-all
+    """
+    ResourceManager("test").remove_all_jobs_and_tasks()
+    return {"status": "ok"}
 
 @app.route("/job", methods=['POST'])
 def submit_job():
     """Test command: curl -H "Content-Type: application/json" --request POST -d @/vagrant/tests/sample_output/input.json http://localhost:5000/job"
     """
     request_json = request.get_json()
-    job = ResourceManager().save_new_job_and_tasks(request_json)
-    # TODO: submit job through JobManager
+    job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
     # JobManager().submit_job(job)
     return {"status": "ok"}
 
 
 @app.route("/job/<id>", methods=['GET'])
 def get_job(id):
-    # TODO: return job info
-    print(id)
-    return {"message": f"You are asking for job info of id {id}"}
+    """Test command: curl --request GET http://localhost:5000/job/<id>
 
-@app.route("/job-list", methods=['GET'])
+    Test steps:
+        1. Modify line 14 & 15 of this file to use database "test"
+        2. Run "curl --request GET http://localhost:5000/clean-all"
+        3. Run "curl --request GET http://localhost:5000/generate-sample"
+        4. Run "curl --request GET http://localhost:5000/job-list/json" to get the list
+        5. Run "curl --request GET http://localhost:5000/job/<id>" where the id is of the first job in the list
+        6. Run "curl --request GET http://localhost:5000/clean-all" after use
+        7. Remember to modify the name of the database
+    """
+    job_dict = ResourceManager(db_name).get_job_info(id)
+    print(job_dict)
+    return job_dict
+
+@app.route("/job-list/json", methods=['GET'])
 def get_job_list():
-    # TODO: Return a list of jobs in json
-    pass
+    """Test command: curl --request GET http://localhost:5000/job-list/json
+    """
+    job_list = ResourceManager(db_name).get_job_list()
+    return {"Job_List": job_list}
+
+@app.route("/generate-sample", methods=['GET'])
+def generate_samples():
+    """Generate three jobs with two tasks in database "test"
+    Command: curl --request GET http://localhost:5000/generate-sample
+    """
+    ResourceManager("test").generate_sample_jobs()
+    return {"status": "ok"}
 
 @app.route("/result", methods=['POST'])
 def get_result():
@@ -122,12 +153,21 @@ def get_result():
     JobManager().finish_task(request.form['task_id'])
     return {'is_received': True}
 
-
-
-@app.route("/task/<task_id>", methods=['GET'])
-def get_task(task_id):
-    return {'command_line_input': ExecutionManager().get_command_line_input(task_id)}
-
+@app.route("/task/<task_id>/<file_type>/<file_name>/json", methods=['GET'])
+def get_task(task_id, file_type, file_name):
+    print(task_id)
+    if file_type == "output":
+        file = ResourceManager(db_name).get_output_file(task_id, file_name)
+        if file is None:
+            abort(404)
+        return {"Content": file}
+    elif file_type == "log":
+        file = ResourceManager(db_name).get_log_file(task_id, file_name)
+        if file is None:
+            abort(404)
+        return {"Content": file}
+    else:
+        abort(404)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

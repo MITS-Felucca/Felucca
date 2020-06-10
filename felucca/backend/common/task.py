@@ -170,15 +170,15 @@ class Task(object):
         task_dict = {}
 
         task_dict["Arguments"] = task.arguments
-        task_dict["Output"] = list(task.output.keys())
-        task_dict["Log"] = list(task.log.keys())
+        task_dict["Output"] = task.output
+        task_dict["Log"] = task.log
         task_dict["Stdout"] = task.stdout
         task_dict["Stderr"] = task.stderr
         if task.finished_time is None:
             task_dict["Finished_Time"] = 0
         else:
             task_dict["Finished_Time"] = time.mktime(task.finished_time.timetuple())
-        task_dict["Status"] = task.status
+        task_dict["Status"] = task.status.name
         task_dict["ID"] = task.task_id
 
         

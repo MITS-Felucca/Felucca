@@ -1,3 +1,4 @@
+import base64
 import datetime
 import gridfs
 import os
@@ -40,7 +41,7 @@ class ResourceManager(object):
 
         # Build the new task
         logger = Logger().get()
-        
+
         new_task_dict = {
             "tool_type": 0,
             # "command_line_input": new_task.command_line_input,
@@ -60,6 +61,81 @@ class ResourceManager(object):
         logger.debug(f"insert the new task:{task_id}")
         # Don't cast id to String for internal use
         return task_id
+    
+    def get_job_info(self, job_id):
+        """Return a json-dict of the specific job.
+        
+        Args:
+            job_id (String): id of the job
+        Return:
+            job_dict (dict): the info of job
+        """
+        job = self.get_job_by_id(job_id)
+        job_dict = Job.to_json(job, True)
+        return job_dict
+    
+    def get_job_list(self):
+        """Return a list of job objects in json format.
+
+        Return:
+            job_list (list of dict): info of all jobs in database
+        """
+        logger = Logger().get()
+        logger.debug("start get_job_list")
+
+        print(os.getcwd())
+
+        job_object_list = self.get_all_jobs_with_tasks()
+        print(job_object_list)
+        print(len(job_object_list))
+
+        job_list = []
+        for job in job_object_list:
+            job_list.append(Job.to_json(job))
+        
+        return job_list
+    
+    def generate_sample_jobs(self):
+        """Generate three sample jobs without tasks for job list test.
+        """
+        job_list = []
+        for i in range(3):
+            job_name = "Test_job%d" % i
+            job_comment = "Just for test%d" % i
+            created_time = datetime.now().replace(microsecond=0)
+            new_job = Job(job_name, job_comment, created_time)
+            new_job.tasks = []
+            job_list.append(new_job)
+            
+        
+        # Create two sample tasks for the first job
+        task_arguments = {
+            "-j": "output.json",
+            "-F": "facts",
+            "-R": "results",
+            "-f": "oo.exe",
+        }
+        task_tool_type = 0
+        task1 = Task({}, task_tool_type, task_arguments)
+        task2 = Task({}, task_tool_type, task_arguments)
+        job_list[0].tasks = [task1, task2]
+
+        # Insert three jobs
+        job_id, tasks_id = self.insert_new_job(job_list[0])
+        self.insert_new_job(job_list[1])
+        self.insert_new_job(job_list[2])
+
+        # Save result to the 1st task of the 1st job
+        stdout = "sample stdout"
+        stderr = "sample stderr"
+        output_file_list = ["/vagrant/tests/sample_output/output.json"]
+        log_file_list = ["/vagrant/tests/sample_output/facts", "/vagrant/tests/sample_output/results"]
+        self.save_result(tasks_id[0], output_file_list, log_file_list, stdout, stderr)
+
+        # Update the status
+        self.update_job_status(job_id, Status.Failed)
+        self.update_task_status(tasks_id[1], Status.Failed)
+        self.mark_task_as_finished(tasks_id[0])
 
     def insert_new_job(self, new_job):
         """Insert a job with its tasks into the database
@@ -98,6 +174,48 @@ class ResourceManager(object):
         
         return str(job_id), tasks_id
     
+    def mark_job_as_finished(self, job_id):
+        """Mark a job as "Successful" and update its "finished_time"
+        Args:
+            job_id (String): the id of the job
+        """
+        logger = Logger().get()
+        logger.debug(f"start mark_job_as_finished for job {job_id}")
+
+        self.__setup()
+        try:
+            condition = {"_id": ObjectId(job_id)}
+            job = self.__jobs_collection.find_one(condition)
+            job["status"] = Status.Successful.value
+            job["finished_time"] = datetime.now().replace(microsecond=0)
+            update_result = self.__jobs_collection.update_one(condition, {"$set": job})
+            if update_result.modified_count != 1:
+                raise Exception("update_result.modified_count != 1")
+            pass
+        except Exception as e:
+            logger.error(f"something wrong in mark_job_as_finished, Exception: {e}")
+    
+    def mark_task_as_finished(self, task_id):
+        """Mark a task as "Successful" and update its "finished_time"
+        Args:
+            task_id (String): the id of the task
+        """
+        logger = Logger().get()
+        logger.debug(f"start mark_task_as_finished for task {task_id}")
+
+        self.__setup()
+        try:
+            condition = {"_id": ObjectId(task_id)}
+            task = self.__tasks_collection.find_one(condition)
+            task["status"] = Status.Successful.value
+            finished_time = datetime.now().replace(microsecond=0)
+            task["finished_time"] = finished_time
+            update_result = self.__tasks_collection.update_one(condition, {"$set": task})
+            if update_result.modified_count != 1:
+                raise Exception("update_result.modified_count != 1")
+        except Exception as e:
+            logger.error(f"something wrong in mark_task_as_finished, Exception: {e}")
+    
     def save_new_job_and_tasks(self, new_job_dict):
         """Turn the newly submitted job with its tasks from dict to objects and save them
         The input files will be saved to a temporary directory named by task_id
@@ -112,7 +230,7 @@ class ResourceManager(object):
 
         # Build the job & task from json
         job = Job.from_json(new_job_dict)
-        job.created_time = datetime.now()
+        job.created_time = datetime.now().replace(microsecond=0)
 
         # Save the job & tasks
         job_id, tasks_id = self.insert_new_job(job)
@@ -125,11 +243,9 @@ class ResourceManager(object):
         for i in range(len(new_job_dict["Tasks"])):
             task = job.tasks[i]
             file_dict = {}
-            print(type(new_job_dict["Tasks"][i]))
 
             # Create the unique directory for each task
             task_file_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
-            print(os.path.dirname(task_file_path))
             if not os.path.exists(task_file_path):
                 try:
                     os.makedirs(task_file_path)
@@ -139,7 +255,8 @@ class ResourceManager(object):
             for filename, content in new_job_dict["Tasks"][i]["Files"].items():
                 file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
                 with open(file_path, "wb") as f:
-                    f.write(bytes.fromhex(content))
+                    f.write(base64.b64decode(content.encode('utf-8')))
+                    # f.write(bytes.fromhex(content))
                 file_dict[filename] = file_path
             task.files = file_dict
 
@@ -156,8 +273,7 @@ class ResourceManager(object):
             stderr (String): The stderr of the task
         """
         logger = Logger().get()
-        logger.debug(f"start save_result task_id:{task_id}, output:{output}, log:{log}, stdout:{stdout}, stderr:{stderr}")
-        
+        logger.debug(f"start save_result task_id:{task_id}, output:{output}, log:{log}, stdout:{stdout}, stderr:{stderr}")        
         
         self.__setup()
         try:
@@ -276,6 +392,7 @@ class ResourceManager(object):
             task.stdout = task_doc["stdout"]
             task.stderr = task_doc["stderr"]
             task.status = Status(task_doc["status"])
+            task.finished_time = task_doc["finished_time"]
             logger.debug(f"get_task_by_id successfully, task_id:{task_id}")
             return task
         except Exception as e:
@@ -301,6 +418,8 @@ class ResourceManager(object):
             # Find the job using id
             condition = {"_id": ObjectId(job_id)}
             job_doc = self.__jobs_collection.find_one(condition)
+
+            print(job_doc)
     
             # Rebuild the Job object from the query result
             job = Job(job_doc["name"], job_doc["comment"], job_doc["created_time"], status=Status(job_doc["status"]))
@@ -330,10 +449,12 @@ class ResourceManager(object):
     
             # Rebuild all tasks into Task objects
             tasks_list = []
+            tasks_id_list = []
             for task_doc in tasks_doc_list:
-                task = self.get_task_by_id(task_doc["_id"])
+                task = self.get_task_by_id(str(task_doc["_id"]))
                 tasks_list.append(task)
-            logger.debug(f"Get all tasks using job_id successfully, tasks_list:{tasks_list}")
+                tasks_id_list.append(task.task_id)
+            logger.debug(f"Get all tasks using job_id successfully, tasks_list:{tasks_id_list}")
             return tasks_list
         except Exception as e:
             logger.error(f"something wrong in get_tasks_by_job_id, Exception: {e}")
@@ -397,8 +518,8 @@ class ResourceManager(object):
         # Rebuild all jobs
         job_list = []
         for job_doc in all_job_ids:
-            job = self.get_job_by_id_without_tasks(job_doc["_id"])
-            job.tasks = self.get_tasks_by_job_id(job_doc["_id"])
+            job = self.get_job_by_id_without_tasks(str(job_doc["_id"]))
+            job.tasks = self.get_tasks_by_job_id(str(job_doc["_id"]))
             job_list.append(job)
 
         return job_list
@@ -410,7 +531,7 @@ class ResourceManager(object):
             task_id (String): the id of the task
             filename (String): the name of the file
         Return:
-            file (String): the content of the file
+            file (String): the content of the file encoded by base64 & decoded by utf-8
         """
         self.__setup()
 
@@ -429,9 +550,10 @@ class ResourceManager(object):
             if filename not in task_doc["output_files"]:
                 raise Exception(f"The file named {filename} of task {task_id} does not exist.")
             file_id = task_doc["output_files"][filename]
-            return self.__fs.get(file_id).read().decode('utf-8')
+            return base64.b64encode(self.__fs.get(file_id).read()).decode('utf-8')
         except Exception as e:
             logger.error(e)
+            return None
     
     def get_log_file(self, task_id, filename):
         """Return an log file of a task
@@ -440,7 +562,7 @@ class ResourceManager(object):
             task_id (String): the id of the task
             filename (String): the name of the file
         Return:
-            file (String): the content of the file
+            file (String): the content of the file encoded by base64 & decoded by utf-8
         """
         self.__setup()
 
@@ -459,9 +581,10 @@ class ResourceManager(object):
             if filename not in task_doc["log_files"]:
                 raise Exception(f"The file named {filename} of task {task_id} does not exist.")
             file_id = task_doc["log_files"][filename]
-            return self.__fs.get(file_id).read().decode('utf-8')
+            return base64.b64encode(self.__fs.get(file_id).read()).decode('utf-8')
         except Exception as e:
             logger.error(e)
+            return None
     
     def remove_job_by_id(self, job_id):
         """Remove the specific job (Used in unit tests)
@@ -524,3 +647,4 @@ class ResourceManager(object):
                 self.remove_tasks_by_job_id(str(job_doc["_id"]))
         except Exception as e:
             logger.error(f"something wrong in remove_all_jobs, Exception: {e}")
+
