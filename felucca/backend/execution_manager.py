@@ -150,11 +150,13 @@ class ExecutionManager(object):
             container.put_archive(container_dir, data)
             
             #delete local tar and exe file
+            
             if(os.path.exists(path)):
                 os.remove(path)
             path = src + '.tar'
             if(os.path.exists(path)):
                 os.remove(path)
+            
         
     def set_map(self,task,container):
         
