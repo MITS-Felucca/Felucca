@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { Job } from './job'
 import { Task } from './task'
 import { Status } from './status.enum'
+import { TaskInfo } from './task-info';
 
 @Injectable()
 export class JobService {
@@ -70,5 +71,17 @@ export class JobService {
         }
       return jobInfo;
     }));
+  }
+
+  submitJob(jobName: string, jobComment: string, tasks: TaskInfo[]): Observable<boolean> {
+    let job = {Name: jobName, Comment: jobComment, Tasks: []};
+    for (let task of tasks) {
+      job.Tasks.push({Tool_ID: 1, Files: task.files, Arguments: task.arguments})
+    }
+    const url = `${this.backEndURL}/job`;
+    return this.http.post(url, JSON.stringify(job), this.httpOptions).pipe(map(data => {
+      return (data as any).Status == 'ok';
+      }
+    ));
   }
 }

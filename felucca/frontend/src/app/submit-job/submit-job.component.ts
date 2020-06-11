@@ -1,9 +1,8 @@
 import { Component, OnInit} from '@angular/core';
+import { Router } from '@angular/router';
 
-import { SubmitTaskComponent } from '../submit-task/submit-task.component'
 import { TaskInfo } from '../task-info'
-
-import { Task } from '../task'
+import { JobService } from "../job.service";
 
 @Component({
   selector: 'app-submit-job',
@@ -18,7 +17,8 @@ export class SubmitJobComponent implements OnInit{
   chosenTool: string;
   toolNames: string[];
 
-  constructor() { }
+  constructor(private jobService: JobService,
+              private router: Router) { }
 
   ngOnInit() {
     this.isAdding = false;
@@ -40,5 +40,10 @@ export class SubmitJobComponent implements OnInit{
 
   displayAddTaskPage() {
     this.isAdding = this.chosenTool != '';
+  }
+
+  submitJob() {
+    this.jobService.submitJob(this.name, this.comment, this.tasks).subscribe();
+    this.router.navigate(['/job-list']);
   }
 }
