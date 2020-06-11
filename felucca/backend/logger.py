@@ -26,7 +26,11 @@ class Logger:
         if not self.logger.handlers:
             #Can't use absolute path here, logging is fixed to append the address based on current path
             #therefore, this code should be ran at backend folder
-            fh = logging.FileHandler("../../../../..//tmp/Felucca/log.txt", mode='a', encoding='utf-8')    
+            folder_path = "../../../../../tmp/Felucca/"
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            fh = logging.FileHandler(os.path.join(folder_path,"log.txt"), mode='a', encoding='utf-8')    
+            
             if stdout:
                 sh = logging.StreamHandler()
 
