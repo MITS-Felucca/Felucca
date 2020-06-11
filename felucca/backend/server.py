@@ -153,8 +153,12 @@ def get_result():
     JobManager().finish_task(request.form['task_id'])
     return {'is_received': True}
 
+@app.route("/task/<task_id>", methods=['GET'])
+def get_task(task_id):
+    return {'command_line_input': ExecutionManager().get_command_line_input(task_id)}
+
 @app.route("/task/<task_id>/<file_type>/<file_name>/json", methods=['GET'])
-def get_task(task_id, file_type, file_name):
+def get_task_file(task_id, file_type, file_name):
     print(task_id)
     if file_type == "output":
         file = ResourceManager(db_name).get_output_file(task_id, file_name)

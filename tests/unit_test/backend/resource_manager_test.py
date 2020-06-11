@@ -392,6 +392,5 @@ class TestResourceManager(unittest.TestCase):
         # Remove all jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
 
-
 if __name__ == '__main__':
     unittest.main()
