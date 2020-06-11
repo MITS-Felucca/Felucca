@@ -107,7 +107,7 @@ def submit_job():
     """
     request_json = request.get_json()
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
-    # JobManager().submit_job(job)
+    JobManager().submit_job(job)
     return {"status": "ok"}
 
 
