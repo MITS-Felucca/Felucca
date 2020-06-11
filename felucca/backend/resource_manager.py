@@ -15,7 +15,8 @@ class ResourceManager(object):
     """
 
     def __init__(self, db_name="felucca"):
-        self.db_name = db_name
+        self.db_name = "test"
+        # self.db_name = db_name
     
     def __setup(self):
         """Initialize the connections to the MongoDB server

@@ -113,7 +113,7 @@ def submit_job():
 
 @app.route("/job-info/<id>/json", methods=['GET'])
 def get_job(id):
-    """Test command: curl --request GET http://localhost:5000/job-info/<id>
+    """Test command: curl --request GET http://localhost:5000/job-info/<id>/json
 
     Test steps:
         1. Modify line 14 & 15 of this file to use database "test"
