@@ -106,15 +106,36 @@ class ExecutionManager(object):
                         task.arguments[task_key] = task.files[file_key]
                         break
            
-            elif task_key in ["-R","-F"]:
-                task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
+            elif task_key in ["-R"]:
+                if(task.arguments[task_key]):
+                    task.arguments[task_key] = "result"
+                    task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
+                    task.log.append(task.arguments[task_key])
+                else:
+                    del task.arguments[task_key]
+                    continue
+                
 
-                task.log.append(task.arguments[task_key])
+            elif task_key in ["-F"]:
+                if(task.arguments[task_key]):
+                    task.arguments[task_key] = "fact"
+                    task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
+                    task.log.append(task.arguments[task_key])
+                else:
+                    del task.arguments[task_key]
+                    continue
+
+
                 
             elif task_key in ["-j"]:
-                task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
+                if(task.arguments[task_key]):
+                    task.arguments[task_key] = "output.json"
+                    task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
+                    task.output.append(task.arguments[task_key])
+                else:
+                    del task.arguments[task_key]
+                    continue
 
-                task.output.append(task.arguments[task_key])
         logger.debug(f"for task({task.task_id}),the task.arguments is {task.arguments}")
     
     def copy_to_container(self,task,container):
