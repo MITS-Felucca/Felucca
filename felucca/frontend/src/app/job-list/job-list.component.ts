@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { JobService } from '../job.service';
 
+import { JobService } from '../job.service';
+import { Status } from '../status.enum'
 import { Job } from '../job';
 
 @Component({
@@ -10,19 +11,21 @@ import { Job } from '../job';
   styleUrls: ['./job-list.component.css']
 })
 export class JobListComponent implements OnInit {
-  id: string
-  jobs: Job[]
+  id: string;
+  jobs: Job[];
+  status = Status;
+
   constructor(
     private route: ActivatedRoute,
     private jobService: JobService,
   ) { }
 
   ngOnInit() {
-    this.getAllJob()
+    this.getJobList();
   }
 
-  getAllJob(): void {
-    this.jobs = this.jobService.getAllJob()
+  getJobList(): void {
+    this.jobService.getJobList().subscribe(jobs => { this.jobs = jobs; })
   }
 
   goTo(jobID: String): void {

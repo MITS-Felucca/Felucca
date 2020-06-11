@@ -1,5 +1,5 @@
 export interface TaskInfo {
-  files: {[key: string]: Blob},
-  arguments: {[key: string]: any},
+  files: {[key: string]: string},
+  arguments: {[key: string]: string},
   toolName: string
 }

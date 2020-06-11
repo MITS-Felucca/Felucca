@@ -1,79 +1,77 @@
 <div>
-  <h2> Job Details </h2>
-  <dl class="row">
-    <dt class="col-sm-3">Job Name</dt>
-    <dd class="col-sm-9">{{job.jobName}}</dd>
+  <div *ngIf="job">
+    <h2> Job Details </h2>
+    <dl class="row">
+      <dt class="col-sm-3">Job Name</dt>
+      <dd class="col-sm-9">{{job.jobName}}</dd>
 
-    <dt class="col-sm-3">Job Comment</dt>
-    <dd class="col-sm-9">{{job.comment}}</dd>
+      <dt class="col-sm-3">Job Comment</dt>
+      <dd class="col-sm-9">{{job.comment}}</dd>
 
-    <dt class="col-sm-3">Job Created Time</dt>
-    <dd class="col-sm-9">{{job.createdTime | date: 'medium'}}</dd>
-    <dt class="col-sm-3">Number of Tasks</dt>
-    <dd class="col-sm-9">{{job.taskNumber}}</dd>
-    <dt class="col-sm-3">Status</dt>
-    <dd class="col-sm-9">{{job.status}}</dd>
-  </dl>
-  <h3> Tasks </h3>
-  <div class="table-responsive">
-    <table class="table table-striped">
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th style="width:30%;">Command Line Input</th>
-        <th>Input Files</th>
-        <th>Output Files</th>
-        <th>Log Files</th>
-        <th>Standard Output</th>
-        <th>Standard Error</th>
-        <th>Finish Time</th>
-        <th>Status</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let task of tasks; index as i">
-        <td>{{i + 1}}</td>
-        <td>
-          <dl class="row" style="margin: 0px 0px 0px 0px">
-              <ng-container *ngFor="let argument of task.arguments | keyvalue"> 
-                <dt class="col-sm-2" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
-                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
-            </ng-container>
-          </dl>
-        </td>
-        <td>
-          <ul>
-            <li *ngFor="let filename of task.inputFilename">
-              {{filename}}
-            </li>
-          </ul>
-        </td>
+      <dt class="col-sm-3">Job Created Time</dt>
+      <dd class="col-sm-9">{{job.createdTime | date: 'medium'}}</dd>
+      <dt *ngIf="job.status == status.Successful" class="col-sm-3">Job Finish Time</dt>
+      <dd *ngIf="job.status == status.Successful" class="col-sm-9">{{job.finishedTime | date: 'medium'}}</dd>
+      <dt class="col-sm-3">Number of Tasks</dt>
+      <dd class="col-sm-9">{{job.taskNumber}}</dd>
+      <dt class="col-sm-3">Status</dt>
+      <dd class="col-sm-9">{{job.status}}</dd>
+    </dl>
+  </div>
+  <div *ngIf="tasks">
+    <h3> Tasks </h3>
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th style="width:30%;">Arguments</th>
+            <th>Output Files</th>
+            <th>Log Files</th>
+            <th>Standard Output</th>
+            <th>Standard Error</th>
+            <th>Finish Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let task of tasks; index as i">
+            <td>{{i + 1}}</td>
+            <td>
+              <dl class="row" style="margin: 0px 0px 0px 0px">
+                  <ng-container *ngFor="let argument of task.arguments | keyvalue">
+                    <dt class="col-sm-2" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
+                    <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
+                </ng-container>
+              </dl>
+            </td>
+            <td>
+              <ul>
+                <li *ngFor="let filename of task.outputFilename">
+                  {{filename}}
+                </li>
+              </ul>
+            </td>
 
-        <td>
-          <ul>
-            <li *ngFor="let filename of task.outputFilename">
-              {{filename}}
-            </li>
-          </ul>
-        </td>
+            <td>
+              <ul>
+                <li *ngFor="let filename of task.logFilename">
+                  {{filename}}
+                </li>
+              </ul>
+            </td>
 
-        <td>
-          <ul>
-            <li *ngFor="let filename of task.logFilename">
-              {{filename}}
-            </li>
-          </ul>
-        </td>
+            <td>{{task.stdout}}</td>
 
-        <td>{{task.stdout}}</td>
+            <td>{{task.stderr}}</td>
 
-        <td>{{task.stderr}}</td>
+            <td *ngIf="task.status == status.Successful">{{task.finishTime | date: 'medium'}}</td>
+            <td *ngIf="task.status != status.Successful"></td>
 
-        <td>{{task.finishTime | date: 'medium'}}</td>
-
-        <td>{{task.status}} </td>
-      </tr>
-      </tbody>
-    </table>
+            <td>{{task.status}} </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

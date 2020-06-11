@@ -1,9 +1,8 @@
 import { Component, OnInit} from '@angular/core';
+import { Router } from '@angular/router';
 
-import { SubmitTaskComponent } from '../submit-task/submit-task.component'
 import { TaskInfo } from '../task-info'
-
-import { Task } from '../task'
+import { JobService } from "../job.service";
 
 @Component({
   selector: 'app-submit-job',
@@ -18,24 +17,33 @@ export class SubmitJobComponent implements OnInit{
   chosenTool: string;
   toolNames: string[];
 
-  constructor() { }
+  constructor(private jobService: JobService,
+              private router: Router) { }
 
   ngOnInit() {
     this.isAdding = false;
-    this.toolNames = ['ooanalzyer'];
+    this.toolNames = ['', 'ooanalzyer'];
     this.tasks = [];
     this.chosenTool = '';
   }
 
   submitTask(newTask: TaskInfo) {
+    console.log(newTask);
     this.tasks.push(newTask);
     this.isAdding = false;
     this.chosenTool = '';
   }
 
+  deleteTask(id: number) {
+    this.tasks.splice(id, 1);
+  }
+
   displayAddTaskPage() {
-    if (this.chosenTool != '') {
-      this.isAdding = true;
-    }
+    this.isAdding = this.chosenTool != '';
+  }
+
+  submitJob() {
+    this.jobService.submitJob(this.name, this.comment, this.tasks).subscribe();
+    this.router.navigate(['/job-list']);
   }
 }

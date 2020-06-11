@@ -16,25 +16,33 @@
     <h4>Task List</h4>
     <table class="table table-striped">
       <thead>
-      <tr>
-        <td>Task ID</td>
-        <td>Tool Name</td>
-        <td>Arguments</td>
-      </tr>
+        <tr>
+          <th>Task ID</th>
+          <th>Tool Name</th>
+          <th>Arguments</th>
+          <th>Operations</th>
+        </tr>
       </thead>
       <tbody *ngIf='tasks.length > 0'>
-      <tr *ngFor='let task of tasks; index as i'> 
-        <td>{{i + 1}}</td>
-        <td>{{task.toolName}}</td>
-        <td>
-          <dl class="row" style="margin: 0px 0px 0px 0px">
-              <ng-container *ngFor="let argument of task.arguments | keyvalue"> 
-                <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
-                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
-            </ng-container>
-          </dl>
-        </td>
-      </tr>
+        <tr *ngFor='let task of tasks; index as i'>
+          <td>{{i + 1}}</td>
+          <td>{{task.toolName}}</td>
+          <td>
+            <dl class="row" style="margin: 0px 0px 0px 0px">
+                <ng-container *ngFor="let argument of task.arguments | keyvalue">
+                  <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
+                  <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
+              </ng-container>
+            </dl>
+          </td>
+          <td>
+            <ul>
+              <li>
+                <button type="button" class="btn btn-primary" style="width:100px" (click)="deleteTask(i)">Delete</button>
+              </li>
+            </ul>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -50,4 +58,7 @@
 
       <app-submit-task *ngIf="isAdding" [toolName]="chosenTool" (submission)="submitTask($event)"></app-submit-task>
   </div>
+   <div>
+     <button type="button" class="btn btn-primary" style="width:100px" (click)="submitJob()">Submit</button>
+   </div>
 </div>
