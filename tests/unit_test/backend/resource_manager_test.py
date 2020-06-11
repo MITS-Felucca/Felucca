@@ -3,6 +3,7 @@ import filecmp
 import json
 import os
 import sys
+import time
 import unittest
 from datetime import datetime
 
@@ -137,25 +138,23 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(rebuilt_task.arguments, task_arguments)
         self.assertEqual(rebuilt_task.tool_type, task_tool_type)
 
-        # TODO: Check the contents of files through new interfaces
-
-        # with open("../../sample_output/output.json", "rb") as f:
-        #     output_json_bytes = f.read()
-        # with open("../../sample_output/facts", "rb") as f:
-        #     facts_bytes = f.read()
-        # with open("../../sample_output/results", "rb") as f:
-        #     results_bytes = f.read()
+        with open("../../sample_output/output.json", "rb") as f:
+            output_json_bytes = base64.b64encode(f.read()).decode('utf-8')
+        with open("../../sample_output/facts", "rb") as f:
+            facts_bytes = base64.b64encode(f.read()).decode('utf-8')
+        with open("../../sample_output/results", "rb") as f:
+            results_bytes = base64.b64encode(f.read()).decode('utf-8')
+        self.assertEqual(self.manager.get_output_file(task_id, "output.json"), output_json_bytes)
+        self.assertEqual(self.manager.get_log_file(task_id, "facts"), facts_bytes)
+        self.assertEqual(self.manager.get_log_file(task_id, "results"), results_bytes)
 
         self.assertEqual(rebuilt_task.output, ["output.json"])
         self.assertEqual(rebuilt_task.log, ["facts", "results"])
-        # self.assertEqual(rebuilt_task.log["results"], results_bytes)
         self.assertEqual(rebuilt_task.stdout, stdout)
         self.assertEqual(rebuilt_task.stderr, stderr)
         self.assertEqual(rebuilt_task.status, Status.Pending)
 
         # Remove the inserted job & task after test
-        # self.manager.remove_job_by_id(job_id)
-        # self.manager.remove_tasks_by_job_id(job_id)
         self.manager.remove_all_jobs_and_tasks()
     
     def test_update_task_status(self):
@@ -287,7 +286,6 @@ class TestResourceManager(unittest.TestCase):
         # Read the input json and store it
         with open("../../sample_output/input.json", "r") as f:
             input_json = json.loads(f.read())
-        print(type(input_json))
         job = self.manager.save_new_job_and_tasks(input_json)
 
         # Check the job attributes
@@ -301,7 +299,6 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(task.arguments, task_json["Arguments"])
 
         # Check the stored file
-        print(task.files)
         for filename, path in task.files.items():
             with open(path, "rb") as f:
                 saved_file = f.read()
@@ -312,19 +309,87 @@ class TestResourceManager(unittest.TestCase):
         # Remove the directory
         os.rmdir(os.path.join("/tmp/Felucca", task.task_id))
 
-    def test_insert_sample_jobs(self):
-        """This method is used to insert some sample jobs & tasks in the database.
-        So that we can get a non-empty job list through get_job_list().
+    def test_job_list(self):
+        # Remove previous jobs & tasks
+        self.manager.remove_all_jobs_and_tasks()
 
-        Uncomment the last line to clean all jobs & tasks after use.
-        """
         # Read the input json and store it
         with open("../../sample_output/input.json", "r") as f:
             input_json = json.loads(f.read())
-        for i in range(3):
-            self.manager.save_new_job_and_tasks(input_json)
+        job = self.manager.save_new_job_and_tasks(input_json)
+
+        # Build the job json
+        job_dict = {
+            "Name": job.name,
+            "Comment": job.comment,
+            "Created_Time": time.mktime(job.created_time.timetuple()),
+            "Finished_Time": 0,
+            "Task_Number": 1,
+            "Status": job.status.name,
+            "ID": job.job_id,
+            "Tasks": [],
+        }
         
+        job_list = self.manager.get_job_list()
+        self.assertEqual(job_list, [job_dict])
+
+        # Remove all jobs & tasks
+        self.manager.remove_all_jobs_and_tasks()
+    
+    def test_get_job_info(self):
         # Remove previous jobs & tasks
+        self.manager.remove_all_jobs_and_tasks()
+
+        # Read the input json and store it
+        with open("../../sample_output/input.json", "r") as f:
+            input_json = json.loads(f.read())
+        job = self.manager.save_new_job_and_tasks(input_json)
+
+        # Save the result of the task
+        task_id = job.tasks[0].task_id
+        stdout = "sample stdout"
+        stderr = "sample stderr"
+        output_file_list = ["../../sample_output/output.json"]
+        log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
+        self.manager.save_result(task_id, output_file_list, log_file_list, stdout, stderr)
+
+        # Mark task as finished
+        self.manager.mark_task_as_finished(task_id)
+
+        job_info = self.manager.get_job_info(job.job_id)
+
+        # Build the task json
+        task_dict = {
+            "Arguments": {
+                "-f": "oo.exe",
+                "-R": "results",
+                "-j": "output.json",
+                "-F": "facts",
+            },
+            'Output': ['output.json'],
+            'Log': ['facts', 'results'],
+            'Stdout': 'sample stdout',
+            'Stderr': 'sample stderr',
+            'Finished_Time': job_info["Tasks"][0]["Finished_Time"],
+            'Status': Status.Successful.name,
+            'ID': job_info["Tasks"][0]["ID"],
+        }
+
+        # Build the job json
+        job_dict = {
+            "Name": job.name,
+            "Comment": job.comment,
+            "Created_Time": time.mktime(job.created_time.timetuple()),
+            "Finished_Time": 0,
+            "Task_Number": 1,
+            "Status": job.status.name,
+            "ID": job.job_id,
+            "Tasks": [task_dict],
+        }
+
+        self.assertEqual(job_info, job_dict)
+
+        # Remove all jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
 
 

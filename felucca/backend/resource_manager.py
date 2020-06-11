@@ -83,11 +83,7 @@ class ResourceManager(object):
         logger = Logger().get()
         logger.debug("start get_job_list")
 
-        print(os.getcwd())
-
         job_object_list = self.get_all_jobs_with_tasks()
-        print(job_object_list)
-        print(len(job_object_list))
 
         job_list = []
         for job in job_object_list:
@@ -418,8 +414,6 @@ class ResourceManager(object):
             # Find the job using id
             condition = {"_id": ObjectId(job_id)}
             job_doc = self.__jobs_collection.find_one(condition)
-
-            print(job_doc)
     
             # Rebuild the Job object from the query result
             job = Job(job_doc["name"], job_doc["comment"], job_doc["created_time"], status=Status(job_doc["status"]))

@@ -111,16 +111,16 @@ def submit_job():
     return {"status": "ok"}
 
 
-@app.route("/job/<id>", methods=['GET'])
+@app.route("/job-info/<id>/json", methods=['GET'])
 def get_job(id):
-    """Test command: curl --request GET http://localhost:5000/job/<id>
+    """Test command: curl --request GET http://localhost:5000/job-info/<id>
 
     Test steps:
         1. Modify line 14 & 15 of this file to use database "test"
         2. Run "curl --request GET http://localhost:5000/clean-all"
         3. Run "curl --request GET http://localhost:5000/generate-sample"
         4. Run "curl --request GET http://localhost:5000/job-list/json" to get the list
-        5. Run "curl --request GET http://localhost:5000/job/<id>" where the id is of the first job in the list
+        5. Run "curl --request GET http://localhost:5000/job-info/<id>/json" where the id is of the first job in the list
         6. Run "curl --request GET http://localhost:5000/clean-all" after use
         7. Remember to modify the name of the database
     """
