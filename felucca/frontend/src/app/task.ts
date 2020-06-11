@@ -1,7 +1,7 @@
 import { Status } from "./status.enum";
 
 export interface Task {
-  commandInput: string,
+  arguments: {[key: string]: string},
   inputFilename: string[],
   outputFilename: string[],
   logFilename: string[],

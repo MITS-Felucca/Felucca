@@ -8,15 +8,13 @@ export class JobService {
   constructor() { }
 
   getJob(id: string): Job {
-    // TODO call real back end API
-    return {jobName: 'job-1',
-            comment: 'test job',
-            createdTime: new Date(),
-            taskNumber: 1,
-            jobID: id,
-            status: Status.Pending}
+    return {jobName: 'job-1', 
+            comment: 'test job', 
+            createdTime: new Date(), 
+            taskNumber: 2, 
+            jobID: id, 
+            status: Status['Pending']}
   }
-
   getAllJob(): Job[] {
     // TODO call real back end API
     return [

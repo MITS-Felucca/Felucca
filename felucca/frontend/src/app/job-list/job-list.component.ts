@@ -5,7 +5,7 @@ import { JobService } from '../job.service';
 import { Job } from '../job';
 
 @Component({
-  selector: 'app-job-info',
+  selector: 'app-job-list',
   templateUrl: './job-list.component.html',
   styleUrls: ['./job-list.component.css']
 })
