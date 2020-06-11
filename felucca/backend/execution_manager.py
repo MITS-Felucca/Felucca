@@ -4,7 +4,6 @@ import docker
 from threading import Thread
 from common.singleton import Singleton
 from resource_manager import ResourceManager
-from common.status import Status
 from logger import Logger
 
 CONTAINER_PORT = '5000'
@@ -78,7 +77,8 @@ class ExecutionManager(object):
             log_path[index] = os.path.join(path, log_path[index][1:])
             
         ResourceManager().save_result(task_id, output_path, log_path, stdout, stderr)
-        ResourceManager().update_task_status(task_id, Status[status])
+        #ResourceManager().update_task_status(task_id, Status[status])
+        ResourceManager().mark_task_as_finished(task_id);
         self.id_to_task_container.pop(task_id, None)
         
         
