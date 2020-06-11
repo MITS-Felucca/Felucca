@@ -109,6 +109,7 @@ def submit_job():
     """Test command: curl -H "Content-Type: application/json" --request POST -d @/vagrant/tests/sample_output/input.json http://localhost:5000/job"
     """
     request_json = request.get_json()
+    print(request.get_json())
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
     JobManager().submit_job(job)
     return {"status": "ok"}
@@ -156,9 +157,11 @@ def get_result():
     JobManager().finish_task(request.form['task_id'])
     return {'is_received': True}
 
+
 @app.route("/task/<task_id>", methods=['GET'])
 def get_task(task_id):
     return {'command_line_input': ExecutionManager().get_command_line_input(task_id)}
+
 
 @app.route("/task/<task_id>/<file_type>/<file_name>/json", methods=['GET'])
 def get_task_file(task_id, file_type, file_name):
@@ -175,6 +178,7 @@ def get_task_file(task_id, file_type, file_name):
         return {"Content": file}
     else:
         abort(404)
+
 
 @app.route("/debug/job-list")
 def debug_get_job_list():

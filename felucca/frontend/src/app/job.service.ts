@@ -12,7 +12,7 @@ import { TaskInfo } from './task-info';
 @Injectable()
 export class JobService {
 
-  private backEndURL = 'Http://localhost:5000/debug';
+  private backEndURL = 'http://localhost:5000';
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -21,7 +21,7 @@ export class JobService {
   constructor(private http: HttpClient) { }
 
   getJobList(): Observable<Job[]> {
-    const url = `${this.backEndURL}/job-list`;
+    const url = `${this.backEndURL}/job-list/json`;
     return this.http.get(url).pipe(map(data => {
       let jobs = [];
       for (let job of (data as any).Job_List) {
@@ -42,7 +42,7 @@ export class JobService {
   }
 
   getJobInfoById(id: string): Observable<{job: Job, tasks: Task[]}> {
-    const url = `${this.backEndURL}/job-info/${id}`;
+    const url = `${this.backEndURL}/job-info/${id}/json`;
     return this.http.get(url).pipe(map(data => {
       let jobInfo = {
         job: {
@@ -74,7 +74,7 @@ export class JobService {
   }
 
   submitJob(jobName: string, jobComment: string, tasks: TaskInfo[]): Observable<boolean> {
-    let job = {Name: jobName, Comment: jobComment, Tasks: []};
+    let job = {Job_Name: jobName, Job_Comment: jobComment, Tasks: []};
     for (let task of tasks) {
       job.Tasks.push({Tool_ID: 1, Files: task.files, Arguments: task.arguments})
     }
