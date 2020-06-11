@@ -6,6 +6,7 @@
       <th>Job ID</th>
       <th>Comment</th>
       <th>Created Time</th>
+      <th>Finished Time</th>
       <th>Number of Tasks</th>
       <th>Status</th>
     </tr>
@@ -14,6 +15,8 @@
       <td>{{job.jobID}}</td>
       <td>{{job.comment}}</td>
       <td>{{job.createdTime | date: 'medium'}}</td>
+      <td *ngIf="job.status == status.Successful">{{job.finishedTime | date: 'medium'}}</td>
+      <td *ngIf="job.status != status.Successful"></td>
       <td>{{job.taskNumber}}</td>
       <td>{{job.status}}</td>
     </tr>

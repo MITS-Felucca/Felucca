@@ -1,5 +1,7 @@
 from flask import Flask
 from flask import request
+from flask import jsonify
+
 from time import sleep
 from execution_manager import ExecutionManager
 from job_manager import JobManager
@@ -72,6 +74,100 @@ def get_result():
 @app.route("/task/<task_id>", methods=['GET'])
 def get_task(task_id):
     return {'command_line_input': ExecutionManager().get_command_line_input(task_id)}
+
+
+@app.route("/debug/job-list")
+def debug_get_job_list():
+    response = jsonify(
+        {
+            "Job_List": [
+                {
+                    "Comment": "Just for test0",
+                    "Created_Time": 1591826345.0,
+                    "Finished_Time": 0,
+                    "ID": "5ee157a95113f5b43b39a3ce",
+                    "Name": "Test_job0",
+                    "Status": "Failed",
+                    "Task_Number": 2,
+                    "Tasks": []
+                },
+                {
+                    "Comment": "Just for test1",
+                    "Created_Time": 1591826345.0,
+                    "Finished_Time": 0,
+                    "ID": "5ee157a95113f5b43b39a3d2",
+                    "Name": "Test_job1",
+                    "Status": "Pending",
+                    "Task_Number": 0,
+                    "Tasks": []
+                },
+                {
+                    "Comment": "Just for test2",
+                    "Created_Time": 1591826345.0,
+                    "Finished_Time": 0,
+                    "ID": "5ee157a95113f5b43b39a3d4",
+                    "Name": "Test_job2",
+                    "Status": "Pending",
+                    "Task_Number": 0,
+                    "Tasks": []
+                }
+            ]
+        })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+
+@app.route("/debug/job-info/<job_id>")
+def debug_get_job_info(job_id):
+    response = jsonify(
+        {
+            "Comment": "Just for test0",
+            "Created_Time": 1591828405.0,
+            "Finished_Time": 0,
+            "ID": "5ee15fb507b312261cd65a2f",
+            "Name": "Test_job0",
+            "Status": "Failed",
+            "Task_Number": 2,
+            "Tasks": [
+                {
+                    "Arguments": {
+                        "-F": "facts",
+                        "-R": "results",
+                        "-f": "oo.exe",
+                        "-j": "output.json"
+                    },
+                    "Finished_Time": 1591828405.0,
+                    "ID": "5ee15fb507b312261cd65a30",
+                    "Log": [
+                        "facts",
+                        "results"
+                    ],
+                    "Output": [
+                        "output.json"
+                    ],
+                    "Status": "Successful",
+                    "Stderr": "sample stderr",
+                    "Stdout": "sample stdout"
+                },
+                {
+                    "Arguments": {
+                        "-F": "facts",
+                        "-R": "results",
+                        "-f": "oo.exe",
+                        "-j": "output.json"
+                    },
+                    "Finished_Time": 0,
+                    "ID": "5ee15fb507b312261cd65a31",
+                    "Log": [],
+                    "Output": [],
+                    "Status": "Failed",
+                    "Stderr": "",
+                    "Stdout": ""
+                }
+            ]
+        })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 
 if __name__ == '__main__':

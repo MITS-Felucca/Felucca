@@ -13,22 +13,32 @@
   <div *ngIf='tasks.length > 0'>
     <h4>Tasks:</h4>
     <table>
-      <tr>
-        <td>Task ID</td>
-        <td>Tool Name</td>
-        <td>Arguments</td>
-      </tr>
+      <thead>
+        <tr>
+          <th>Task ID</th>
+          <th>Tool Name</th>
+          <th>Arguments</th>
+          <th>Operations</th>
+        <tr>
+      </thead>
 
-      <tr *ngFor='let task of tasks; index as i'> 
+      <tr *ngFor='let task of tasks; index as i'>
         <td>{{i + 1}}</td>
         <td>{{task.toolName}}</td>
         <td>
-        <ul>
-          <li *ngFor="let argument of task.arguments | keyvalue">
-            {{argument.key}} : {{argument.value}}
-          </li>
-        </ul>
-      </td>
+          <ul>
+            <li *ngFor="let argument of task.arguments | keyvalue">
+              {{argument.key}} : {{argument.value}}
+            </li>
+          </ul>
+        </td>
+        <td>
+          <ul>
+            <li>
+              <button type="button" (click)="deleteTask(i)">delete</button>
+            </li>
+          </ul>
+        </td>
       </tr>
     </table>
   </div>

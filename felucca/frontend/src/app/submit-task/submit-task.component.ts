@@ -12,11 +12,11 @@ import { TaskInfo } from '../task-info';
 export class SubmitTaskComponent implements OnChanges {
   @Input() toolName: string;
   @Output() submission = new EventEmitter<TaskInfo>();
-  arguments: {[key: string]: [number, string, string]}
+  arguments: {[key: string]: [number, string, string]};
+  files: {[key: string]: string} = {};
   form: FormGroup;
-  payload = '';
   argumentType = ArgumentType;
-  constructor() { 
+  constructor() {
     this.refreshForm();
   }
 
@@ -26,10 +26,28 @@ export class SubmitTaskComponent implements OnChanges {
     }
   }
 
+  onFileChange(event, key) {
+  let reader = new FileReader();
+
+  // TODO: validate file
+
+  if (event.target.files && event.target.files.length) {
+    const [file] = event.target.files;
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      if (this.form.controls[key].value != '') {
+        delete this.files[this.form.controls[key].value];
+      }
+      this.files[file.name] = (<string> reader.result).split(',')[1];
+      this.form.patchValue({[key]: file.name});
+    };
+  }
+}
+
   onSubmit() {
-    let taskInfo = {toolName: this.toolName, arguments: this.form.getRawValue(), files: null}
-    this.payload += JSON.stringify(this.form.getRawValue());
-    this.submission.emit(taskInfo)
+
+    let taskInfo = {toolName: this.toolName, arguments: this.form.getRawValue(), files: this.files};
+    this.submission.emit(taskInfo);
   }
 
   refreshForm() {
@@ -41,13 +59,13 @@ export class SubmitTaskComponent implements OnChanges {
                       '-n' : [ArgumentType.InputText, '--new-method', 'function at address is a new() method']};
     let keys = {}
     for (let key in this.arguments) {
-      if (this.arguments[key][0] == ArgumentType.OutputFile || 
+      if (this.arguments[key][0] == ArgumentType.OutputFile ||
           this.arguments[key][0] == ArgumentType.InputFlag) {
             keys[key] = new FormControl(false);
       } else if (this.arguments[key][0] == ArgumentType.InputText) {
         keys[key] = new FormControl('');
       } else {
-        keys[key] = new FormControl();
+        keys[key] = new FormControl('');
       }
     }
     this.form = new FormGroup(keys)

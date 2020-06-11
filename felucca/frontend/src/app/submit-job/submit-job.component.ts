@@ -22,20 +22,23 @@ export class SubmitJobComponent implements OnInit{
 
   ngOnInit() {
     this.isAdding = false;
-    this.toolNames = ['ooanalzyer'];
+    this.toolNames = ['', 'ooanalzyer'];
     this.tasks = [];
     this.chosenTool = '';
   }
 
   submitTask(newTask: TaskInfo) {
+    console.log(newTask);
     this.tasks.push(newTask);
     this.isAdding = false;
     this.chosenTool = '';
   }
 
+  deleteTask(id: number) {
+    this.tasks.splice(id, 1);
+  }
+
   displayAddTaskPage() {
-    if (this.chosenTool != '') {
-      this.isAdding = true;
-    }
+    this.isAdding = this.chosenTool != '';
   }
 }
