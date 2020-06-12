@@ -4,6 +4,7 @@
     <thead>
       <tr>
         <th>Job ID</th>
+        <th>Job Name</th>
         <th>Comment</th>
         <th>Created Time</th>
         <th>Finished Time</th>
@@ -14,6 +15,7 @@
     <tbody>
       <tr *ngFor="let job of jobs" routerLink="/job-info/{{job.jobID}}">
         <th>{{job.jobID}}</th>
+        <td>{{job.jobName}}</td>
         <td>{{job.comment}}</td>
         <td>{{job.createdTime | date: 'medium'}}</td>
         <td *ngIf="job.status == status.Successful">{{job.finishedTime | date: 'medium'}}</td>

@@ -36,7 +36,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let task of tasks; index as i">
-            <td>{{i + 1}}</td>
+            <th>{{i + 1}}</th>
             <td>
               <dl class="row" style="margin: 0px 0px 0px 0px">
                   <ng-container *ngFor="let argument of task.arguments | keyvalue">
