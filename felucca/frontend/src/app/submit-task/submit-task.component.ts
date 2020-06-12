@@ -1,5 +1,5 @@
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { ArgumentType } from '../argument-type.enum';
 import { TaskInfo } from '../task-info';
@@ -15,6 +15,7 @@ export class SubmitTaskComponent implements OnChanges {
   arguments: {[key: string]: [number, string, string]};
   files: {[key: string]: string} = {};
   form: FormGroup;
+  fileUploaded: boolean = false;
   argumentType = ArgumentType;
   constructor() {
     this.refreshForm();
@@ -29,11 +30,10 @@ export class SubmitTaskComponent implements OnChanges {
   onFileChange(event, key) {
   let reader = new FileReader();
 
-  // TODO: validate file
-
   if (event.target.files && event.target.files.length) {
     const [file] = event.target.files;
     reader.readAsDataURL(file);
+    this.fileUploaded = true;
     reader.onload = () => {
       if (this.form.controls[key].value != '') {
         delete this.files[this.form.controls[key].value];
@@ -65,7 +65,7 @@ export class SubmitTaskComponent implements OnChanges {
       } else if (this.arguments[key][0] == ArgumentType.InputText) {
         keys[key] = new FormControl('');
       } else {
-        keys[key] = new FormControl('');
+        keys[key] = new FormControl('', Validators.required);
       }
     }
     this.form = new FormGroup(keys)

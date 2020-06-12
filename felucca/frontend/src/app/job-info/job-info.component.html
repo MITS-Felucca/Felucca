@@ -36,7 +36,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let task of tasks; index as i">
-            <td>{{i + 1}}</td>
+            <th>{{i + 1}}</th>
             <td>
               <dl class="row" style="margin: 0px 0px 0px 0px">
                   <ng-container *ngFor="let argument of task.arguments | keyvalue">
@@ -47,7 +47,7 @@
             </td>
             <td>
               <ul>
-                <li *ngFor="let filename of task.outputFilename" (click)="goTo(task.taskID, 'output' ,filename)">
+                <li *ngFor="let filename of task.outputFilename" (click)="goToFile(task.taskID, 'output', filename);" routerLinkActive="active-link" class="link">
                   {{filename}}
                 </li>
               </ul>
@@ -55,15 +55,15 @@
 
             <td>
               <ul>
-                <li *ngFor="let filename of task.logFilename" (click)="goTo(task.taskID, 'log' ,filename)">
+                <li *ngFor="let filename of task.logFilename" (click)="goToFile(task.taskID, 'log', filename)" routerLinkActive="active-link" class="link">
                   {{filename}}
                 </li>
               </ul>
             </td>
 
-            <td>{{task.stdout}}</td>
+            <td class="text">{{task.stdout}}</td>
 
-            <td>{{task.stderr}}</td>
+            <td class="text">{{task.stderr}}</td>
 
             <td *ngIf="task.status == status.Successful">{{task.finishTime | date: 'medium'}}</td>
             <td *ngIf="task.status != status.Successful"></td>

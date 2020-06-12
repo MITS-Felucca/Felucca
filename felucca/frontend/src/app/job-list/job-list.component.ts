@@ -27,8 +27,4 @@ export class JobListComponent implements OnInit {
   getJobList(): void {
     this.jobService.getJobList().subscribe(jobs => { this.jobs = jobs; })
   }
-
-  goTo(jobID: String): void {
-    
-  }
 }
