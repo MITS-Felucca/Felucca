@@ -160,7 +160,8 @@ def get_result():
 
 @app.route("/task/<task_id>", methods=['GET'])
 def get_task(task_id):
-    return {'command_line_input': ExecutionManager().get_command_line_input(task_id)}
+    command = ExecutionManager().get_command_line_input(task_id)
+    return {'command_line_input': command}
 
 
 @app.route("/task/<task_id>/<file_type>/<file_name>/json", methods=['GET'])
@@ -175,7 +176,7 @@ def get_task_file(task_id, file_type, file_name):
         file = ResourceManager(db_name).get_log_file(task_id, file_name)
         if file is None:
             abort(404)
-        return {"Content": file}
+        return{"Content": file}
     else:
         abort(404)
 
@@ -270,7 +271,6 @@ def debug_get_job_info(job_id):
 
 @app.route("/debug/job", methods=[ "POST" ])
 def debug_job_submission():
-    print(request.get_json())
     return {"Status": "ok"}
 
 

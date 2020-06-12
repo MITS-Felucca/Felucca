@@ -31,8 +31,7 @@ class ExecutionManager(object):
             stderr (byte[]): the output in std error
             stdout (byte[]): the output in std out
         """
-        
-        
+
         logger = Logger().get()
         logger.debug(f"start save_result: task_id: {task_id} status: {status}")
         output_path = self.id_to_task_container[task_id][0].output
@@ -42,14 +41,13 @@ class ExecutionManager(object):
         # get result from container
         container.exec_run("tar -cvf result.docker %s %s" % (" ".join(output_path), " ".join(log_path)))
         bits, stat = container.get_archive("result.docker")
-        
 
         path = f"/tmp/Felucca/result/{task_id}"
-        print(path)
+
         if not os.path.exists(path):
             os.makedirs(path)
             
-        file = open(f"{path}/result", "wb+") 
+        file = open(f"{path}/result", "wb+")
         for chunk in bits:
             file.write(chunk)
         file.close()
@@ -70,11 +68,12 @@ class ExecutionManager(object):
         container.stop()
         container.remove()
 
-                
+
         for index in range(len(output_path)):
-            output_path[index] = os.path.join(path, output_path[index][1:])
+            output_path[index] = os.path.join(path, output_path[index])
         for index in range(len(log_path)):
-            log_path[index] = os.path.join(path, log_path[index][1:])
+            log_path[index] = os.path.join(path, log_path[index])
+
             
         ResourceManager().save_result(task_id, output_path, log_path, stdout, stderr)
         #ResourceManager().update_task_status(task_id, Status[status])
@@ -99,42 +98,34 @@ class ExecutionManager(object):
         logger = Logger().get()
         task.output = []
         task.log = []
+        tmp_arguments = {}
+
         for task_key in task.arguments:
-            if task_key in ["-f","-s"]:
+            if task_key in ["-f", "-s"]:
                 for file_key in task.files:
                     if file_key == task.arguments[task_key]:
-                        task.arguments[task_key] = task.files[file_key]
+                        tmp_arguments[task_key] = task.files[file_key]
                         break
            
             elif task_key in ["-R"]:
                 if(task.arguments[task_key]):
-                    task.arguments[task_key] = "result"
-                    task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
-                    task.log.append(task.arguments[task_key])
-                else:
-                    del task.arguments[task_key]
-                    continue
+                    tmp_arguments[task_key] = "results"
+                    task.log.append(tmp_arguments[task_key])
                 
 
             elif task_key in ["-F"]:
                 if(task.arguments[task_key]):
-                    task.arguments[task_key] = "fact"
-                    task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
-                    task.log.append(task.arguments[task_key])
-                else:
-                    del task.arguments[task_key]
-                    continue
+                    tmp_arguments[task_key] = "facts"
+                    task.log.append(tmp_arguments[task_key])
 
 
                 
             elif task_key in ["-j"]:
                 if(task.arguments[task_key]):
-                    task.arguments[task_key] = "output.json"
-                    task.arguments[task_key] = os.path.join(f"/tmp/Felucca/{task.task_id}/",task.arguments[task_key])
-                    task.output.append(task.arguments[task_key])
-                else:
-                    del task.arguments[task_key]
-                    continue
+                    tmp_arguments[task_key] = "output.json"
+                    task.output.append(tmp_arguments[task_key])
+
+        task.arguments = tmp_arguments
 
         logger.debug(f"for task({task.task_id}),the task.arguments is {task.arguments}")
     

@@ -47,7 +47,7 @@
             </td>
             <td>
               <ul>
-                <li *ngFor="let filename of task.outputFilename">
+                <li *ngFor="let filename of task.outputFilename" (click)="goTo(task.taskID, 'output' ,filename)">
                   {{filename}}
                 </li>
               </ul>
@@ -55,7 +55,7 @@
 
             <td>
               <ul>
-                <li *ngFor="let filename of task.logFilename">
+                <li *ngFor="let filename of task.logFilename" (click)="goTo(task.taskID, 'log' ,filename)">
                   {{filename}}
                 </li>
               </ul>
