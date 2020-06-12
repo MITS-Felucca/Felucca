@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { DOCUMENT } from '@angular/common';
 
 import { Job } from '../job';
 import { Task } from '../task';
 import { JobService } from '../job.service';
-import { TaskService } from '../task.service';
+import { Status } from "../status.enum";
 
 @Component({
   selector: 'app-job-info',
@@ -15,24 +16,24 @@ export class JobInfoComponent implements OnInit {
   job: Job;
   tasks: Task[];
   jobID: string;
+  status = Status;
 
   constructor(
+    @Inject(DOCUMENT) private document: Document,
     private route: ActivatedRoute,
     private jobService: JobService,
-    private taskService: TaskService
-  ) { }
+  ) {
+  }
 
   ngOnInit() {
     this.jobID = this.route.snapshot.paramMap.get('jobID');
-    this.getJob();
-    this.getTasks();
+    this.jobService.getJobInfoById(this.jobID).subscribe(jobInfo => {
+      this.job = jobInfo.job;
+      this.tasks = jobInfo.tasks;
+    });
   }
 
-  getJob(): void {
-    this.job = this.jobService.getJob(this.jobID);
-  }
-
-  getTasks(): void {
-    this.tasks = this.taskService.getTasks(this.jobID);
+  goTo(taskID: string, type: string, fileName: string) {
+    this.document.location.href = `http://localhost:5000/task/${taskID}/${type}/${fileName}/json`;
   }
 }

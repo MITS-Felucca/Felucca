@@ -1,0 +1,38 @@
+<div class="card">
+  <h4 class="card-header"> New Task </h4>
+  <div class="card-body">
+      <form (ngSubmit) = "onSubmit()" [formGroup]="form">
+        <div>
+          <label>Tool Name</label> <strong> {{toolName}}</strong>
+        </div>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col"> Flag </th>
+              <th scope="col"> Comment </th>
+              <th scope="col"> input </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let argument of arguments | keyvalue">
+              <td> {{argument.key}}
+                <span *ngIf="argument.value[1]">
+                  ({{argument.value[1]}})
+                </span>
+              </td>
+              <td> {{argument.value[2]}} </td>
+              <td [ngSwitch]="argument.value[0]">
+                <input *ngSwitchCase="argumentType.InputFile" type="file" (change) = "onFileChange($event, argument.key)">
+                <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
+                <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFlag" type="checkbox">
+                <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputText" type="Text">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="form-row">
+            <button type="submit" [disabled]="!form.valid" class="btn btn-primary" style="width:100px">Save</button>
+        </div>
+    </form>
+  </div>
+</div>

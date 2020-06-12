@@ -1,22 +1,27 @@
 <div>
-  <h3> Jobs </h3>
-  <table>
+  <h2> Jobs </h2>
+  <table class="table table-striped table-hover">
     <thead>
-    <tr>
-      <th>Job ID</th>
-      <th>Comment</th>
-      <th>Created Time</th>
-      <th>Number of Tasks</th>
-      <th>Status</th>
-    </tr>
+      <tr>
+        <th>Job ID</th>
+        <th>Comment</th>
+        <th>Created Time</th>
+        <th>Finished Time</th>
+        <th>Number of Tasks</th>
+        <th>Status</th>
+      </tr>
   </thead>
-    <tr *ngFor="let job of jobs" routerLink="/job-info/{{job.jobID}}">
-      <td>{{job.jobID}}</td>
-      <td>{{job.comment}}</td>
-      <td>{{job.createdTime | date: 'medium'}}</td>
-      <td>{{job.taskNumber}}</td>
-      <td>{{job.status}}</td>
-    </tr>
+    <tbody>
+      <tr *ngFor="let job of jobs" routerLink="/job-info/{{job.jobID}}">
+        <th>{{job.jobID}}</th>
+        <td>{{job.comment}}</td>
+        <td>{{job.createdTime | date: 'medium'}}</td>
+        <td *ngIf="job.status == status.Successful">{{job.finishedTime | date: 'medium'}}</td>
+        <td *ngIf="job.status != status.Successful"></td>
+        <td>{{job.taskNumber}}</td>
+        <td>{{job.status}}</td>
+      </tr>
+    </tbody>
   </table>
   
 </div>

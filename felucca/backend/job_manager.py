@@ -25,20 +25,24 @@ class JobManager(object):
         logger = Logger().get()
         logger.debug(f"receive job in submit_job")
 
-        job_id, tasks_id = ResourceManager().insert_new_job(new_job)
-        logger.debug(f"insert new job to ResourceManager finished, get job_id:{job_id}, tasks_id:{tasks_id}")
-        new_job.job_id = job_id
+        # job_id, tasks_id = ResourceManager().insert_new_job(new_job)
+        # logger.debug(f"insert new job to ResourceManager finished, get job_id:{job_id}, tasks_id:{tasks_id}")
+        # new_job.job_id = job_id
 
-        for task, task_id in zip(new_job.tasks, tasks_id):
-            task.task_id = task_id
-        self.job_metadata[job_id] = new_job
-        self.task_id_to_job_id[new_job.tasks[0].task_id] = new_job.job_id
+        # for task, task_id in zip(new_job.tasks, tasks_id):
+        #     task.task_id = task_id
+        self.job_metadata[new_job.job_id] = new_job
+        for task in new_job.tasks:
+            self.task_id_to_job_id[task.task_id] = new_job.job_id
+        # self.task_id_to_job_id[new_job.tasks[0].task_id] = new_job.job_id
 
         # only submit first task in this dummy implementation
         logger.debug(f"submit task to ExecutionManager, task_id={new_job.tasks[0].task_id}")
-        ExecutionManager().submit_task(new_job.tasks[0])
+        # ExecutionManager().submit_task(new_job.tasks[0])
+        for task in new_job.tasks:
+            ExecutionManager().submit_task(task)
 
-        return job_id, tasks_id
+        # return job_id, tasks_id
 
     def finish_task(self, task_id):
         """Finish task report
