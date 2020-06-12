@@ -5,3 +5,9 @@ ul {
   padding: 0px 0px;
   list-style-type: none
 }
+
+.text { white-space: pre-wrap; }
+
+.link { color: #0000EE; }
+.link:hover { text-decoration:underline }
+.link:active {color: #663366}

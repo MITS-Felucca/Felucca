@@ -43,7 +43,14 @@ export class SubmitJobComponent implements OnInit{
   }
 
   submitJob() {
+    if (!this.comment) {
+      this.comment = '';
+    }
     this.jobService.submitJob(this.name, this.comment, this.tasks).subscribe();
     this.router.navigate(['/job-list']);
+  }
+
+  isValidJob(): boolean {
+    return this.name && this.name.length > 0 && this.tasks.length > 0;
   }
 }

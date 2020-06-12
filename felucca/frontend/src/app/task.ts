@@ -8,5 +8,5 @@ export interface Task {
   stderr: string,
   finishTime: Date,
   status: Status,
-  taskID: String
+  taskID: string
 }

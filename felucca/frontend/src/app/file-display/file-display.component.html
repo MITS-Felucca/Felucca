@@ -1,0 +1,21 @@
+<div>
+  <div>
+    <dl class="row">
+      <dt class="col-sm-3">Task ID</dt>
+      <dd class="col-sm-9">{{taskID}}</dd>
+
+      <dt class="col-sm-3">File Name</dt>
+      <dd class="col-sm-9">{{filename}}</dd>
+
+      <dt class="col-sm-3">File Type</dt>
+      <dd class="col-sm-9">{{filetype}}</dd>
+
+    </dl>
+  </div>
+
+  <div *ngIf="content">
+    <span class="text">
+      {{content}}
+    </span>
+  </div>
+</div>

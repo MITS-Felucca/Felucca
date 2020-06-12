@@ -59,6 +59,6 @@
       <app-submit-task *ngIf="isAdding" [toolName]="chosenTool" (submission)="submitTask($event)"></app-submit-task>
   </div>
    <div>
-     <button type="button" class="btn btn-primary" style="width:100px" (click)="submitJob()">Submit</button>
+     <button type="button" [disabled]="!isValidJob()" class="btn btn-primary" style="width:100px" (click)="submitJob()">Submit</button>
    </div>
 </div>

@@ -545,7 +545,7 @@ class ResourceManager(object):
             if filename not in task_doc["output_files"]:
                 raise Exception(f"The file named {filename} of task {task_id} does not exist.")
             file_id = task_doc["output_files"][filename]
-            return str(self.__fs.get(file_id).read())
+            return self.__fs.get(file_id).read().decode('utf-8')
         except Exception as e:
             logger.error(e)
             return None
@@ -576,7 +576,7 @@ class ResourceManager(object):
             if filename not in task_doc["log_files"]:
                 raise Exception(f"The file named {filename} of task {task_id} does not exist.")
             file_id = task_doc["log_files"][filename]
-            return str(self.__fs.get(file_id).read())
+            return self.__fs.get(file_id).read().decode('utf-8')
         except Exception as e:
             logger.error(e)
             return None

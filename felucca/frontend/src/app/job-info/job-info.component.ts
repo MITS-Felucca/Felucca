@@ -1,6 +1,5 @@
 import {Component, Inject, OnInit} from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Job } from '../job';
 import { Task } from '../task';
@@ -19,9 +18,9 @@ export class JobInfoComponent implements OnInit {
   status = Status;
 
   constructor(
-    @Inject(DOCUMENT) private document: Document,
     private route: ActivatedRoute,
     private jobService: JobService,
+    private router: Router
   ) {
   }
 
@@ -33,7 +32,11 @@ export class JobInfoComponent implements OnInit {
     });
   }
 
-  goTo(taskID: string, type: string, fileName: string) {
-    this.document.location.href = `http://localhost:5000/task/${taskID}/${type}/${fileName}/json`;
+  goToFile(taskID: string, filetype: string, filename: string): void {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/task', taskID, filetype, filename])
+    );
+    window.open(url, '_blank');
+    
   }
 }

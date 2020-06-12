@@ -5,3 +5,7 @@ ul {
   padding: 0px 0px;
   list-style-type: none
 }
+
+button:disabled {
+  background: gray
+}
