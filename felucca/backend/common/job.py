@@ -78,18 +78,16 @@ class Job(object):
         
         Returns:
             job (Job): Job object
+            
         """
     
         job_name = json["Job_Name"]
         job_comment = json["Job_Comment"]
-        # created_time = json["Created_Time"]
         job = Job(job_name, job_comment)
         job.tasks = []
-        
         for task_dict in json["Tasks"]:
             task = Task.from_json(task_dict)
-            job.tasks.append(task)
-            
+            job.tasks.append(task)     
         return(job)
     
     @classmethod

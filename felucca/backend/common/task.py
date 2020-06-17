@@ -11,16 +11,19 @@ class Task(object):
     Task object represent a pharos executable task 
     """
 
-    def __init__(self, files={}, tool_type=0, arguments={}, finished_time=None, status=Status.Pending):
+    def __init__(self, status=Status.Pending):
         # self.__executable_file = executable_file
-        self.__files = files
-        self.__tool_type = tool_type
+        self.__files = None
+        self.__program_name = None
+        self.__tool_id = None
         # self.__command_line_input = command_line_input
-        self.__arguments = arguments
+        self.__input_file_args = None
+        self.__input_text_args = None
+        self.__input_flag_args = None
+        self.__output_file_args = None
         self.__job_id = None
         self.__task_id = None
         self.__output = None
-        self.__log = None
         self.__stdout = None
         self.__stderr = None
         self.__status = status
@@ -92,17 +95,52 @@ class Task(object):
         self.__files = val
 
     @property
-    def tool_type(self):
+    def tool_id(self):
         return self.__tool_type
-
-    @property
-    def arguments(self):
-        return self.__arguments
-
-    @arguments.setter
-    def arguments(self,val):
-        self.__arguments = val
     
+    @tool_id.setter
+    def tool_id(self,val):
+        self.__tool_id = val
+        
+    @property
+    def program_name(self):
+        return self.__program_name
+    
+    @program_name.setter
+    def program_name(self,val):
+        self.__program_name = val        
+        
+    @property
+    def input_file_args(self):
+        return self.__input_file_args
+
+    @input_file_args.setter
+    def input_file_args(self,val):
+        self.__input_file_args = val
+        
+    @property
+    def input_text_args(self):
+        return self.__input_file_args
+
+    @input_text_args.setter
+    def input_text_args(self,val):
+        self.__input_text_args = val
+    @property
+    def input_flag_args(self):
+        return self.__input_flag_args
+
+    @input_flag_args.setter
+    def input_flag_args(self,val):
+        self.__input_flag_args = val
+        
+    @property
+    def output_file_args(self):
+        return self.__output_file_args
+
+    @output_file_args.setter
+    def output_file_args(self,val):
+        self.__output_file_args = val
+
     @property
     def start_time(self):
         return self.__start_time
@@ -119,17 +157,16 @@ class Task(object):
     def finished_time(self,val):
         self.__finished_time = val
 
-    def set_result(self, output = None, log = None, stdout = None, stderr = None):
+    def set_result(self, output = None, stdout = None, stderr = None):
         """Set the result for finished task
         The execution manager will get three types of result
 
         Args:
             output: the output file in json format
-            log: the log file in txt format
             stdout: the stdout in string format
+            stderr: the stderr in string format
         """
         self.__output = output
-        self.__log = log
         self.__stdout = stdout
         self.__stderr = stderr
     
@@ -144,11 +181,14 @@ class Task(object):
         Returns:
             task (Task): Task object
         """
-        
-        # Files = task_dict["Files"]
-        tool_type = task_dict["Tool_ID"]
-        argument = task_dict["Arguments"]
-        task = Task({},tool_type,argument)
+
+        task = Task()
+        task.files = task_dict["Files"]
+        task.program_name = task_dict["Program_Name"]
+        task.input_file_args = task_dict["Input_File_Args"]
+        task.input_text_args = task_dict["Input_Text_Args"]
+        task.input_flag_args = task_dict["Input_Flag_Args"]
+        task.output_file_args = task_dict["Output_File_Args"]
         
         return task
     
