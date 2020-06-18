@@ -22,7 +22,7 @@ class BackEndTest(unittest.TestCase):
     def __init__(self, test_name, input_json_path):
         super(BackEndTest, self).__init__(test_name)
         self.input_json_path = input_json_path
-    
+
     def test_backend_pipeline(self):
         url = "http://localhost:5000/clean-all"
         response = requests.get(url=url)
