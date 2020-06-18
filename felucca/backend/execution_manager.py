@@ -35,11 +35,11 @@ class ExecutionManager(object):
         logger = Logger().get()
         logger.debug(f"start save_result: task_id: {task_id} status: {status}")
         output_path = self.id_to_task_container[task_id][0].output
-        log_path = self.id_to_task_container[task_id][0].log
+
         container = self.id_to_task_container[task_id][1]
 
         # get result from container
-        container.exec_run("tar -cvf result.docker %s %s" % (" ".join(output_path), " ".join(log_path)))
+        container.exec_run("tar -cvf result.docker %s" % (" ".join(output_path)))
         bits, stat = container.get_archive("result.docker")
 
         path = f"/tmp/Felucca/result/{task_id}"
@@ -71,20 +71,17 @@ class ExecutionManager(object):
 
         for index in range(len(output_path)):
             output_path[index] = os.path.join(path, output_path[index])
-        for index in range(len(log_path)):
-            log_path[index] = os.path.join(path, log_path[index])
+
 
             
-        ResourceManager().save_result(task_id, output_path, log_path, stdout, stderr)
-        #ResourceManager().update_task_status(task_id, Status[status])
-        ResourceManager().mark_task_as_finished(task_id);
+        #ResourceManager().save_result(task_id, output_path, stdout, stderr)
+
+        #ResourceManager().mark_task_as_finished(task_id);
         self.id_to_task_container.pop(task_id, None)
         
-        
-        
-        
 
-    def commandline_path_parser(self,task):
+
+    def set_attr(self,task):
         
         """change a task's arguments corresponding to the exe path inside tge container
         For input file, the absolute path is the same as input file outside the container, i.e. "/tmp/Felucca/{task.task_id}/{input_filename}"
@@ -97,37 +94,19 @@ class ExecutionManager(object):
         #change the input file path
         logger = Logger().get()
         task.output = []
-        task.log = []
-        tmp_arguments = {}
+        
+        task_file_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
+        if not os.path.exists(task_file_path):
+            os.makedirs(task_file_path)
 
-        for task_key in task.arguments:
-            if task_key in ["-f", "-s"]:
-                for file_key in task.files:
-                    if file_key == task.arguments[task_key]:
-                        tmp_arguments[task_key] = task.files[file_key]
-                        break
-           
-            elif task_key in ["-R"]:
-                if(task.arguments[task_key]):
-                    tmp_arguments[task_key] = "results"
-                    task.log.append(tmp_arguments[task_key])
-                
+        for key, value in task.output_file_args.items():
+            task.output_file_args[key]  = os.path.join(task_file_path,task.output_file_args[key])
+            task.output.append(task.output_file_args[key])
+            
+        for key in task.input_file_args:
+            task.input_file_args[key]  = os.path.join(task_file_path,task.input_file_args[key])
 
-            elif task_key in ["-F"]:
-                if(task.arguments[task_key]):
-                    tmp_arguments[task_key] = "facts"
-                    task.log.append(tmp_arguments[task_key])
-
-
-                
-            elif task_key in ["-j"]:
-                if(task.arguments[task_key]):
-                    tmp_arguments[task_key] = "output.json"
-                    task.output.append(tmp_arguments[task_key])
-
-        task.arguments = tmp_arguments
-
-        logger.debug(f"for task({task.task_id}),the task.arguments is {task.arguments}")
+        logger.debug(f"for task({task.task_id}),set_task_output: {task.output}")
     
     def copy_to_container(self,task,container):
         
@@ -142,6 +121,7 @@ class ExecutionManager(object):
         logger = Logger().get()
         
         for filename, path in task.files.items():
+            print(f"src and dst: {path}")
             src = path
             dst = src
 
@@ -209,16 +189,28 @@ class ExecutionManager(object):
         """
         logger = Logger().get()
         task = self.id_to_task_container[task_id][0]
-        command_line_input = ""
-        
-        if task.tool_type == 1:
-            command_line_input = command_line_input +"ooanalyzer"
-        #for key in task.arguments:
-        for key, value in task.arguments.items():
-            command_line_input = command_line_input + " " + key + " " + value
+
+        task_file_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
+        if not os.path.exists(task_file_path):
+            os.makedirs(task_file_path)
             
-        logger.debug(f"for task({task.task_id}),the command_line_input is {command_line_input}")
-        return(command_line_input)
+        cmd = task.program_name
+        for key, value in task.input_file_args.items():
+            cmd += " " + key + " " + value
+            
+        for key, value in task.input_text_args.items():
+            cmd += " " + key + " " + value
+            
+        for key, value in task.output_file_args.items():
+            cmd += " " + key + " " + value
+            
+        for value in task.input_flag_args:
+            cmd += " " + value
+        
+        print(f"cmd: {cmd}")
+            
+        logger.debug(f"for task({task.task_id}),the command_line_input is {cmd}")
+        return(cmd)
         
     def submit_task(self,task):
         """Job Manager call this method and submit a task. This method will launch the whole procedure (i.e. parse cmd, create container, run exe with phraos and insert result into Resource Manager) of the Execution Manager
@@ -232,7 +224,7 @@ class ExecutionManager(object):
         logger = Logger().get()
         logger.debug(f"receive task: task_id = {task.task_id}, job_id = {task.job_id}")
 
-        self.commandline_path_parser(task)#this will change task.arguments to the path corresponding to the path inside the container
+        self.set_attr(task)#this will change task.arguments to the path corresponding to the path inside the container
         
         client = docker.from_env()
     

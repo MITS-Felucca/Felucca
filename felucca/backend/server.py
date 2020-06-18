@@ -1,5 +1,6 @@
 import json
 import os
+import base64
 from datetime import datetime
 from flask import abort
 from flask import Flask
@@ -70,12 +71,40 @@ def test_new_execution():
 
     Test command: curl “http://0.0.0.0:5000/test_new_execution", to use this, we should put the input.json at the "backend" folder in advance 
     """
+    exe_str="str"
+    {
+        "Job_Name": "dump_job",
+        "Job_Comment": "this is the test json input for resource manager",
+        "Tasks": [
+            {
+                "Files": {
+                "-f":exe_str
+                },
+                "Program_Name": "ooanalyzer",
+                "Input_File_Args": {
+                    "-f": "oo.exe"
+                },
+                "Input_Text_Args": { 
+                    "--timeout": "300"
+                },
+                "Input_Flag_Args": ["-v"],
+                "Output_File_Args": {
+                    "-j": "output.json",
+                    "-F": "facts",
+                    "-R": "results"
+                }
+            }
+        ]
+    }   
+    
+    
+    
     with open("input.json",'r') as f:
         json_data = json.load(f)
     job = Job.from_json(json_data)
     job.job_id = "this_is_a_test_job_id"
     task = job.tasks[0]
-    task.task_id = "this_is_a_test_task_id2"
+    task.task_id = "this_is_a_test_task_id"
     
 
     file_dict = {}
@@ -84,13 +113,16 @@ def test_new_execution():
     if not os.path.exists(folder_path):
             os.makedirs(folder_path)
     
-    for filename, content in json_data["Tasks"][0]["Files"].items():
+    for input_flag, content in json_data["Tasks"][0]["Files"].items():
+        filename = json_data["Tasks"][0]["Input_File_Args"][input_flag] #oo.exe
         file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
-        
-        
+
         with open(file_path, "wb") as f:
-            f.write(bytes.fromhex(content))
+            byte_stream = base64.b64decode(content.encode('utf-8'))
+            f.write(byte_stream)
+    #this is the simulation for RM changing the task.files from task.files = {"-f":exe_str } to task.files = {"-f": path } 
         file_dict[filename] = file_path
+        print(f"file_path: {file_path}")
     task.files = file_dict
     ExecutionManager().submit_task(task)
            
