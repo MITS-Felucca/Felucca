@@ -28,7 +28,7 @@ class Task(object):
         self.__stderr = None
         self.__status = status
         self.__start_time = None
-        self.__finished_time = finished_time
+        self.__finished_time = None
 
     @property
     def job_id(self):
@@ -120,7 +120,7 @@ class Task(object):
         
     @property
     def input_text_args(self):
-        return self.__input_file_args
+        return self.__input_text_args
 
     @input_text_args.setter
     def input_text_args(self,val):
