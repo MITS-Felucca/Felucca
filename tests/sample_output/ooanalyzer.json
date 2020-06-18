@@ -1,4 +1,8 @@
 {
+    "Tool_Name": "OOAnalyzer",
+    "Program_Name": "ooanalyzer",
+    "Tool_ID": "5ee7f4dab94462018d0a6b2c",
+    "Is_Pharos": true,
     "Classes": [
         {
             "Name": "OOAnalyzer v1.0 options:",
