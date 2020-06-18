@@ -18,7 +18,7 @@ class TestResourceManager(unittest.TestCase):
     def setUp(self):
         # Use "test" database for unit tests instead of "felucca"
         self.manager = ResourceManager("test")
-    
+
     def test_insert_job_without_tasks(self):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
@@ -40,16 +40,15 @@ class TestResourceManager(unittest.TestCase):
         created_time = created_time.replace(microsecond=ms_without_ns)
 
         # Rebuild the job object and check the contents
-        rebuilt_job = self.manager.get_job_by_id_without_tasks(job_id)
+        rebuilt_job = self.manager.db_manager.get_job_by_id_without_tasks(job_id)
         self.assertEqual(rebuilt_job.name, job_name)
         self.assertEqual(rebuilt_job.comment, job_comment)
         self.assertEqual(rebuilt_job.created_time, created_time)
         self.assertEqual(rebuilt_job.status, Status.Pending)
 
         # Remove the inserted job after test
-        # self.manager.remove_job_by_id(job_id)
         self.manager.remove_all_jobs_and_tasks()
-    
+
     def test_insert_job_with_single_task(self):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
@@ -99,7 +98,7 @@ class TestResourceManager(unittest.TestCase):
         # self.manager.remove_job_by_id(job_id)
         # self.manager.remove_tasks_by_job_id(job_id)
         self.manager.remove_all_jobs_and_tasks()
-    
+
     def test_save_result(self):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
@@ -139,11 +138,11 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(rebuilt_task.tool_type, task_tool_type)
 
         with open("../../sample_output/output.json", "rb") as f:
-            output_json_bytes = base64.b64encode(f.read()).decode('utf-8')
+            output_json_bytes = f.read().decode('utf-8')
         with open("../../sample_output/facts", "rb") as f:
-            facts_bytes = base64.b64encode(f.read()).decode('utf-8')
+            facts_bytes = f.read().decode('utf-8')
         with open("../../sample_output/results", "rb") as f:
-            results_bytes = base64.b64encode(f.read()).decode('utf-8')
+            results_bytes = f.read().decode('utf-8')
         self.assertEqual(self.manager.get_output_file(task_id, "output.json"), output_json_bytes)
         self.assertEqual(self.manager.get_log_file(task_id, "facts"), facts_bytes)
         self.assertEqual(self.manager.get_log_file(task_id, "results"), results_bytes)
@@ -198,7 +197,7 @@ class TestResourceManager(unittest.TestCase):
         # self.manager.remove_job_by_id(job_id)
         # self.manager.remove_tasks_by_job_id(job_id)
         self.manager.remove_all_jobs_and_tasks()
-    
+
     def test_get_all_jobs_without_tasks(self):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
@@ -215,7 +214,7 @@ class TestResourceManager(unittest.TestCase):
             job_list.append(new_job)
             self.manager.insert_new_job(new_job)
 
-        rebuilt_jobs = self.manager.get_all_jobs_without_tasks()
+        rebuilt_jobs = self.manager.db_manager.get_all_jobs_without_tasks()
         for i in range(3):
             original_job = job_list[i]
             rebuilt_job = rebuilt_jobs[i]
@@ -226,7 +225,7 @@ class TestResourceManager(unittest.TestCase):
 
         # Remove the inserted jobs
         self.manager.remove_all_jobs_and_tasks()
-    
+
     def test_get_output_and_log_file(self):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
@@ -264,7 +263,7 @@ class TestResourceManager(unittest.TestCase):
         file = self.manager.get_output_file(task_id, "output.json")
         with open("../../sample_output/output.json", "rb") as f:
             output_json = f.read()
-        self.assertEqual(base64.b64decode(file.encode('utf-8')), output_json)
+        self.assertEqual(file.encode('utf-8'), output_json)
 
         # Retrive the log files
         facts_file = self.manager.get_log_file(task_id, "facts")
@@ -273,8 +272,8 @@ class TestResourceManager(unittest.TestCase):
             facts = f.read()
         with open("../../sample_output/results", "rb") as f:
             results = f.read()
-        self.assertEqual(base64.b64decode(facts_file.encode('utf-8')), facts)
-        self.assertEqual(base64.b64decode(results_file.encode('utf-8')), results)
+        self.assertEqual(facts_file.encode('utf-8'), facts)
+        self.assertEqual(results_file.encode('utf-8'), results)
 
         # Remove the inserted jobs
         self.manager.remove_all_jobs_and_tasks()
