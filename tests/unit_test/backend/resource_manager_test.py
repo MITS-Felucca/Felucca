@@ -81,7 +81,7 @@ class TestResourceManager(unittest.TestCase):
         created_time = created_time.replace(microsecond=ms_without_ns)
 
         # Rebuild the job object and check the contents
-        rebuilt_job = self.manager.get_job_by_id_without_tasks(job_id)
+        rebuilt_job = self.manager.db_manager.get_job_by_id_without_tasks(job_id)
         self.assertEqual(rebuilt_job.name, job_name)
         self.assertEqual(rebuilt_job.comment, job_comment)
         self.assertEqual(rebuilt_job.created_time, created_time)
@@ -89,7 +89,7 @@ class TestResourceManager(unittest.TestCase):
 
         # Rebuild the task object and check the contents of files
         task_id = tasks_id[0]
-        rebuilt_task = self.manager.get_task_by_id(task_id)
+        rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
         self.assertEqual(rebuilt_task.arguments, task_arguments)
         self.assertEqual(rebuilt_task.tool_type, task_tool_type)
         self.assertEqual(rebuilt_task.status, Status.Pending)
@@ -133,7 +133,7 @@ class TestResourceManager(unittest.TestCase):
         self.manager.save_result(task_id, output_file_list, log_file_list, stdout, stderr)
 
         # Rebuild the task object and check the contents of files
-        rebuilt_task = self.manager.get_task_by_id(task_id)
+        rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
         self.assertEqual(rebuilt_task.arguments, task_arguments)
         self.assertEqual(rebuilt_task.tool_type, task_tool_type)
 
@@ -186,11 +186,11 @@ class TestResourceManager(unittest.TestCase):
         self.manager.update_task_status(task_id, Status.Successful)
 
         # Rebuild the job object and check the status
-        rebuilt_job = self.manager.get_job_by_id_without_tasks(job_id)
+        rebuilt_job = self.manager.db_manager.get_job_by_id_without_tasks(job_id)
         self.assertEqual(rebuilt_job.status, Status.Failed)
 
         # Rebuild the task object and check the status
-        rebuilt_task = self.manager.get_task_by_id(task_id)
+        rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
         self.assertEqual(rebuilt_task.status, Status.Successful)
 
         # Remove the inserted job & task after test
