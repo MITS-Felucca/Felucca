@@ -12,7 +12,7 @@
                     "Abbreviation": "-j",
                     "Description": "specify the JSON output file",
                     "Is_Required": false,
-                    "Default_Value": "output.json",
+                    "Default_Value": "output",
                     "Type": "Output_File_Args"
                 },
                 {

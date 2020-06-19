@@ -1,91 +1,19 @@
 {
-    "Tool_Name": "OOAnalyzer",
-    "Program_Name": "ooanalyzer",
+    "Tool_Name": "MKIR",
+    "Program_Name": "mkir",
     "Tool_ID": "5ee7f4dab94462018d0a6b2c",
     "Is_Pharos": true,
     "Classes": [
         {
-            "Name": "OOAnalyzer v1.0 options:",
+            "Name": "mkir options:",
             "Arguments": [
                 {
-                    "Full_Name": "--json",
-                    "Abbreviation": "-j",
-                    "Description": "specify the JSON output file",
-                    "Is_Required": false,
-                    "Default_Value": "output",
-                    "Type": "Output_File_Args"
-                },
-                {
-                    "Full_Name": "--new-method",
-                    "Abbreviation": "-n",
-                    "Description": "function at address is a new() method",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Text_Args"
-                },
-                {
-                    "Full_Name": "--delete-method",
-                    "Abbreviation": "",
-                    "Description": "function at address is a delete() method",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Text_Args"
-                },
-                {
-                    "Full_Name": "--no-guessing",
-                    "Abbreviation": "",
-                    "Description": "do not perform hypothetical reasoning. never use except for experiments",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
-                },
-                {
-                    "Full_Name": "--ignore-rtti",
-                    "Abbreviation": "",
-                    "Description": "ignore RTTI metadata if present",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
-                },
-                {
-                    "Full_Name": "--prolog-facts",
-                    "Abbreviation": "-F",
-                    "Description": "specify the Prolog facts output file",
-                    "Is_Required": false,
-                    "Default_Value": "fact",
-                    "Type": "Output_File_Args"
-                },
-                {
-                    "Full_Name": "--prolog-results",
-                    "Abbreviation": "-R",
-                    "Description": "specify the Prolog results output file",
-                    "Is_Required": false,
-                    "Default_Value": "result",
-                    "Type": "Output_File_Args"
-                },
-                {
-                    "Full_Name": "--prolog-debug",
+                    "Full_Name": "--dot",
                     "Abbreviation": "-d",
-                    "Description": "enable debugging in the Prolog analysis",
+                    "Description": "directory to write graphviz file(s) instead of stdout",
                     "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
-                },
-                {
-                    "Full_Name": "--prolog-trace",
-                    "Abbreviation": "",
-                    "Description": "enable output of prolog commands, queries, and results",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
-                },
-                {
-                    "Full_Name": "--prolog-low-level-tracing",
-                    "Abbreviation": "",
-                    "Description": "enable prolog's low-level tracing",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
+                    "Default_Value": "graphviz",
+                    "Type": "Output_File_Args"
                 }
             ]
         },

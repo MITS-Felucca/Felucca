@@ -1,91 +1,51 @@
 {
-    "Tool_Name": "OOAnalyzer",
-    "Program_Name": "ooanalyzer",
+    "Tool_Name": "APILookup",
+    "Program_Name": "apilookup",
     "Tool_ID": "5ee7f4dab94462018d0a6b2c",
     "Is_Pharos": true,
     "Classes": [
         {
-            "Name": "OOAnalyzer v1.0 options:",
+            "Name": "APILookup Options:",
             "Arguments": [
                 {
                     "Full_Name": "--json",
                     "Abbreviation": "-j",
-                    "Description": "specify the JSON output file",
+                    "Description": "[=FILENAME(=-)] Ouput JSON to given file.  Default is to stdout (-).",
                     "Is_Required": false,
                     "Default_Value": "output",
                     "Type": "Output_File_Args"
                 },
                 {
-                    "Full_Name": "--new-method",
-                    "Abbreviation": "-n",
-                    "Description": "function at address is a new() method",
+                    "Full_Name": "--pretty-json",
+                    "Abbreviation": "-p",
+                    "Description": "[=arg(=4)] Pretty-print json.  Argument is the indent width",
                     "Is_Required": false,
                     "Default_Value": "",
                     "Type": "Input_Text_Args"
                 },
                 {
-                    "Full_Name": "--delete-method",
-                    "Abbreviation": "",
-                    "Description": "function at address is a delete() method",
+                    "Full_Name": "--regexp",
+                    "Abbreviation": "-r",
+                    "Description": "Treat symbols as regular expressions",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--case-insensitive-regexp",
+                    "Abbreviation": "-c",
+                    "Description": "Treat symbols as case-insensitive regular expressions",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--symbols",
+                    "Abbreviation": "-s",
+                    "Description": "Symbols to be queried",
                     "Is_Required": false,
                     "Default_Value": "",
                     "Type": "Input_Text_Args"
-                },
-                {
-                    "Full_Name": "--no-guessing",
-                    "Abbreviation": "",
-                    "Description": "do not perform hypothetical reasoning. never use except for experiments",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
-                },
-                {
-                    "Full_Name": "--ignore-rtti",
-                    "Abbreviation": "",
-                    "Description": "ignore RTTI metadata if present",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
-                },
-                {
-                    "Full_Name": "--prolog-facts",
-                    "Abbreviation": "-F",
-                    "Description": "specify the Prolog facts output file",
-                    "Is_Required": false,
-                    "Default_Value": "fact",
-                    "Type": "Output_File_Args"
-                },
-                {
-                    "Full_Name": "--prolog-results",
-                    "Abbreviation": "-R",
-                    "Description": "specify the Prolog results output file",
-                    "Is_Required": false,
-                    "Default_Value": "result",
-                    "Type": "Output_File_Args"
-                },
-                {
-                    "Full_Name": "--prolog-debug",
-                    "Abbreviation": "-d",
-                    "Description": "enable debugging in the Prolog analysis",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
-                },
-                {
-                    "Full_Name": "--prolog-trace",
-                    "Abbreviation": "",
-                    "Description": "enable output of prolog commands, queries, and results",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
-                },
-                {
-                    "Full_Name": "--prolog-low-level-tracing",
-                    "Abbreviation": "",
-                    "Description": "enable prolog's low-level tracing",
-                    "Is_Required": false,
-                    "Default_Value": "",
-                    "Type": "Input_Flag_Args"
                 }
             ]
         },

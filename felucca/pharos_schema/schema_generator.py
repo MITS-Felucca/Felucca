@@ -1,3 +1,8 @@
+# 1. Get the help string in a file
+# 2. Run the script
+# 3. Manually check
+# 4. Add header
+
 import re
 import json
 import sys
@@ -20,14 +25,14 @@ prevArgs = {}
 for line in lines:
     idx += 1
     if len(line) == 1:
-        print("ADDDD")
+        if prevArgs != {}:
+            newClass["Arguments"].append(prevArgs)
         classStart = False
         result["Classes"].append(newClass)
         newClass = {}
         continue
     if line[0] != " " and not classStart:
         classStart = True
-        # print (str(idx) + " " + line)
         newClass["Name"] = line[:-1]
         newClass["Arguments"] = []
         prevArgs = {}
@@ -38,58 +43,46 @@ for line in lines:
         if line[2:4] == "--":
             if prevArgs != {}:
                 newClass["Arguments"].append(prevArgs)
-            print("Log::no short")
             matchObj = re.match(noShortArgsReg, line)
             if matchObj == None:
                 matchObj = re.match(noShortNoArgsReg, line)
                 tmp = "Input_Flag_Args"
             else:
                 tmp = "Input_Text_Args"
-            #     print(matchObj.group(1))
-            #     print(matchObj.group(2))
-            # else:
-            #     print(matchObj.group(1))
-            #     print(matchObj.group(2))
             args["Full_Name"] = matchObj.group(1)
-            args["Abbreviation"] = None
+            args["Abbreviation"] = ""
             args["Description"] = matchObj.group(2)
             args["Is_Required"] = False
-            args["Default_Value"] = None
+            args["Default_Value"] = ""
             args["Type"] = tmp
             prevArgs = args
         # has short
         elif line[2] == "-":
             if prevArgs != {}:
                 newClass["Arguments"].append(prevArgs)
-            print("Log::has short")
             matchObj = re.match(argsReg, line)
             if matchObj == None:
                 matchObj = re.match(noArgsReg, line)
                 tmp = "Input_Flag_Args"
             else:
                 tmp = "Input_Text_Args"
-            #     print(matchObj.group(1))
-            #     print(matchObj.group(2))
-            #     print(matchObj.group(3))
-            # else:
-            #     print(matchObj.group(1))
-            #     print(matchObj.group(2))
-            #     print(matchObj.group(3))
             args["Full_Name"] = matchObj.group(2)
             args["Abbreviation"] = matchObj.group(1)
             args["Description"] = matchObj.group(3)
             args["Is_Required"] = False
-            args["Default_Value"] = None
+            args["Default_Value"] = ""
             args["Type"] = tmp
             prevArgs = args
         else:
             prevArgs["Description"] += (" " + line.strip())
 
+if prevArgs != {}:
+    newClass["Arguments"].append(prevArgs)
 result["Classes"].append(newClass)
 resultStr = json.dumps(result, indent=4)
 print(resultStr)
-# print(json.dumps(result))
 
 resultFile = open(fileName+".json", "w")
 resultFile.write(resultStr)
 resultFile.close()
+

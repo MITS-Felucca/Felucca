@@ -1,0 +1,84 @@
+fn2yara 0.06 Options:
+  -o [ --output-filename ] arg          output filename (defaults to the
+                                        filename suffixed by .yara
+  -m [ --min-instructions ] arg (=5)    Minimum number of instructions needed
+                                        for an instruction block to be output
+                                        for a function
+  -M [ --max-string-bytes ] arg (=10000)
+                                        Maximum size allowed for a yara string
+                                        (in bytes) to be output for a function
+                                        (no rule generated if any string
+                                        exceeds this)
+  -B [ --basic-blocks ]                 Split rules strictly by basic blocks
+  -c [ --comparison ]                   Output a yara single rule that matches
+                                        all instruction blocks found in the
+                                        program
+  -T [ --threshold ] arg (=100)         A percentage threshold for the number
+                                        of strings that need to match in any
+                                        given rule
+  -p [ --prefix ] arg                   Prefix for rule names
+  -a [ --address-only ]                 Only output addresses of candidate
+                                        functions, rather than rules.  Not in
+                                        YARA format.
+  --include-thunks                      include thunks in output
+  -O [ --oldway ]                       use old hacky way to PIC
+
+CERT/Pharos options:
+  -h [ --help ]                         display help
+  -v [ --verbose ] [=arg(=3)]           enable verbose logging (1-14, default
+                                        3)
+  --timing                              Include duration field in log messages
+  -b [ --batch ]                        suppress colors, progress bars, etc.
+  --allow-64bit                         allow analysis of 64-bit executables
+  -i [ --include-func ] arg             limit analysis to a specific function
+  -e [ --exclude-func ] arg             exclude analysis of a specific function
+  -C [ --config ] arg                   pharos configuration file (can be
+                                        specified multiple times)
+  --dump-config                         display current active config
+                                        parameters
+  --no-user-file                        don't load the user's configuration
+                                        file
+  --no-site-file                        don't load the site's configuration
+                                        file
+  --apidb arg                           path to sqlite or JSON file containing
+                                        API and type information
+  -l [ --library ] arg                  specify the path to the pharos library
+                                        directory
+  --timeout arg                         time limit (sec) for the entire
+                                        analysis
+  --per-function-timeout arg            CPU limit (sec) per function
+  --partitioner-timeout arg             time limit (sec) for the partitioner
+  --maximum-memory arg                  maximum memory (Mib) for the entire
+                                        anlaysis
+  --per-function-maximum-memory arg     maximum memory (Mib) per function
+  --maximum-instructions-per-block arg  limit the number of instructions per
+                                        basic block
+  --maximum-iterations-per-function arg limit the number of CFG iterations per
+                                        function
+  --maximum-nodes-per-condition arg     limit the number of tree nodes per ITE
+                                        condition
+  --threads [=arg(=1)]                  Number of threads to use, if this
+                                        program uses threads.  A value of zero
+                                        means to use all available processors.
+                                        A negative value means to use that many
+                                        less than the number of available
+                                        processors.
+  -f [ --file ] arg                     executable to be analyzed
+
+ROSE/Partitioner options:
+  --partitioner arg                     specify the function parititioner
+  --serialize arg                       file which caches function partitioning
+                                        information
+  --ignore-serialize-version            reject version mismatch errors when
+                                        reading a serialized file
+  --no-semantics                        disable semantic analysis during
+                                        parititioning
+  --pdebug                              enable partitioner debugging
+  --no-executable-entry                 do not mark the entry point segment as
+                                        executable
+  --mark-executable                     mark all segments as executable during
+                                        partitioning
+  --log arg                             log facility control string
+  --stockpart                           deprecated, use --parititioner=rose
+  --rose-version                        output ROSE version information and
+                                        exit immediately

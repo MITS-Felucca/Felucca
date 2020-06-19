@@ -1,88 +1,88 @@
 {
-    "Tool_Name": "OOAnalyzer",
-    "Program_Name": "ooanalyzer",
+    "Tool_Name": "FN2Yara",
+    "Program_Name": "fn2yara",
     "Tool_ID": "5ee7f4dab94462018d0a6b2c",
     "Is_Pharos": true,
     "Classes": [
         {
-            "Name": "OOAnalyzer v1.0 options:",
+            "Name": "fn2yara 0.06 Options:",
             "Arguments": [
                 {
-                    "Full_Name": "--json",
-                    "Abbreviation": "-j",
-                    "Description": "specify the JSON output file",
+                    "Full_Name": "--output-filename",
+                    "Abbreviation": "-o",
+                    "Description": "output filename (defaults to the filename suffixed by .yara",
                     "Is_Required": false,
                     "Default_Value": "output",
                     "Type": "Output_File_Args"
                 },
                 {
-                    "Full_Name": "--new-method",
-                    "Abbreviation": "-n",
-                    "Description": "function at address is a new() method",
+                    "Full_Name": "--min-instructions",
+                    "Abbreviation": "-m",
+                    "Description": "(=5) Minimum number of instructions needed for an instruction block to be output for a function",
                     "Is_Required": false,
                     "Default_Value": "",
                     "Type": "Input_Text_Args"
                 },
                 {
-                    "Full_Name": "--delete-method",
-                    "Abbreviation": "",
-                    "Description": "function at address is a delete() method",
+                    "Full_Name": "--max-string-bytes",
+                    "Abbreviation": "-M",
+                    "Description": "(=10000) Maximum size allowed for a yara string (in bytes) to be output for a function (no rule generated if any string exceeds this)",
                     "Is_Required": false,
                     "Default_Value": "",
                     "Type": "Input_Text_Args"
                 },
                 {
-                    "Full_Name": "--no-guessing",
-                    "Abbreviation": "",
-                    "Description": "do not perform hypothetical reasoning. never use except for experiments",
+                    "Full_Name": "--basic-blocks",
+                    "Abbreviation": "-B",
+                    "Description": "Split rules strictly by basic blocks",
                     "Is_Required": false,
                     "Default_Value": "",
                     "Type": "Input_Flag_Args"
                 },
                 {
-                    "Full_Name": "--ignore-rtti",
-                    "Abbreviation": "",
-                    "Description": "ignore RTTI metadata if present",
+                    "Full_Name": "--comparison",
+                    "Abbreviation": "-c",
+                    "Description": "Output a yara single rule that matches all instruction blocks found in the program",
                     "Is_Required": false,
                     "Default_Value": "",
                     "Type": "Input_Flag_Args"
                 },
                 {
-                    "Full_Name": "--prolog-facts",
-                    "Abbreviation": "-F",
-                    "Description": "specify the Prolog facts output file",
+                    "Full_Name": "--threshold",
+                    "Abbreviation": "-T",
+                    "Description": "(=100) A percentage threshold for the number of strings that need to match in any given rule",
                     "Is_Required": false,
-                    "Default_Value": "fact",
-                    "Type": "Output_File_Args"
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
                 },
                 {
-                    "Full_Name": "--prolog-results",
-                    "Abbreviation": "-R",
-                    "Description": "specify the Prolog results output file",
+                    "Full_Name": "--prefix",
+                    "Abbreviation": "-p",
+                    "Description": "Prefix for rule names",
                     "Is_Required": false,
-                    "Default_Value": "result",
-                    "Type": "Output_File_Args"
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
                 },
                 {
-                    "Full_Name": "--prolog-debug",
-                    "Abbreviation": "-d",
-                    "Description": "enable debugging in the Prolog analysis",
+                    "Full_Name": "--address-only",
+                    "Abbreviation": "-a",
+                    "Description": "Only output addresses of candidate functions, rather than rules.  Not in YARA format.",
                     "Is_Required": false,
                     "Default_Value": "",
                     "Type": "Input_Flag_Args"
                 },
                 {
-                    "Full_Name": "--prolog-trace",
+                    "Full_Name": "--include-thunks",
                     "Abbreviation": "",
-                    "Description": "enable output of prolog commands, queries, and results",
+                    "Description": "include thunks in output",
                     "Is_Required": false,
                     "Default_Value": "",
                     "Type": "Input_Flag_Args"
                 },
                 {
-                    "Full_Name": "--prolog-low-level-tracing",
-                    "Abbreviation": "",
-                    "Description": "enable prolog's low-level tracing",
+                    "Full_Name": "--oldway",
+                    "Abbreviation": "-O",
+                    "Description": "use old hacky way to PIC",
                     "Is_Required": false,
                     "Default_Value": "",
                     "Type": "Input_Flag_Args"
