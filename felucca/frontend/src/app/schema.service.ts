@@ -50,7 +50,6 @@ export class SchemaService {
         schemas.push({
           toolName: (schema as any).Tool_Name,
           programName: (schema as any).Program_Name,
-          toolID: (schema as any).Tool_ID,
           isPharos: (schema as any).Is_Pharos,
           argumentClasses: classes
         });
