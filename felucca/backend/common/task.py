@@ -92,14 +92,6 @@ class Task(object):
         self.__files = val
 
     @property
-    def tool_id(self):
-        return self.__tool_type
-    
-    @tool_id.setter
-    def tool_id(self,val):
-        self.__tool_id = val
-        
-    @property
     def program_name(self):
         return self.__program_name
     
