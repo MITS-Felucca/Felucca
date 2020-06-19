@@ -206,7 +206,7 @@ class Task(object):
         for key, value in task.input_text_args.items():
             argument[key] = value
         for key in task.input_flag_args:
-            argument[key] = None
+            argument[key] = ''
         for key, value in task.output_file_args.items():
             argument[key] = value
 
