@@ -26,8 +26,8 @@
                     "Full_Name": "--json",
                     "Abbreviation": "-j",
                     "Description": "Output json representation to given file ('-' for stdout)",
-                    "Is_Required": "output",
-                    "Default_Value": "",
+                    "Is_Required": false,
+                    "Default_Value": "output",
                     "Type": "Output_File_Args"
                 },
                 {
