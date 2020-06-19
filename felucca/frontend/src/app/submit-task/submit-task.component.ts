@@ -3,6 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { ArgumentType } from '../argument-type.enum';
 import { TaskInfo } from '../task-info';
+import { Schema } from '../schema';
 
 @Component({
   selector: 'app-submit-task',
@@ -10,64 +11,128 @@ import { TaskInfo } from '../task-info';
   styleUrls: ['./submit-task.component.css']
 })
 export class SubmitTaskComponent implements OnChanges {
-  @Input() toolName: string;
+  @Input() schema: Schema;
   @Output() submission = new EventEmitter<TaskInfo>();
-  arguments: {[key: string]: [number, string, string]};
   files: {[key: string]: string} = {};
   form: FormGroup;
-  fileUploaded: boolean = false;
+  defaultNames: {[key: string]: string} = {};
   argumentType = ArgumentType;
-  constructor() {
-    this.refreshForm();
-  }
-
+  
   ngOnChanges(changes: {[key: string]: SimpleChange}) {
-    if (this.toolName != '') {
+    if (this.schema != undefined) {
+      console.log(this.schema);
       this.refreshForm();
     }
   }
 
-  onFileChange(event, key) {
-  let reader = new FileReader();
+  onFileChange(event, key: string) {
+    let reader = new FileReader();
 
-  if (event.target.files && event.target.files.length) {
-    const [file] = event.target.files;
-    reader.readAsDataURL(file);
-    this.fileUploaded = true;
-    reader.onload = () => {
-      if (this.form.controls[key].value != '') {
-        delete this.files[this.form.controls[key].value];
-      }
-      this.files[file.name] = (<string> reader.result).split(',')[1];
-      this.form.patchValue({[key]: file.name});
-    };
+    if (event.target.files && event.target.files.length) {
+      const [file] = event.target.files;
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        this.files[key] = (<string> reader.result).split(',')[1];
+        this.form.get('inputFile').patchValue({[key]: file.name});
+      };
+    }
   }
-}
 
   onSubmit() {
+    let inputFileForm: {[key: string]: string} = {};
+    let inputTextForm: {[key: string]: string} = {};
+    let inputFlagForm: string[] = [];
+    let outputFileForm: {[key: string]: string} = {};
 
-    let taskInfo = {toolName: this.toolName, arguments: this.form.getRawValue(), files: this.files};
+    let rawInputFileForm = (this.form.get('inputFile') as FormGroup).getRawValue();
+
+    for (let key in rawInputFileForm) {
+      if (rawInputFileForm[key] !== '') {
+        inputFileForm[key] = rawInputFileForm[key];
+      }
+    }
+
+    let rawInputFlagForm = (this.form.get('inputFlag') as FormGroup).getRawValue();
+
+    for (let key in rawInputFlagForm) {
+      if (rawInputFlagForm[key] !== false) {
+        inputFlagForm.push(key);
+      }
+    }
+
+    let rawInputTextForm = (this.form.get('inputText') as FormGroup).getRawValue();
+
+    for (let key in rawInputTextForm) {
+      if (rawInputTextForm[key] !== '') {
+        inputTextForm[key] = rawInputTextForm[key];
+      }
+    }
+
+    let rawOutputFileForm = (this.form.get('outputFile') as FormGroup).getRawValue();
+
+    for (let key in rawOutputFileForm) {
+      if (rawOutputFileForm[key] !== false) {
+        outputFileForm[key] = this.defaultNames[key];
+      }
+    }
+
+    let taskInfo = {
+      files: this.files,
+      inputFileArguments: inputFileForm,
+      inputTextArguments: inputTextForm,
+      inputFlagArguments: inputFlagForm,
+      outputFileArguments: outputFileForm,
+      toolName: this.schema.toolName,
+      programName: this.schema.programName
+    };
+
     this.submission.emit(taskInfo);
   }
 
   refreshForm() {
-    this.arguments = {'-f' : [ArgumentType.InputFile, '--file', 'Executable file'],
-                      '-j' : [ArgumentType.OutputFile, '--json', 'json output'],
-                      '-R' : [ArgumentType.OutputFile, '--prolog-results', 'Results log file'],
-                      '-F' : [ArgumentType.OutputFile, '--prolog-facts', 'Facts log file'],
-                      '--no-guessing' : [ArgumentType.InputFlag, null, 'do not perform hypothetical reasoning never use except for experiments'],
-                      '-n' : [ArgumentType.InputText, '--new-method', 'function at address is a new() method']};
-    let keys = {}
-    for (let key in this.arguments) {
-      if (this.arguments[key][0] == ArgumentType.OutputFile ||
-          this.arguments[key][0] == ArgumentType.InputFlag) {
-            keys[key] = new FormControl(false);
-      } else if (this.arguments[key][0] == ArgumentType.InputText) {
-        keys[key] = new FormControl('');
-      } else {
-        keys[key] = new FormControl('', Validators.required);
-      }
-    }
-    this.form = new FormGroup(keys)
+    let inputFileKeys = {};
+    let inputTextKeys = {};
+    let inputFlagKeys = {};
+    let outputFileKeys = {};
+    for (let argumentClass of this.schema.argumentClasses) {
+      for (let argument of argumentClass.arguments) {
+        if (argument.argumentType === ArgumentType.OutputFile) {
+          if (argument.isRequired) {
+            outputFileKeys[argument.key] = new FormControl(true, Validators.requiredTrue);
+          } else {
+            outputFileKeys[argument.key] = new FormControl(false);
+          }
+          this.defaultNames[argument.key] = argument.defaultValue;
+        } else if (argument.argumentType === ArgumentType.InputFlag) {
+            if (argument.isRequired) {
+              inputFlagKeys[argument.key] = new FormControl(true, Validators.requiredTrue);
+            } else {
+              inputFlagKeys[argument.key] = new FormControl(false);
+            }
+        } else if (argument.argumentType == ArgumentType.InputText) {
+          if (argument.defaultValue !== undefined && argument.isRequired) {
+            inputTextKeys[argument.key] = new FormControl(argument.defaultValue, Validators.required);
+          } else if (argument.defaultValue !== undefined && argument.isRequired === false) {
+            inputTextKeys[argument.key] = new FormControl(argument.defaultValue);
+          } else if (argument.isRequired) {
+            inputTextKeys[argument.key] = new FormControl('', Validators.required);
+          } else {
+            inputTextKeys[argument.key] = new FormControl('');
+          }
+        } else {
+          if (argument.isRequired) {
+            inputFileKeys[argument.key] = new FormControl('', Validators.required);
+          } else {
+            inputFileKeys[argument.key] = new FormControl('');
+          }
+        }
+     }
+    } 
+    this.form = new FormGroup ({
+      inputFile: new FormGroup(inputFileKeys), 
+      outputFile: new FormGroup(outputFileKeys),
+      inputText: new FormGroup(inputTextKeys),
+      inputFlag: new FormGroup(inputFlagKeys)
+    });
   }
 }

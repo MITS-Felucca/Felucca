@@ -2,7 +2,9 @@ import { Component, OnInit} from '@angular/core';
 import { Router } from '@angular/router';
 
 import { TaskInfo } from '../task-info'
-import { JobService } from "../job.service";
+import { JobService } from '../job.service';
+import { Schema } from '../schema';
+import { SchemaService } from '../schema.service';
 
 @Component({
   selector: 'app-submit-job',
@@ -14,24 +16,29 @@ export class SubmitJobComponent implements OnInit{
   comment: string;
   isAdding: boolean;
   tasks: TaskInfo[];
-  chosenTool: string;
+  schemas: Schema[];
+  chosenSchema: Schema;
+  chosenIndex: number;
   toolNames: string[];
 
   constructor(private jobService: JobService,
+              private schemaService: SchemaService,
               private router: Router) { }
 
   ngOnInit() {
     this.isAdding = false;
-    this.toolNames = ['', 'ooanalzyer'];
     this.tasks = [];
-    this.chosenTool = '';
+    this.schemaService.getSchemas().subscribe(schemas => {this.schemas = schemas;});
+    this.chosenSchema = undefined;
+    this.chosenIndex = 0;
   }
 
   submitTask(newTask: TaskInfo) {
     console.log(newTask);
     this.tasks.push(newTask);
     this.isAdding = false;
-    this.chosenTool = '';
+    this.chosenSchema = undefined;
+    this.chosenIndex = 0;
   }
 
   deleteTask(id: number) {
@@ -39,7 +46,10 @@ export class SubmitJobComponent implements OnInit{
   }
 
   displayAddTaskPage() {
-    this.isAdding = this.chosenTool != '';
+    if (this.chosenIndex !== 0) {
+      this.isAdding = true;
+      this.chosenSchema = this.schemas[this.chosenIndex - 1];
+    }
   }
 
   submitJob() {

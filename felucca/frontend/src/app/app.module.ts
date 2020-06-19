@@ -14,6 +14,7 @@ import { SubmitJobComponent } from './submit-job/submit-job.component';
 import { SubmitTaskComponent } from './submit-task/submit-task.component';
 import { FileDisplayComponent } from './file-display/file-display.component';
 import { FileService } from './file.service';
+import { SchemaService } from './schema.service';
 
 @NgModule({
   imports:      [ BrowserModule,
@@ -30,6 +31,7 @@ import { FileService } from './file.service';
                   HelloComponent,
                   FileDisplayComponent],
   bootstrap:    [ AppComponent ],
-  providers: [ JobService, FileService ]
+  providers: [ JobService, FileService, SchemaService ]
 })
+
 export class AppModule { }

@@ -2,30 +2,55 @@
   <h4 class="card-header"> New Task </h4>
   <div class="card-body">
       <form (ngSubmit) = "onSubmit()" [formGroup]="form">
-        <div>
-          <label>Tool Name</label> <strong> {{toolName}}</strong>
-        </div>
         <table class="table table-striped">
           <thead>
             <tr>
-              <th scope="col"> Flag </th>
-              <th scope="col"> Comment </th>
-              <th scope="col"> input </th>
+              <th colspan="6">Task Info</th>
+            </tr>
+            <tr>
+              <th>Tool Name:</th>
+              <td>{{schema.toolName}}</td>
+              
+              <th>Program Name:</th>
+              <td>{{schema.programName}}</td>
+              <th>Pharos:</th>
+              <td>{{schema.isPharos}}</td>
             </tr>
           </thead>
-          <tbody>
-            <tr *ngFor="let argument of arguments | keyvalue">
-              <td> {{argument.key}}
-                <span *ngIf="argument.value[1]">
-                  ({{argument.value[1]}})
+          <tbody *ngFor="let argumentClass of schema.argumentClasses">
+              <tr>
+                <th colspan="6">{{argumentClass.name}}</th>
+              </tr>
+
+              <tr>
+                <th colspan="2">Argument</th>
+                <th colspan="2">Comment</th>
+                <th colspan="2">Input</th>
+              </tr>
+            <tr *ngFor="let argument of argumentClass.arguments">
+              <td colspan="2"> 
+                <span *ngIf="argument.abbreviation !== ''">
+                  {{argument.abbreviation}}
+                </span>
+                <span *ngIf="argument.fullName !== '' && argument.abbreviation === ''">
+                  {{argument.fullName}}
+                </span>
+                <span *ngIf="argument.fullName !== '' && argument.abbreviation !== ''">
+                  ({{argument.fullName}})
                 </span>
               </td>
-              <td> {{argument.value[2]}} </td>
-              <td [ngSwitch]="argument.value[0]">
+              <td colspan="2"> {{argument.description}} </td>
+              <td [ngSwitch]="argument.argumentType" colspan="2">
                 <input *ngSwitchCase="argumentType.InputFile" type="file" (change) = "onFileChange($event, argument.key)">
-                <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
-                <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFlag" type="checkbox">
-                <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputText" type="Text">
+                <div formGroupName="outputFile">
+                  <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
+                </div>
+                <div formGroupName="inputFlag">
+                  <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFlag" type="checkbox">
+                </div>
+                <div formGroupName="inputText">
+                  <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputText" type="Text">
+                </div>
               </td>
             </tr>
           </tbody>

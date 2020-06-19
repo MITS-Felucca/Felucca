@@ -76,9 +76,14 @@ export class JobService {
   submitJob(jobName: string, jobComment: string, tasks: TaskInfo[]): Observable<boolean> {
     let job = {Job_Name: jobName, Job_Comment: jobComment, Tasks: []};
     for (let task of tasks) {
-      job.Tasks.push({Tool_ID: 1, Files: task.files, Arguments: task.arguments});
+      job.Tasks.push({Program_Name: task.programName,
+                      Files: task.files,
+                      Input_File_Args: task.inputFileArguments,
+                      Input_Text_Args: task.inputTextArguments,
+                      Input_Flag_Args: task.inputFlagArguments,
+                      Output_File_Args: task.outputFileArguments});
     }
-    const url = `${this.backEndURL}/job`;
+    const url = `${this.backEndURL}/debug/job`;
     return this.http.post(url, JSON.stringify(job), this.httpOptions).pipe(map(data => {
       return (data as any).Status == 'ok';
       }

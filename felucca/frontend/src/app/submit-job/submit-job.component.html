@@ -19,7 +19,10 @@
         <tr>
           <th>Task ID</th>
           <th>Tool Name</th>
-          <th>Arguments</th>
+          <th>Input File Arguments</th>
+          <th>Input Text Arguments</th>
+          <th>Input Flag Arguments</th>
+          <th>Output File Arguments</th>
           <th>Operations</th>
         </tr>
       </thead>
@@ -29,9 +32,33 @@
           <td>{{task.toolName}}</td>
           <td>
             <dl class="row" style="margin: 0px 0px 0px 0px">
-                <ng-container *ngFor="let argument of task.arguments | keyvalue">
-                  <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
-                  <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
+              <ng-container *ngFor="let argument of task.inputFileArguments | keyvalue">
+                <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
+                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
+              </ng-container>
+            </dl>
+          </td>
+          <td>
+            <dl class="row" style="margin: 0px 0px 0px 0px">
+              <ng-container *ngFor="let argument of task.inputTextArguments | keyvalue">
+                <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
+                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
+              </ng-container>
+            </dl>
+          </td>
+          <td>
+            <dl class="row" style="margin: 0px 0px 0px 0px">
+              <ng-container *ngFor="let argument of task.inputFlagArguments | keyvalue">
+                <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
+                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
+              </ng-container>
+            </dl>
+          </td>
+          <td>
+            <dl class="row" style="margin: 0px 0px 0px 0px">
+              <ng-container *ngFor="let argument of task.outputFileArguments | keyvalue">
+                <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
+                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
               </ng-container>
             </dl>
           </td>
@@ -51,12 +78,13 @@
         <div class="input-group-prepend">
           <label class="input-group-text" for="inputGroupSelect01" style="background-color:#28a745;color:#ffffff">Add Task</label>
         </div>
-        <select class="custom-select" [(ngModel)]="chosenTool" (change)="displayAddTaskPage()" place-holder="123">
-          <option *ngFor="let toolName of toolNames"> {{toolName}}</option>
+        <select class="custom-select" [(ngModel)]="chosenIndex" (change)="displayAddTaskPage()" place-holder="123">
+          <option [value]="0">Please choose a tool...</option>
+          <option *ngFor="let schema of schemas; index as i" [value]="i + 1" > {{schema.toolName}}</option>
         </select>
       </div>
 
-      <app-submit-task *ngIf="isAdding" [toolName]="chosenTool" (submission)="submitTask($event)"></app-submit-task>
+      <app-submit-task *ngIf="isAdding" [schema]="chosenSchema" (submission)="submitTask($event)"></app-submit-task>
   </div>
    <div>
      <button type="button" [disabled]="!isValidJob()" class="btn btn-primary" style="width:100px" (click)="submitJob()">Submit</button>
