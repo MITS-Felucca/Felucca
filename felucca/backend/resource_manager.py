@@ -83,6 +83,14 @@ class ResourceManager(object):
             job.tasks = self.db_manager.get_tasks_by_job_id(job.job_id)
         return job_list
 
+    def get_all_tools(self):
+        """Return the schemas of all tools with id
+
+        Returns:
+            schema_list (List of dict): schemas of all tools with id
+        """
+        return self.db_manager.get_all_tools()
+
     def get_job_by_id(self, job_id):
         """Return a Job object of the specific job with all its tasks
 
@@ -155,6 +163,28 @@ class ResourceManager(object):
         """
         return self.db_manager.get_output_file(task_id, filename)
 
+    def get_stdout(self, task_id):
+        """Return the stdout of a task
+
+        Args:
+            task_id (String): the id of the task
+
+        Return:
+            stdout (String): the stdout
+        """
+        return self.db_manager.get_stdout(task_id)
+
+    def get_tool_by_id(self, tool_id):
+        """Get the schema of the specific tool.
+
+        Args:
+            tool_id (String): The id of the tool
+
+        Return:
+            tool_dict (dict): The schema of the tool with id
+        """
+        return self.db_manager.get_tool_by_id(tool_id)
+
     def insert_new_job(self, new_job):
         """Insert a job with its tasks into the database
 
@@ -190,6 +220,19 @@ class ResourceManager(object):
         """
         self.db_manager.remove_all_jobs_and_tasks()
         return
+
+    def remove_all_tools(self):
+        """Remove all tools (Only for collection "test")
+        """
+        self.db_manager.remove_all_tools()
+
+    def remove_tool_by_id(self, tool_id):
+        """Remove the tool with the specified id.
+
+        Args:
+            tool_id (String)): the id of the tool
+        """
+        self.db_manager.remove_tool_by_id(tool_id)
 
     def save_new_job_and_tasks(self, new_job_dict):
         """Turn the newly submitted job with its tasks from dict to objects
@@ -281,41 +324,288 @@ class ResourceManager(object):
             self.__db = self.__client[self.db_name]
             self.__jobs_collection = self.__db.jobs
             self.__tasks_collection = self.__db.tasks
+            self.__tools_collection = self.__db.tools
             self.__fs = gridfs.GridFS(self.__db)
 
-        def insert_new_task(self, job_id, new_task):
-            """Insert a task into the database
+        def get_all_jobs_without_tasks(self):
+            """Return all jobs as Job objects without their tasks
 
-            Args:
-                job_id (ObjectId): The id of the parent job
-                new_task (Task): The task which will be inserted
+            Return:
+                job_list (List of Job): the Job objects
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_all_jobs_without_tasks")
+
+            # Get ids of all jobs
+            field = {"_id": 1}
+            all_job_ids = self.__jobs_collection.find(projection=field)
+
+            # Rebuild all jobs
+            job_list = []
+            for job_doc in all_job_ids:
+                # print(job_doc["_id"])
+                job = self.get_job_by_id_without_tasks(str(job_doc["_id"]))
+                job_list.append(job)
+
+            return job_list
+
+        def get_all_tools(self):
+            """Return the schemas of all tools with id
 
             Returns:
-                task_id (String): The id of the newly inserted task
+                schema_list (List of dict): schemas of all tools with id
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_all_tools")
+
+            try:
+                schema_docs = self.__tools_collection.find()
+
+                schema_list = []
+                for schema_doc in schema_docs:
+                    schema_dict = schema_doc['schema']
+                    schema_dict['Tool_ID'] = str(schema_doc['_id'])
+                    schema_list.append(schema_dict)
+
+                logger.debug(f"Get {len(schema_list)} tools")
+                return schema_list
+            except Exception as e:
+                logger.error(f"Failed when getting tools. Exception: {e}")
+
+        def get_job_by_id(self, job_id):
+            """Return a Job object of the specific job with all its tasks
+
+            Arg:
+                job_id (String): the id of the specific job
+
+            Return:
+                job (Job): the Job object of the specific id
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_job_by_id, job_id:{job_id}")
+            try:
+                job = self.get_job_by_id_without_tasks(job_id)
+                job.tasks = self.get_tasks_by_job_id(job_id)
+
+                return job
+            except Exception as e:
+                logger.error(f"something wrong in get_job_by_id, Exception: {e}")
+
+        def get_job_by_id_without_tasks(self, job_id):
+            """Return a Job object of the specific job
+
+            The member tasks of the job will be empty to simplify the process.
+            Use get_tasks_by_job_id instead to get the related tasks.
+
+            Arg:
+                job_id (String): the id of the specific job
+
+            Return:
+                job (Job): the Job object of the specific id
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_job_by_id_without_tasks, job_id:{job_id}")
+            try:
+                # Find the job using id
+                condition = {"_id": ObjectId(job_id)}
+                job_doc = self.__jobs_collection.find_one(condition)
+
+                # Rebuild the Job object from the query result
+                job = Job(job_doc["name"], job_doc["comment"],
+                          job_doc["created_time"], status=Status(job_doc["status"]))
+                job.job_id = job_id
+
+                return job
+            except Exception as e:
+                logger.error(f"something wrong in get_job_by_id_without_tasks,"
+                             f" Exception: {e}")
+
+        def get_log_file(self, task_id, filename):
+            """Return an log file of a task
+
+            Arg:
+                task_id (String): the id of the task
+                filename (String): the name of the file
+            Return:
+                file (String): the content of the file encoded by base64
+                               & decoded by utf-8
             """
 
-            # Build the new task
             logger = Logger().get()
+            logger.debug(f"start get_log_file {filename} from {task_id}")
 
-            new_task_dict = {
-                "tool_type": 0,
-                # "command_line_input": new_task.command_line_input,
-                "arguments": new_task.arguments,
-                "job_id": job_id,
-                "output_files": {},
-                "log_files": {},
-                "stdout": "",
-                "stderr": "",
-                "status": new_task.status.value,
-                "finished_time": new_task.finished_time,
-            }
+            try:
+                # Find the task using id
+                condition = {"_id": ObjectId(task_id)}
+                field = {"log_files": 1}
+                task_doc = self.__tasks_collection.find_one(condition, field)
+                if task_doc is None:
+                    raise Exception(f"The task of {task_id} does not exist.")
 
-            # Insert the new task
-            result = self.__tasks_collection.insert_one(new_task_dict)
-            task_id = result.inserted_id
-            logger.debug(f"insert the new task:{task_id}")
-            # Don't cast id to String for internal use
-            return task_id
+                # Find the file in the task
+                if filename not in task_doc["log_files"]:
+                    raise Exception(f"The file named {filename} of task {task_id}"
+                                     " does not exist.")
+                file_id = task_doc["log_files"][filename]
+                return self.__fs.get(file_id).read().decode('utf-8')
+            except Exception as e:
+                logger.error(e)
+                return None
+
+        def get_output_file(self, task_id, filename):
+            """Return an output file of a task
+
+            Arg:
+                task_id (String): the id of the task
+                filename (String): the name of the file
+            Return:
+                file (String): the content of the file encoded by base64
+                               & decoded by utf-8
+            """
+
+            logger = Logger().get()
+            logger.debug(f"start get_output_file {filename} from {task_id}")
+
+            try:
+                # Find the task using id
+                condition = {"_id": ObjectId(task_id)}
+                field = {"output_files": 1}
+                task_doc = self.__tasks_collection.find_one(condition, field)
+                if task_doc is None:
+                    raise Exception(f"The task of {task_id} does not exist.")
+
+                # Find the file in the task
+                if filename not in task_doc["output_files"]:
+                    raise Exception(f"The file named {filename} of task {task_id}"
+                                     " does not exist.")
+                file_id = task_doc["output_files"][filename]
+                return self.__fs.get(file_id).read().decode('utf-8')
+            except Exception as e:
+                logger.error(e)
+                return None
+
+        def get_stdout(self, task_id):
+            """Return the stdout of a task
+
+            Args:
+                task_id (String): the id of the task
+
+            Return:
+                stdout (String): the stdout
+            """
+            logger = Logger().get()
+            logger.debug(f"Start get_stdout from {task_id}")
+
+            try:
+                # Find the task using id
+                condition = {"_id": ObjectId(task_id)}
+                field = {"stdout": 1}
+                task_doc = self.__tasks_collection.find_one(condition, field)
+                if task_doc is None:
+                    raise Exception(f"The task of {task_id} does not exist.")
+
+                return task_doc['stdout']
+            except Exception as e:
+                logger.error(f"Failed getting stdout from task {task_id}."
+                             f"Exception: {e}")
+                return None
+
+        def get_task_by_id(self, task_id):
+            """Return a Task object of the specific task
+
+            Arg:
+                task_id (String): the id of the specific task
+
+            Return:
+                task: the Task object of the specific id
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_task_by_id, task_id:{task_id}")
+            try:
+                # Find the task using id
+                condition = {"_id": ObjectId(task_id)}
+                task_doc = self.__tasks_collection.find_one(condition)
+
+                # Retrieve the output files and log files
+                # Transform the dict into list of filenames
+                output_list = []
+                for filename in task_doc["output_files"].keys():
+                    output_list.append(filename)
+                log_list = []
+                for filename in task_doc["log_files"].keys():
+                    log_list.append(filename)
+
+                # Rebuild the Task object from the query result
+                task = Task({}, task_doc["tool_type"], task_doc["arguments"])
+                task.job_id = str(task_doc["job_id"])
+                task.task_id = task_id
+                task.output = output_list
+                task.log = log_list
+                task.stdout = task_doc["stdout"]
+                task.stderr = task_doc["stderr"]
+                task.status = Status(task_doc["status"])
+                task.finished_time = task_doc["finished_time"]
+                logger.debug(f"get_task_by_id successfully, task_id:{task_id}")
+                return task
+            except Exception as e:
+                logger.error(f"something wrong in get_task_by_id, Exception: {e}")
+
+        def get_tasks_by_job_id(self, job_id):
+            """Return all the tasks belonging to the specific job
+
+            Arg:
+                job_id (String): the id of the specific job
+
+            Return:
+                tasks: a list of Task objects
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_tasks_by_job_id, job_id:{job_id}")
+            try:
+                # Get ids of all tasks using job_id
+                condition = {"job_id": ObjectId(job_id)}
+                field = {"_id": 1}
+                tasks_doc_list = self.__tasks_collection.find(condition, field)
+
+                # Rebuild all tasks into Task objects
+                tasks_list = []
+                tasks_id_list = []
+                for task_doc in tasks_doc_list:
+                    task = self.get_task_by_id(str(task_doc["_id"]))
+                    tasks_list.append(task)
+                    tasks_id_list.append(task.task_id)
+                logger.debug(f"Get all tasks using job_id successfully,"
+                             f" tasks_list:{tasks_id_list}")
+                return tasks_list
+            except Exception as e:
+                logger.error(f"something wrong in get_tasks_by_job_id,"
+                             f" Exception: {e}")
+
+        def get_tool_by_id(self, tool_id):
+            """Get the schema of the specific tool.
+
+            Args:
+                tool_id (String): The id of the tool
+
+            Return:
+                tool_dict (dict): The schema of the tool with id
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_tool_by_id, tool_id:{tool_id}")
+
+            try:
+                # Get the schema of tool using tool_id
+                condition = {"_id": ObjectId(tool_id)}
+                tool_doc = self.__tools_collection.find_one(condition)
+
+                # Rebuild the tool with id
+                tool_dict = tool_doc['schema']
+                tool_dict["Tool_ID"] = str(tool_doc['_id'])
+
+                return tool_dict
+            except Exception as e:
+                logger.error(f"something wrong in get_tool_by_id,"
+                             f" Exception: {e}")
 
         def insert_new_job(self, new_job):
             """Insert a job with its tasks into the database
@@ -353,6 +643,61 @@ class ResourceManager(object):
                           " in insert_new_job")
 
             return str(job_id), tasks_id
+
+        def insert_new_task(self, job_id, new_task):
+            """Insert a task into the database
+
+            Args:
+                job_id (ObjectId): The id of the parent job
+                new_task (Task): The task which will be inserted
+
+            Returns:
+                task_id (String): The id of the newly inserted task
+            """
+
+            logger = Logger().get()
+
+            # Build the new task
+            new_task_dict = {
+                "tool_type": 0,
+                # "command_line_input": new_task.command_line_input,
+                "arguments": new_task.arguments,
+                "job_id": job_id,
+                "output_files": {},
+                "log_files": {},
+                "stdout": "",
+                "stderr": "",
+                "status": new_task.status.value,
+                "finished_time": new_task.finished_time,
+            }
+
+            # Insert the new task
+            result = self.__tasks_collection.insert_one(new_task_dict)
+            task_id = result.inserted_id
+            logger.debug(f"insert the new task:{task_id}")
+            # Don't cast id to String for internal use
+            return task_id
+
+
+        def insert_new_tool(self, schema_json):
+            """Insert a new tool.
+
+            Args:
+                schema_json (dict): The schema of the new tool.
+            """
+            logger = Logger().get()
+            logger.debug("insert_new_tool starts.")
+
+            new_tool_dict = {
+                "schema": schema_json
+            }
+
+            try:
+                # Insert the new tool
+                result = self.__tools_collection.insert_one(new_tool_dict)
+            except Exception as e:
+                logger.error(f"Failed when inserting a new tool. Exception: {e}")
+
 
         def mark_job_as_finished(self, job_id):
             """Mark a job as "Successful" and update its "finished_time"
@@ -401,6 +746,106 @@ class ResourceManager(object):
             except Exception as e:
                 logger.error(f"something wrong in mark_task_as_finished, "
                              f"Exception: {e}")
+
+        def remove_all_jobs_and_tasks(self):
+            """Remove all the jobs and tasks (Only used in unit tests)
+            """
+            logger = Logger().get()
+            logger.debug("remove all jobs and tasks")
+            if self.db_name != "test":
+                logger.error("Cannot remove all jobs and tasks unless current db"
+                             " is \"test\"!")
+                return
+
+            try:
+                # Get ids of all jobs
+                field = {"_id": 1}
+                all_job_ids = self.__jobs_collection.find(projection=field)
+
+                # Remove all jobs & tasks
+                for job_doc in all_job_ids:
+                    self.remove_job_by_id(str(job_doc["_id"]))
+                    self.remove_tasks_by_job_id(str(job_doc["_id"]))
+            except Exception as e:
+                logger.error(f"something wrong in remove_all_jobs, Exception: {e}")
+
+        def remove_all_tools(self):
+            """Remove all tools (Only for collection "test")
+            """
+            logger = Logger().get()
+            logger.debug("remove all tools")
+            if self.db_name != "test":
+                logger.error("Cannot remove all tools unless current db"
+                             " is \"test\"!")
+                return
+
+            try:
+                # Get ids of all jobs
+                field = {"_id": 1}
+                delete_result = self.__tools_collection.delete_many({})
+
+                logger.debug(f"Remove {delete_result.deleted_count} tools.")
+            except Exception as e:
+                logger.error(f"something wrong in remove_all_tools, Exception: {e}")
+
+        def remove_job_by_id(self, job_id):
+            """Remove the specific job (Used in unit tests)
+
+            Arg:
+                job_id (String): the id of the specific job
+            """
+            logger = Logger().get()
+            logger.debug(f"remove job by id, job_id:{job_id}")
+            if self.db_name != "test":
+                logger.error("Cannot remove job unless current db is \"test\"!")
+                return
+
+            try:
+                delete_result = self.__jobs_collection.delete_one(
+                                     {"_id": ObjectId(job_id)})
+                return delete_result.deleted_count
+            except Exception as e:
+                logger.error(f"something wrong in remove_job_by_id, Exception: {e}")
+
+        def remove_tasks_by_job_id(self, job_id):
+            """Remove the tasks related to the specific job (Used in unit tests)
+
+            Arg:
+                task_id (String): the id of the specific task
+            """
+            logger = Logger().get()
+            logger.debug(f"remove tasks by id, job_id:{job_id}")
+            if self.db_name != "test":
+                logger.error("Cannot remove tasks unless current db is \"test\"!")
+                return
+
+            try:
+                delete_result = self.__tasks_collection.delete_many(
+                                     {"job_id": ObjectId(job_id)})
+
+                return delete_result.deleted_count
+            except Exception as e:
+                logger.error(f"something wrong in remove_tasks_by_job_id,"
+                             f" Exception: {e}")
+
+        def remove_tool_by_id(self, tool_id):
+            """Remove the tool with the specified id.
+
+            Args:
+                tool_id (String)): the id of the tool
+            """
+            logger = Logger().get()
+            logger.debug(f"remove tool by id, tool_id:{tool_id}")
+
+            try:
+                delete_result = self.__tools_collection.delete_one(
+                                     {"_id": ObjectId(tool_id)})
+
+                if delete_result.deleted_count is not 1:
+                    raise Exception("Delete failed")
+            except Exception as e:
+                logger.error(f"Something wrong in remove_tasks_by_job_id,"
+                             f" Exception: {e}")
 
         def save_result(self, task_id, output, log, stdout, stderr):
             """Save the result of the task specified by task_id
@@ -497,273 +942,3 @@ class ResourceManager(object):
             except Exception as e:
                 logger.error(f"something wrong in update_task_status,"
                              f" Exception: {e}")
-
-        def get_job_by_id(self, job_id):
-            """Return a Job object of the specific job with all its tasks
-
-            Arg:
-                job_id (String): the id of the specific job
-
-            Return:
-                job (Job): the Job object of the specific id
-            """
-            logger = Logger().get()
-            logger.debug(f"start get_job_by_id, job_id:{job_id}")
-            try:
-                job = self.get_job_by_id_without_tasks(job_id)
-                job.tasks = self.get_tasks_by_job_id(job_id)
-
-                return job
-            except Exception as e:
-                logger.error(f"something wrong in get_job_by_id, Exception: {e}")
-
-        def get_task_by_id(self, task_id):
-            """Return a Task object of the specific task
-
-            Arg:
-                task_id (String): the id of the specific task
-
-            Return:
-                task: the Task object of the specific id
-            """
-            logger = Logger().get()
-            logger.debug(f"start get_task_by_id, task_id:{task_id}")
-            try:
-                # Find the task using id
-                condition = {"_id": ObjectId(task_id)}
-                task_doc = self.__tasks_collection.find_one(condition)
-
-                # Retrieve the output files and log files
-                # Transform the dict into list of filenames
-                output_list = []
-                for filename in task_doc["output_files"].keys():
-                    output_list.append(filename)
-                log_list = []
-                for filename in task_doc["log_files"].keys():
-                    log_list.append(filename)
-
-                # Rebuild the Task object from the query result
-                task = Task({}, task_doc["tool_type"], task_doc["arguments"])
-                task.job_id = str(task_doc["job_id"])
-                task.task_id = task_id
-                task.output = output_list
-                task.log = log_list
-                task.stdout = task_doc["stdout"]
-                task.stderr = task_doc["stderr"]
-                task.status = Status(task_doc["status"])
-                task.finished_time = task_doc["finished_time"]
-                logger.debug(f"get_task_by_id successfully, task_id:{task_id}")
-                return task
-            except Exception as e:
-                logger.error(f"something wrong in get_task_by_id, Exception: {e}")
-
-
-        def get_job_by_id_without_tasks(self, job_id):
-            """Return a Job object of the specific job
-
-            The member tasks of the job will be empty to simplify the process.
-            Use get_tasks_by_job_id instead to get the related tasks.
-
-            Arg:
-                job_id (String): the id of the specific job
-
-            Return:
-                job (Job): the Job object of the specific id
-            """
-            logger = Logger().get()
-            logger.debug(f"start get_job_by_id_without_tasks, job_id:{job_id}")
-            try:
-                # Find the job using id
-                condition = {"_id": ObjectId(job_id)}
-                job_doc = self.__jobs_collection.find_one(condition)
-
-                # Rebuild the Job object from the query result
-                job = Job(job_doc["name"], job_doc["comment"],
-                          job_doc["created_time"], status=Status(job_doc["status"]))
-                job.job_id = job_id
-
-                return job
-            except Exception as e:
-                logger.error(f"something wrong in get_job_by_id_without_tasks,"
-                             f" Exception: {e}")
-
-        def get_tasks_by_job_id(self, job_id):
-            """Return all the tasks belonging to the specific job
-
-            Arg:
-                job_id (String): the id of the specific job
-
-            Return:
-                tasks: a list of Task objects
-            """
-            logger = Logger().get()
-            logger.debug(f"start get_tasks_by_job_id, job_id:{job_id}")
-            try:
-                # Get ids of all tasks using job_id
-                condition = {"job_id": ObjectId(job_id)}
-                field = {"_id": 1}
-                tasks_doc_list = self.__tasks_collection.find(condition, field)
-
-                # Rebuild all tasks into Task objects
-                tasks_list = []
-                tasks_id_list = []
-                for task_doc in tasks_doc_list:
-                    task = self.get_task_by_id(str(task_doc["_id"]))
-                    tasks_list.append(task)
-                    tasks_id_list.append(task.task_id)
-                logger.debug(f"Get all tasks using job_id successfully,"
-                             f" tasks_list:{tasks_id_list}")
-                return tasks_list
-            except Exception as e:
-                logger.error(f"something wrong in get_tasks_by_job_id,"
-                             f" Exception: {e}")
-
-        def get_all_jobs_without_tasks(self):
-            """Return all jobs as Job objects without their tasks
-
-            Return:
-                job_list (List of Job): the Job objects
-            """
-            logger = Logger().get()
-            logger.debug(f"start get_all_jobs_without_tasks")
-
-            # Get ids of all jobs
-            field = {"_id": 1}
-            all_job_ids = self.__jobs_collection.find(projection=field)
-
-            # Rebuild all jobs
-            job_list = []
-            for job_doc in all_job_ids:
-                # print(job_doc["_id"])
-                job = self.get_job_by_id_without_tasks(str(job_doc["_id"]))
-                job_list.append(job)
-
-            return job_list
-
-        def get_output_file(self, task_id, filename):
-            """Return an output file of a task
-
-            Arg:
-                task_id (String): the id of the task
-                filename (String): the name of the file
-            Return:
-                file (String): the content of the file encoded by base64
-                               & decoded by utf-8
-            """
-
-            logger = Logger().get()
-            logger.debug(f"start get_output_file {filename} from {task_id}")
-
-            try:
-                # Find the task using id
-                condition = {"_id": ObjectId(task_id)}
-                field = {"output_files": 1}
-                task_doc = self.__tasks_collection.find_one(condition, field)
-                if task_doc is None:
-                    raise Exception(f"The task of {task_id} does not exist.")
-
-                # Find the file in the task
-                if filename not in task_doc["output_files"]:
-                    raise Exception(f"The file named {filename} of task {task_id}"
-                                     " does not exist.")
-                file_id = task_doc["output_files"][filename]
-                return self.__fs.get(file_id).read().decode('utf-8')
-            except Exception as e:
-                logger.error(e)
-                return None
-
-        def get_log_file(self, task_id, filename):
-            """Return an log file of a task
-
-            Arg:
-                task_id (String): the id of the task
-                filename (String): the name of the file
-            Return:
-                file (String): the content of the file encoded by base64
-                               & decoded by utf-8
-            """
-
-            logger = Logger().get()
-            logger.debug(f"start get_log_file {filename} from {task_id}")
-
-            try:
-                # Find the task using id
-                condition = {"_id": ObjectId(task_id)}
-                field = {"log_files": 1}
-                task_doc = self.__tasks_collection.find_one(condition, field)
-                if task_doc is None:
-                    raise Exception(f"The task of {task_id} does not exist.")
-
-                # Find the file in the task
-                if filename not in task_doc["log_files"]:
-                    raise Exception(f"The file named {filename} of task {task_id}"
-                                     " does not exist.")
-                file_id = task_doc["log_files"][filename]
-                return self.__fs.get(file_id).read().decode('utf-8')
-            except Exception as e:
-                logger.error(e)
-                return None
-
-        def remove_job_by_id(self, job_id):
-            """Remove the specific job (Used in unit tests)
-
-            Arg:
-                job_id (String): the id of the specific job
-            """
-            logger = Logger().get()
-            logger.debug(f"remove job by id, job_id:{job_id}")
-            if self.db_name != "test":
-                logger.error("Cannot remove job unless current db is \"test\"!")
-                return
-
-            try:
-                delete_result = self.__jobs_collection.delete_one(
-                                     {"_id": ObjectId(job_id)})
-                return delete_result.deleted_count
-            except Exception as e:
-                logger.error(f"something wrong in remove_job_by_id, Exception: {e}")
-
-        def remove_tasks_by_job_id(self, job_id):
-            """Remove the tasks related to the specific job (Used in unit tests)
-
-            Arg:
-                task_id (String): the id of the specific task
-            """
-            logger = Logger().get()
-            logger.debug(f"remove tasks by id, job_id:{job_id}")
-            if self.db_name != "test":
-                logger.error("Cannot remove tasks unless current db is \"test\"!")
-                return
-
-            try:
-                delete_result = self.__tasks_collection.delete_many(
-                                     {"job_id": ObjectId(job_id)})
-
-                return delete_result.deleted_count
-            except Exception as e:
-                logger.error(f"something wrong in remove_tasks_by_job_id,"
-                             f" Exception: {e}")
-
-        def remove_all_jobs_and_tasks(self):
-            """Remove all the jobs and tasks (Only used in unit tests)
-            """
-            logger = Logger().get()
-            logger.debug("remove all jobs and tasks")
-            if self.db_name != "test":
-                logger.error("Cannot remove all jobs and tasks unless current db"
-                             " is \"test\"!")
-                return
-
-            try:
-                # Get ids of all jobs
-                field = {"_id": 1}
-                all_job_ids = self.__jobs_collection.find(projection=field)
-
-                # Remove all jobs & tasks
-                for job_doc in all_job_ids:
-                    self.remove_job_by_id(str(job_doc["_id"]))
-                    self.remove_tasks_by_job_id(str(job_doc["_id"]))
-            except Exception as e:
-                logger.error(f"something wrong in remove_all_jobs, Exception: {e}")
-
-

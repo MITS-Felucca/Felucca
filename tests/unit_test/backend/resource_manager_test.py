@@ -391,5 +391,25 @@ class TestResourceManager(unittest.TestCase):
         # Remove all jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
 
+    def test_tool(self):
+        # Insert a sample schema
+        with open("/vagrant/tests/sample_output/ooanalyzer.json") as f:
+            schema_json = json.loads(f.read())
+        self.manager.db_manager.insert_new_tool(schema_json)
+
+        tool_list = self.manager.get_all_tools()
+
+        rebuild_schema = tool_list[0]
+        self.assertIsNotNone(rebuild_schema['Tool_ID'])
+        schema_json['Tool_ID'] = rebuild_schema['Tool_ID']
+        self.assertEqual(rebuild_schema, schema_json)
+
+        rebuild_schema_by_get = self.manager.get_tool_by_id(
+            schema_json['Tool_ID'])
+        self.assertEqual(rebuild_schema_by_get, schema_json)
+
+        # Remove the inserted sample
+        self.manager.remove_tool_by_id(schema_json['Tool_ID'])
+
 if __name__ == '__main__':
     unittest.main()
