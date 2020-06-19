@@ -14,7 +14,6 @@ class Task(object):
     def __init__(self, status=Status.Pending):
         self.__files = None
         self.__program_name = None
-        self.__tool_id = None
         self.__input_file_args = None
         self.__input_text_args = None
         self.__input_flag_args = None
