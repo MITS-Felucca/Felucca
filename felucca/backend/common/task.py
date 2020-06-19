@@ -12,11 +12,9 @@ class Task(object):
     """
 
     def __init__(self, status=Status.Pending):
-        # self.__executable_file = executable_file
         self.__files = None
         self.__program_name = None
         self.__tool_id = None
-        # self.__command_line_input = command_line_input
         self.__input_file_args = None
         self.__input_text_args = None
         self.__input_flag_args = None
@@ -204,14 +202,25 @@ class Task(object):
             task_dict (dict): dict format of task correspoding to the predefined format, the format is as follow:
             
             
-        Tasks :{Argument(no path, dict) | Output[] | Log[] | Stdout : String | Stderr | Finished_Time : long(seconds since epoch) | Status: String | ID : String }
+        Tasks :{Program_Name:string | Argument(no path, dict) | Output[] | Stdout : String | Stderr | Finished_Time : long(seconds since epoch) | Status: String | ID : String }
 
         """
+        
         task_dict = {}
+        task_dict["Program_Name"] = task.program_name
+        
+        argument = {}
+        for key, value in task.input_file_args.items():
+            argument[key] = value
+        for key, value in task.input_text_args.items():
+            argument[key] = value
+        for key in task.input_flag_args:
+            argument[key] = None
+        for key, value in task.output_file_args.items():
+            argument[key] = value
 
-        task_dict["Arguments"] = task.arguments
+        task_dict["Arguments"] = argument
         task_dict["Output"] = task.output
-        task_dict["Log"] = task.log
         task_dict["Stdout"] = task.stdout
         task_dict["Stderr"] = task.stderr
         if task.finished_time is None:
@@ -221,5 +230,4 @@ class Task(object):
         task_dict["Status"] = task.status.name
         task_dict["ID"] = task.task_id
 
-        
         return task_dict

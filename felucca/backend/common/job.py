@@ -94,7 +94,7 @@ class Job(object):
     def to_json(cls, job, need_task = False):
         
         """form a json-like dict output from a job instance, the predifined dict format is as follow:
-        {Name | Comment | Created_Time | Task_Number | Status | ID | Tasks(list of task dict) }  
+        {Name | Comment | Created_Time | Task_Number | Status | ID | Tasks(list of task dicts) }  
 
         Args:
             job (Job): a job instance
@@ -103,6 +103,7 @@ class Job(object):
             job_json (dict): a json-like dict of job object
 
         """
+
         job_json = {}
         job_json["Name"] = job.name
         job_json["Comment"] = job.comment
