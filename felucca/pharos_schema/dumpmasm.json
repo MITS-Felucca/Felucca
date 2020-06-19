@@ -1,7 +1,6 @@
 {
     "Tool_Name": "DumpMASM",
     "Program_Name": "dumpmasm",
-    "Tool_ID": "5ee7f4dab94462018d0a6b2c",
     "Is_Pharos": true,
     "Classes": [
         {

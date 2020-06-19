@@ -1,7 +1,6 @@
 {
     "Tool_Name": "ApiAnalyzer",
     "Program_Name": "apianalyzer",
-    "Tool_ID": "5ee7f4dab94462018d0a6b2c",
     "Is_Pharos": true,
     "Classes": [
         {

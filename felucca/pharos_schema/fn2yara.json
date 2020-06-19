@@ -1,7 +1,6 @@
 {
     "Tool_Name": "FN2Yara",
     "Program_Name": "fn2yara",
-    "Tool_ID": "5ee7f4dab94462018d0a6b2c",
     "Is_Pharos": true,
     "Classes": [
         {
