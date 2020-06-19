@@ -84,7 +84,7 @@
         </select>
       </div>
 
-      <app-submit-task *ngIf="isAdding" [schema]="chosenSchema" (submission)="submitTask($event)"></app-submit-task>
+      <app-submit-task [schema]="chosenSchema" (submission)="submitTask($event)"></app-submit-task>
   </div>
    <div>
      <button type="button" [disabled]="!isValidJob()" class="btn btn-primary" style="width:100px" (click)="submitJob()">Submit</button>

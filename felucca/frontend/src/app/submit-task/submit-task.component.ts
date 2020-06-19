@@ -20,7 +20,6 @@ export class SubmitTaskComponent implements OnChanges {
   
   ngOnChanges(changes: {[key: string]: SimpleChange}) {
     if (this.schema != undefined) {
-      console.log(this.schema);
       this.refreshForm();
     }
   }

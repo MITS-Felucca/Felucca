@@ -14,19 +14,16 @@ import { SchemaService } from '../schema.service';
 export class SubmitJobComponent implements OnInit{
   name: string;
   comment: string;
-  isAdding: boolean;
   tasks: TaskInfo[];
   schemas: Schema[];
   chosenSchema: Schema;
   chosenIndex: number;
-  toolNames: string[];
 
   constructor(private jobService: JobService,
               private schemaService: SchemaService,
               private router: Router) { }
 
   ngOnInit() {
-    this.isAdding = false;
     this.tasks = [];
     this.schemaService.getSchemas().subscribe(schemas => {this.schemas = schemas;});
     this.chosenSchema = undefined;
@@ -34,9 +31,7 @@ export class SubmitJobComponent implements OnInit{
   }
 
   submitTask(newTask: TaskInfo) {
-    console.log(newTask);
     this.tasks.push(newTask);
-    this.isAdding = false;
     this.chosenSchema = undefined;
     this.chosenIndex = 0;
   }
@@ -47,8 +42,9 @@ export class SubmitJobComponent implements OnInit{
 
   displayAddTaskPage() {
     if (this.chosenIndex !== 0) {
-      this.isAdding = true;
       this.chosenSchema = this.schemas[this.chosenIndex - 1];
+    } else {
+      this.chosenSchema = undefined;
     }
   }
 

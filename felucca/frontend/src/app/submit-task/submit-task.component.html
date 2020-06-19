@@ -1,4 +1,4 @@
-<div class="card">
+<div class="card" *ngIf="schema">
   <h4 class="card-header"> New Task </h4>
   <div class="card-body">
       <form (ngSubmit) = "onSubmit()" [formGroup]="form">
