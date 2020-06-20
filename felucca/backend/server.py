@@ -181,7 +181,7 @@ def get_task_file(task_id, file_type, file_name):
         abort(404)
 
 
-@app.route("/debug/job-list")
+@app.route("/debug/job-list/json")
 def debug_get_job_list():
     return {
         "Job_List": [
@@ -219,7 +219,7 @@ def debug_get_job_list():
     }
 
 
-@app.route("/debug/job-info/<job_id>")
+@app.route("/debug/job-info/<job_id>/json")
 def debug_get_job_info(job_id):
     return {
         "Comment": "Just for test0",
@@ -239,16 +239,12 @@ def debug_get_job_info(job_id):
                 },
                 "Finished_Time": 1591828405.0,
                 "ID": "5ee15fb507b312261cd65a30",
-                "Log": [
+                "Output": [
+                    "output.json",
                     "facts",
                     "results"
                 ],
-                "Output": [
-                    "output.json"
-                ],
                 "Status": "Successful",
-                "Stderr": "sample stderr",
-                "Stdout": "sample stdout"
             },
             {
                 "Arguments": {
@@ -262,8 +258,6 @@ def debug_get_job_info(job_id):
                 "Log": [],
                 "Output": [],
                 "Status": "Failed",
-                "Stderr": "",
-                "Stdout": ""
             }
         ]
     }

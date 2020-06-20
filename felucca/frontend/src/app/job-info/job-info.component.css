@@ -11,3 +11,7 @@ ul {
 .link { color: #0000EE; }
 .link:hover { text-decoration:underline }
 .link:active {color: #663366}
+
+button:disabled {
+  background: gray
+}

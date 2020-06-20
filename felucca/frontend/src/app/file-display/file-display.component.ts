@@ -10,7 +10,7 @@ import { FileService } from '../file.service';
 export class FileDisplayComponent implements OnInit {
   taskID: string;
   filename: string;
-  filetype: string;
+  fileType: string;
   content: string;
   constructor(private route: ActivatedRoute, 
               private fileService: FileService) { }
@@ -18,8 +18,8 @@ export class FileDisplayComponent implements OnInit {
   ngOnInit() {
     this.taskID = this.route.snapshot.paramMap.get('taskID');
     this.filename = this.route.snapshot.paramMap.get('filename');
-    this.filetype = this.route.snapshot.paramMap.get('filetype');
-    this.fileService.getFile(this.taskID,  this.filetype, this.filename).subscribe(
+    this.fileType = this.route.snapshot.paramMap.get('fileType');
+    this.fileService.getFile(this.taskID,  this.fileType, this.filename).subscribe(
       content => {this.content = content});
   }
 }
