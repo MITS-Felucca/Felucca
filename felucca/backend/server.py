@@ -16,6 +16,7 @@ from common.job import Job
 
 app = Flask(__name__)
 db_name = "test"
+
 # db_name = "felucca"
 
 @app.route("/")
@@ -68,7 +69,7 @@ def test():
 def test_new_execution():
     """this is used for testing new execution manager after reconstrction
 
-    Test command: curl “http://0.0.0.0:5000/test_new_execution", to use this, we should put the input.json at the "backend" folder in advance 
+    Test command: curl “http://0.0.0.0:5000/test_new_execution", to use this, we should put the input.json at the "backend" folder in advance
     """
     with open("input.json",'r') as f:
         json_data = json.load(f)
@@ -76,24 +77,24 @@ def test_new_execution():
     job.job_id = "this_is_a_test_job_id"
     task = job.tasks[0]
     task.task_id = "this_is_a_test_task_id2"
-    
+
 
     file_dict = {}
     folder_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
 
     if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-    
+
     for filename, content in json_data["Tasks"][0]["Files"].items():
         file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
-        
-        
+
+
         with open(file_path, "wb") as f:
             f.write(bytes.fromhex(content))
         file_dict[filename] = file_path
     task.files = file_dict
     ExecutionManager().submit_task(task)
-           
+
     return ("test2 finished\n")
 
 @app.route("/clean-all", methods=['GET'])
@@ -122,7 +123,7 @@ def get_job(id):
     Test steps:
         1. Modify line 14 & 15 of this file to use database "test"
         2. Run "curl --request GET http://localhost:5000/clean-all"
-        3. Run "curl --request GET http://localhost:5000/generate-sample"
+        3. Submit jobs through browser
         4. Run "curl --request GET http://localhost:5000/job-list/json" to get the list
         5. Run "curl --request GET http://localhost:5000/job-info/<id>/json" where the id is of the first job in the list
         6. Run "curl --request GET http://localhost:5000/clean-all" after use
@@ -138,14 +139,6 @@ def get_job_list():
     """
     job_list = ResourceManager(db_name).get_job_list()
     return {"Job_List": job_list}
-
-@app.route("/generate-sample", methods=['GET'])
-def generate_samples():
-    """Generate three jobs with two tasks in database "test"
-    Command: curl --request GET http://localhost:5000/generate-sample
-    """
-    ResourceManager("test").generate_sample_jobs()
-    return {"status": "ok"}
 
 @app.route("/result", methods=['POST'])
 def get_result():
@@ -172,13 +165,31 @@ def get_task_file(task_id, file_type, file_name):
         if file is None:
             abort(404)
         return {"Content": file}
-    elif file_type == "log":
-        file = ResourceManager(db_name).get_log_file(task_id, file_name)
-        if file is None:
-            abort(404)
-        return{"Content": file}
     else:
         abort(404)
+
+@app.route("/task/<task_id>/stdout/json", methods=['GET'])
+def get_stdout(task_id):
+    print(task_id)
+    stdout = ResourceManager(db_name).get_stdout(task_id)
+    if stdout is None:
+        abort(404)
+    else:
+        return {"Content": stdout}
+
+@app.route("/task/<task_id>/stderr/json", methods=['GET'])
+def get_stderr(task_id):
+    print(task_id)
+    stderr = ResourceManager(db_name).get_stderr(task_id)
+    if stderr is None:
+        abort(404)
+    else:
+        return {"Content": stderr}
+
+@app.route("/tool-list/json", methods=["GET"])
+def get_tool_list():
+    tool_list = ResourceManager(db_name).get_all_tools()
+    return {"Schemas": tool_list}
 
 
 @app.route("/debug/job-list")
@@ -281,6 +292,15 @@ def allow_cross_domain(response: Response):
     response.headers['Access-Control-Allow-Headers'] = 'content-type'
     return response
 
+def setup_pharos_tools(app):
+    # Remove the check for non-debug mode
+    # It means "Only run when app has been loaded"
+    # Flask will run it twice to enable the "reload" feature in debug mode
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        ResourceManager(db_name).initialize_pharos_tools()
+        tool_list = ResourceManager(db_name).get_all_tools()
+        print(len(tool_list))
+setup_pharos_tools(app)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

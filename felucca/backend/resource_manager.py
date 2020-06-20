@@ -1,8 +1,10 @@
 import base64
 import datetime
 import gridfs
+import json
 import os
 import pymongo
+import re
 from bson import ObjectId
 from datetime import datetime
 from common.job import Job
@@ -18,50 +20,6 @@ class ResourceManager(object):
         self.db_name = "test"
         # self.db_name = db_name
         self.db_manager = self.DatabaseManager(self.db_name)
-
-    def generate_sample_jobs(self):
-        """Generate three sample jobs without tasks for job list test.
-        """
-        job_list = []
-        for i in range(3):
-            job_name = "Test_job%d" % i
-            job_comment = "Just for test%d" % i
-            created_time = datetime.now().replace(microsecond=0)
-            new_job = Job(job_name, job_comment, created_time)
-            new_job.tasks = []
-            job_list.append(new_job)
-
-
-        # Create two sample tasks for the first job
-        task_arguments = {
-            "-j": "output.json",
-            "-F": "facts",
-            "-R": "results",
-            "-f": "oo.exe",
-        }
-        task_tool_type = 0
-        task1 = Task({}, task_tool_type, task_arguments)
-        task2 = Task({}, task_tool_type, task_arguments)
-        job_list[0].tasks = [task1, task2]
-
-        # Insert three jobs
-        job_id, tasks_id = self.insert_new_job(job_list[0])
-        self.insert_new_job(job_list[1])
-        self.insert_new_job(job_list[2])
-
-        # Save result to the 1st task of the 1st job
-        stdout = "sample stdout"
-        stderr = "sample stderr"
-        output_file_list = ["/vagrant/tests/sample_output/output.json"]
-        log_file_list = ["/vagrant/tests/sample_output/facts",
-                         "/vagrant/tests/sample_output/results"]
-        self.save_result(tasks_id[0], output_file_list, log_file_list,
-                         stdout, stderr)
-
-        # Update the status
-        self.update_job_status(job_id, Status.Failed)
-        self.update_task_status(tasks_id[1], Status.Failed)
-        self.mark_task_as_finished(tasks_id[0])
 
     def get_all_jobs_without_tasks(self):
         """Return all jobs as Job objects without their tasks
@@ -163,6 +121,17 @@ class ResourceManager(object):
         """
         return self.db_manager.get_output_file(task_id, filename)
 
+    def get_stderr(self, task_id):
+        """Return the stderr of a task
+
+        Args:
+            task_id (String): the id of the task
+
+        Return:
+            stderr (String): the stderr
+        """
+        return self.db_manager.get_stderr(task_id)
+
     def get_stdout(self, task_id):
         """Return the stdout of a task
 
@@ -184,6 +153,30 @@ class ResourceManager(object):
             tool_dict (dict): The schema of the tool with id
         """
         return self.db_manager.get_tool_by_id(tool_id)
+
+    def initialize_pharos_tools(self, schema_path='pharos_schema'):
+        """Read and store the schemas of Pharos tools
+        """
+        logger = Logger().get()
+        logger.debug("start initialize_pharos_tools")
+
+        pharos_schema_path = schema_path
+
+        schema_list = []
+        for root, dirs, files in os.walk(pharos_schema_path):
+            for filename in files:
+                if not filename.endswith('.json'):
+                    continue
+                print(filename)
+                path = os.path.join(root, filename)
+                with open(path, 'r') as f:
+                    schema_json = json.loads(f.read())
+                schema_list.append(schema_json)
+
+        for schema in schema_list:
+            self.db_manager.insert_new_tool(schema)
+
+        logger.debug(f"Initialize {len(schema_list)} Pharos tools.")
 
     def insert_new_job(self, new_job):
         """Insert a job with its tasks into the database
@@ -283,17 +276,16 @@ class ResourceManager(object):
 
         return job
 
-    def save_result(self, task_id, output, log, stdout, stderr):
+    def save_result(self, task_id, output, stdout, stderr):
         """Save the result of the task specified by task_id
 
         Args:
             task_id (String): The id of the specific task
             output (List of String): Each entry is a path of an output file
-            log (List of String): Each entry in log is the path of an log file
             stdout (String): The stdout of the task
             stderr (String): The stderr of the task
         """
-        self.db_manager.save_result(task_id, output, log, stdout, stderr)
+        self.db_manager.save_result(task_id, output, stdout, stderr)
         return
 
     def update_job_status(self, job_id, new_status):
@@ -343,7 +335,6 @@ class ResourceManager(object):
             # Rebuild all jobs
             job_list = []
             for job_doc in all_job_ids:
-                # print(job_doc["_id"])
                 job = self.get_job_by_id_without_tasks(str(job_doc["_id"]))
                 job_list.append(job)
 
@@ -484,6 +475,32 @@ class ResourceManager(object):
                 logger.error(e)
                 return None
 
+        def get_stderr(self, task_id):
+            """Return the stderr of a task
+
+            Args:
+                task_id (String): the id of the task
+
+            Return:
+                stderr (String): the stderr
+            """
+            logger = Logger().get()
+            logger.debug(f"Start get_stderr from {task_id}")
+
+            try:
+                # Find the task using id
+                condition = {"_id": ObjectId(task_id)}
+                field = {"stderr": 1}
+                task_doc = self.__tasks_collection.find_one(condition, field)
+                if task_doc is None:
+                    raise Exception(f"The task of {task_id} does not exist.")
+
+                return task_doc['stderr']
+            except Exception as e:
+                logger.error(f"Failed getting stderr from task {task_id}."
+                             f"Exception: {e}")
+                return None
+
         def get_stdout(self, task_id):
             """Return the stdout of a task
 
@@ -531,16 +548,17 @@ class ResourceManager(object):
                 output_list = []
                 for filename in task_doc["output_files"].keys():
                     output_list.append(filename)
-                log_list = []
-                for filename in task_doc["log_files"].keys():
-                    log_list.append(filename)
 
                 # Rebuild the Task object from the query result
-                task = Task({}, task_doc["tool_type"], task_doc["arguments"])
+                task = Task()
                 task.job_id = str(task_doc["job_id"])
                 task.task_id = task_id
+                task.program_name = task_doc['program_name']
+                task.input_file_args = task_doc['input_file_args']
+                task.input_text_args = task_doc['input_text_args']
+                task.input_flag_args = task_doc['input_flag_args']
+                task.output_file_args = task_doc['output_file_args']
                 task.output = output_list
-                task.log = log_list
                 task.stdout = task_doc["stdout"]
                 task.stderr = task_doc["stderr"]
                 task.status = Status(task_doc["status"])
@@ -659,12 +677,16 @@ class ResourceManager(object):
 
             # Build the new task
             new_task_dict = {
-                "tool_type": 0,
+                "program_name": new_task.program_name,
+                "input_file_args": new_task.input_file_args,
+                "input_text_args": new_task.input_text_args,
+                "input_flag_args": new_task.input_flag_args,
+                "output_file_args": new_task.output_file_args,
                 # "command_line_input": new_task.command_line_input,
-                "arguments": new_task.arguments,
+                # "arguments": new_task.arguments,
                 "job_id": job_id,
                 "output_files": {},
-                "log_files": {},
+                # "log_files": {},
                 "stdout": "",
                 "stderr": "",
                 "status": new_task.status.value,
@@ -847,7 +869,7 @@ class ResourceManager(object):
                 logger.error(f"Something wrong in remove_tasks_by_job_id,"
                              f" Exception: {e}")
 
-        def save_result(self, task_id, output, log, stdout, stderr):
+        def save_result(self, task_id, output, stdout, stderr):
             """Save the result of the task specified by task_id
 
             Args:
@@ -858,8 +880,8 @@ class ResourceManager(object):
                 stderr (String): The stderr of the task
             """
             logger = Logger().get()
-            logger.debug(f"start save_result task_id:{task_id}, output:{output}, "
-                         f"log:{log}, stdout:{stdout}, stderr:{stderr}")
+            logger.debug(f"start save_result task_id:{task_id}, "
+                         f"output:{output}, stdout:{stdout}, stderr:{stderr}")
 
             try:
                 # Cast task_id from String to ObjectId first
@@ -873,20 +895,20 @@ class ResourceManager(object):
                     filename = os.path.basename(os.path.normpath(output_file_path))
                     output_dict[filename] = file_id
 
-                log_dict = {}
-                for log_file_path in log:
-                    with open(log_file_path, "r") as f:
-                        file_id = self.__fs.put(f.read().encode("utf-8"))
-                    filename = os.path.basename(os.path.normpath(log_file_path))
-                    log_dict[filename] = file_id
+                # log_dict = {}
+                # for log_file_path in log:
+                #     with open(log_file_path, "r") as f:
+                #         file_id = self.__fs.put(f.read().encode("utf-8"))
+                #     filename = os.path.basename(os.path.normpath(log_file_path))
+                #     log_dict[filename] = file_id
 
                 condition = {"_id": task_id}
                 task = self.__tasks_collection.find_one(condition)
                 task["output_files"] = output_dict
-                task["log_files"] = log_dict
+                # task["log_files"] = log_dict
                 task["stdout"] = stdout
                 task["stderr"] = stderr
-                task["is_finished"] = True
+                # task["is_finished"] = True
                 update_result = self.__tasks_collection.update_one(condition,
                                                                    {"$set": task})
                 if update_result.modified_count != 1:

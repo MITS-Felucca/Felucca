@@ -1,0 +1,334 @@
+{
+    "Tool_Name": "ApiAnalyzer",
+    "Program_Name": "apianalyzer",
+    "Is_Pharos": true,
+    "Classes": [
+        {
+            "Name": "ApiAnalyzer v2.0.07 options:",
+            "Arguments": [
+                {
+                    "Full_Name": "--sig_file",
+                    "Abbreviation": "-S",
+                    "Description": "Specify the API signature file",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_File_Args"
+                },
+                {
+                    "Full_Name": "--graphviz",
+                    "Abbreviation": "-G",
+                    "Description": "Specify the graphviz output file (for troubleshooting)",
+                    "Is_Required": false,
+                    "Default_Value": "graphviz",
+                    "Type": "Output_File_Args"
+                },
+                {
+                    "Full_Name": "--path",
+                    "Abbreviation": "-P",
+                    "Description": "Set the search path output level (nopath, sigpath, fullpath)",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--format",
+                    "Abbreviation": "-F",
+                    "Description": "Set output format: json or text",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--out_file",
+                    "Abbreviation": "-O",
+                    "Description": "Set output file",
+                    "Is_Required": false,
+                    "Default_Value": "output",
+                    "Type": "Output_File_Args"
+                },
+                {
+                    "Full_Name": "--category",
+                    "Abbreviation": "-C",
+                    "Description": "Select signature categories for which to search",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                }
+            ]
+        },
+        {
+            "Name": "CERT/Pharos options:",
+            "Arguments": [
+                {
+                    "Full_Name": "--help",
+                    "Abbreviation": "-h",
+                    "Description": "display help",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--verbose",
+                    "Abbreviation": "-v",
+                    "Description": "[=arg(=3)] enable verbose logging (1-14, default 3)",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--timing",
+                    "Abbreviation": "",
+                    "Description": "Include duration field in log messages",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--batch",
+                    "Abbreviation": "-b",
+                    "Description": "suppress colors, progress bars, etc.",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--allow-64bit",
+                    "Abbreviation": "",
+                    "Description": "allow analysis of 64-bit executables",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--include-func",
+                    "Abbreviation": "-i",
+                    "Description": "limit analysis to a specific function",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--exclude-func",
+                    "Abbreviation": "-e",
+                    "Description": "exclude analysis of a specific function",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--config",
+                    "Abbreviation": "-C",
+                    "Description": "pharos configuration file (can be specified multiple times)",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_File_Args"
+                },
+                {
+                    "Full_Name": "--dump-config",
+                    "Abbreviation": "",
+                    "Description": "display current active config parameters",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--no-user-file",
+                    "Abbreviation": "",
+                    "Description": "don't load the user's configuration file",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--no-site-file",
+                    "Abbreviation": "",
+                    "Description": "don't load the site's configuration file",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--apidb",
+                    "Abbreviation": "",
+                    "Description": "path to sqlite or JSON file containing API and type information",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_File_Args"
+                },
+                {
+                    "Full_Name": "--library",
+                    "Abbreviation": "-l",
+                    "Description": "specify the path to the pharos library directory",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--timeout",
+                    "Abbreviation": "",
+                    "Description": "time limit (sec) for the entire analysis",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--per-function-timeout",
+                    "Abbreviation": "",
+                    "Description": "CPU limit (sec) per function",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--partitioner-timeout",
+                    "Abbreviation": "",
+                    "Description": "time limit (sec) for the partitioner",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--maximum-memory",
+                    "Abbreviation": "",
+                    "Description": "maximum memory (Mib) for the entire anlaysis",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--per-function-maximum-memory",
+                    "Abbreviation": "",
+                    "Description": "maximum memory (Mib) per function",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--maximum-instructions-per-block",
+                    "Abbreviation": "",
+                    "Description": "limit the number of instructions per basic block",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--maximum-iterations-per-function",
+                    "Abbreviation": "",
+                    "Description": "limit the number of CFG iterations per function",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--maximum-nodes-per-condition",
+                    "Abbreviation": "",
+                    "Description": "limit the number of tree nodes per ITE condition",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--threads",
+                    "Abbreviation": "",
+                    "Description": "[=arg(=1)] Number of threads to use, if this program uses threads.  A value of zero means to use all available processors. A negative value means to use that many less than the number of available processors.",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--file",
+                    "Abbreviation": "-f",
+                    "Description": "executable to be analyzed",
+                    "Is_Required": true,
+                    "Default_Value": "",
+                    "Type": "Input_File_Args"
+                }
+            ]
+        },
+        {
+            "Name": "ROSE/Partitioner options:",
+            "Arguments": [
+                {
+                    "Full_Name": "--partitioner",
+                    "Abbreviation": "",
+                    "Description": "specify the function parititioner",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--serialize",
+                    "Abbreviation": "",
+                    "Description": "file which caches function partitioning information",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_File_Args"
+                },
+                {
+                    "Full_Name": "--ignore-serialize-version",
+                    "Abbreviation": "",
+                    "Description": "reject version mismatch errors when reading a serialized file",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--no-semantics",
+                    "Abbreviation": "",
+                    "Description": "disable semantic analysis during parititioning",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--pdebug",
+                    "Abbreviation": "",
+                    "Description": "enable partitioner debugging",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--no-executable-entry",
+                    "Abbreviation": "",
+                    "Description": "do not mark the entry point segment as executable",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--mark-executable",
+                    "Abbreviation": "",
+                    "Description": "mark all segments as executable during partitioning",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--log",
+                    "Abbreviation": "",
+                    "Description": "log facility control string",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Text_Args"
+                },
+                {
+                    "Full_Name": "--stockpart",
+                    "Abbreviation": "",
+                    "Description": "deprecated, use --parititioner=rose",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                },
+                {
+                    "Full_Name": "--rose-version",
+                    "Abbreviation": "",
+                    "Description": "output ROSE version information and exit immediately",
+                    "Is_Required": false,
+                    "Default_Value": "",
+                    "Type": "Input_Flag_Args"
+                }
+            ]
+        }
+    ]
+}

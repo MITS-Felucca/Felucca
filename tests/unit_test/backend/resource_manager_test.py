@@ -54,14 +54,27 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_all_jobs_and_tasks()
 
         # Create a sample task
-        task_arguments = {
+        program_name = "ooanalyzer"
+        input_file_args = {
+            "-f": "oo.exe"
+        }
+        input_text_args = {
+                "--timeout": "300"
+        }
+        input_flag_args = [
+            "-v",
+        ]
+        output_file_args = {
             "-j": "output.json",
             "-F": "facts",
-            "-R": "results",
-            "-f": "oo.exe",
+            "-R": "results"
         }
-        task_tool_type = 0
-        new_task = Task({}, task_tool_type, task_arguments)
+        new_task = Task()
+        new_task.program_name = program_name
+        new_task.input_file_args = input_file_args
+        new_task.input_text_args = input_text_args
+        new_task.input_flag_args = input_flag_args
+        new_task.output_file_args = output_file_args
 
         # Create a sample job
         job_name = "Test_job"
@@ -90,8 +103,10 @@ class TestResourceManager(unittest.TestCase):
         # Rebuild the task object and check the contents of files
         task_id = tasks_id[0]
         rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
-        self.assertEqual(rebuilt_task.arguments, task_arguments)
-        self.assertEqual(rebuilt_task.tool_type, task_tool_type)
+        self.assertEqual(rebuilt_task.input_file_args, input_file_args)
+        self.assertEqual(rebuilt_task.input_text_args, input_text_args)
+        self.assertEqual(rebuilt_task.input_flag_args, input_flag_args)
+        self.assertEqual(rebuilt_task.output_file_args, output_file_args)
         self.assertEqual(rebuilt_task.status, Status.Pending)
 
         # Remove the inserted job & task after test
@@ -104,14 +119,27 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_all_jobs_and_tasks()
 
         # Create a sample task
-        task_arguments = {
+        program_name = "ooanalyzer"
+        input_file_args = {
+            "-f": "oo.exe"
+        }
+        input_text_args = {
+                "--timeout": "300"
+        }
+        input_flag_args = [
+            "-v",
+        ]
+        output_file_args = {
             "-j": "output.json",
             "-F": "facts",
-            "-R": "results",
-            "-f": "oo.exe",
+            "-R": "results"
         }
-        task_tool_type = 0
-        new_task = Task({}, task_tool_type, task_arguments)
+        new_task = Task()
+        new_task.program_name = program_name
+        new_task.input_file_args = input_file_args
+        new_task.input_text_args = input_text_args
+        new_task.input_flag_args = input_flag_args
+        new_task.output_file_args = output_file_args
 
         # Create a sample job
         job_name = "Test_job"
@@ -127,15 +155,13 @@ class TestResourceManager(unittest.TestCase):
         task_id = tasks_id[0]
         stdout = "sample stdout"
         stderr = "sample stderr"
-        output_file_list = ["../../sample_output/output.json"]
+        output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
         log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
 
-        self.manager.save_result(task_id, output_file_list, log_file_list, stdout, stderr)
+        self.manager.save_result(task_id, output_file_list, stdout, stderr)
 
         # Rebuild the task object and check the contents of files
         rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
-        self.assertEqual(rebuilt_task.arguments, task_arguments)
-        self.assertEqual(rebuilt_task.tool_type, task_tool_type)
 
         with open("../../sample_output/output.json", "rb") as f:
             output_json_bytes = f.read().decode('utf-8')
@@ -144,31 +170,46 @@ class TestResourceManager(unittest.TestCase):
         with open("../../sample_output/results", "rb") as f:
             results_bytes = f.read().decode('utf-8')
         self.assertEqual(self.manager.get_output_file(task_id, "output.json"), output_json_bytes)
-        self.assertEqual(self.manager.get_log_file(task_id, "facts"), facts_bytes)
-        self.assertEqual(self.manager.get_log_file(task_id, "results"), results_bytes)
+        self.assertEqual(self.manager.get_output_file(task_id, "facts"), facts_bytes)
+        self.assertEqual(self.manager.get_output_file(task_id, "results"), results_bytes)
 
-        self.assertEqual(rebuilt_task.output, ["output.json"])
-        self.assertEqual(rebuilt_task.log, ["facts", "results"])
+        self.assertEqual(self.manager.get_stdout(task_id), stdout)
+        self.assertEqual(self.manager.get_stderr(task_id), stderr)
+
+        self.assertEqual(rebuilt_task.output, ["output.json", "facts", "results"])
         self.assertEqual(rebuilt_task.stdout, stdout)
         self.assertEqual(rebuilt_task.stderr, stderr)
         self.assertEqual(rebuilt_task.status, Status.Pending)
 
         # Remove the inserted job & task after test
         self.manager.remove_all_jobs_and_tasks()
-    
+
     def test_update_task_status(self):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
 
         # Create a sample task
-        task_arguments = {
+        program_name = "ooanalyzer"
+        input_file_args = {
+            "-f": "oo.exe"
+        }
+        input_text_args = {
+                "--timeout": "300"
+        }
+        input_flag_args = [
+            "-v",
+        ]
+        output_file_args = {
             "-j": "output.json",
             "-F": "facts",
-            "-R": "results",
-            "-f": "oo.exe",
+            "-R": "results"
         }
-        task_tool_type = 0
-        new_task = Task({}, task_tool_type, task_arguments)
+        new_task = Task()
+        new_task.program_name = program_name
+        new_task.input_file_args = input_file_args
+        new_task.input_text_args = input_text_args
+        new_task.input_flag_args = input_flag_args
+        new_task.output_file_args = output_file_args
 
         # Create a sample job
         job_name = "Test_job"
@@ -194,8 +235,6 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(rebuilt_task.status, Status.Successful)
 
         # Remove the inserted job & task after test
-        # self.manager.remove_job_by_id(job_id)
-        # self.manager.remove_tasks_by_job_id(job_id)
         self.manager.remove_all_jobs_and_tasks()
 
     def test_get_all_jobs_without_tasks(self):
@@ -231,14 +270,27 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_all_jobs_and_tasks()
 
         # Create a sample task
-        task_arguments = {
+        program_name = "ooanalyzer"
+        input_file_args = {
+            "-f": "oo.exe"
+        }
+        input_text_args = {
+                "--timeout": "300"
+        }
+        input_flag_args = [
+            "-v",
+        ]
+        output_file_args = {
             "-j": "output.json",
             "-F": "facts",
-            "-R": "results",
-            "-f": "oo.exe",
+            "-R": "results"
         }
-        task_tool_type = 0
-        new_task = Task({}, task_tool_type, task_arguments)
+        new_task = Task()
+        new_task.program_name = program_name
+        new_task.input_file_args = input_file_args
+        new_task.input_text_args = input_text_args
+        new_task.input_flag_args = input_flag_args
+        new_task.output_file_args = output_file_args
 
         # Create a sample job
         job_name = "Test_job"
@@ -254,10 +306,9 @@ class TestResourceManager(unittest.TestCase):
         task_id = tasks_id[0]
         stdout = "sample stdout"
         stderr = "sample stderr"
-        output_file_list = ["../../sample_output/output.json"]
-        log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
+        output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
 
-        self.manager.save_result(task_id, output_file_list, log_file_list, stdout, stderr)
+        self.manager.save_result(task_id, output_file_list, stdout, stderr)
 
         # Retrive the output file
         file = self.manager.get_output_file(task_id, "output.json")
@@ -266,8 +317,8 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(file.encode('utf-8'), output_json)
 
         # Retrive the log files
-        facts_file = self.manager.get_log_file(task_id, "facts")
-        results_file = self.manager.get_log_file(task_id, "results")
+        facts_file = self.manager.get_output_file(task_id, "facts")
+        results_file = self.manager.get_output_file(task_id, "results")
         with open("../../sample_output/facts", "rb") as f:
             facts = f.read()
         with open("../../sample_output/results", "rb") as f:
@@ -277,7 +328,7 @@ class TestResourceManager(unittest.TestCase):
 
         # Remove the inserted jobs
         self.manager.remove_all_jobs_and_tasks()
-    
+
     def test_save_new_job_and_tasks(self):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
@@ -294,8 +345,10 @@ class TestResourceManager(unittest.TestCase):
         # Check the task attributes
         task = job.tasks[0]
         task_json = input_json["Tasks"][0]
-        self.assertEqual(task.tool_type, task_json["Tool_ID"])
-        self.assertEqual(task.arguments, task_json["Arguments"])
+        self.assertEqual(task.input_file_args, task_json["Input_File_Args"])
+        self.assertEqual(task.input_text_args, task_json["Input_Text_Args"])
+        self.assertEqual(task.input_flag_args, task_json["Input_Flag_Args"])
+        self.assertEqual(task.output_file_args, task_json["Output_File_Args"])
 
         # Check the stored file
         for filename, path in task.files.items():
@@ -304,7 +357,7 @@ class TestResourceManager(unittest.TestCase):
             self.assertEqual(saved_file, base64.b64decode(task_json["Files"][filename].encode('utf-8')))
             # self.assertEqual(saved_file, bytes.fromhex(task_json["Files"][filename]))
             os.remove(path)
-        
+
         # Remove the directory
         os.rmdir(os.path.join("/tmp/Felucca", task.task_id))
 
@@ -328,13 +381,13 @@ class TestResourceManager(unittest.TestCase):
             "ID": job.job_id,
             "Tasks": [],
         }
-        
+
         job_list = self.manager.get_job_list()
         self.assertEqual(job_list, [job_dict])
 
         # Remove all jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
-    
+
     def test_get_job_info(self):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
@@ -348,9 +401,8 @@ class TestResourceManager(unittest.TestCase):
         task_id = job.tasks[0].task_id
         stdout = "sample stdout"
         stderr = "sample stderr"
-        output_file_list = ["../../sample_output/output.json"]
-        log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
-        self.manager.save_result(task_id, output_file_list, log_file_list, stdout, stderr)
+        output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
+        self.manager.save_result(task_id, output_file_list, stdout, stderr)
 
         # Mark task as finished
         self.manager.mark_task_as_finished(task_id)
@@ -359,14 +411,16 @@ class TestResourceManager(unittest.TestCase):
 
         # Build the task json
         task_dict = {
+            "Program_Name": "ooanalyzer",
             "Arguments": {
                 "-f": "oo.exe",
-                "-R": "results",
+                "--timeout": "300",
+                "-v": "",
                 "-j": "output.json",
                 "-F": "facts",
+                "-R": "results"
             },
-            'Output': ['output.json'],
-            'Log': ['facts', 'results'],
+            'Output': ['output.json', 'facts', 'results'],
             'Stdout': 'sample stdout',
             'Stderr': 'sample stderr',
             'Finished_Time': job_info["Tasks"][0]["Finished_Time"],
@@ -410,6 +464,14 @@ class TestResourceManager(unittest.TestCase):
 
         # Remove the inserted sample
         self.manager.remove_tool_by_id(schema_json['Tool_ID'])
+
+        # Initialize Pharos tools
+        self.manager.initialize_pharos_tools('/vagrant/felucca/backend/pharos_schema')
+
+        tool_list = self.manager.get_all_tools()
+
+        self.assertGreater(len(tool_list), 0)
+        self.manager.remove_all_tools()
 
 if __name__ == '__main__':
     unittest.main()
