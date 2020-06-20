@@ -20,6 +20,9 @@ class ResourceManager(object):
         self.db_name = "test"
         # self.db_name = db_name
         self.db_manager = self.DatabaseManager(self.db_name)
+    
+    def setup(self):
+        self.db_manager.setup()
 
     def get_all_jobs_without_tasks(self):
         """Return all jobs as Job objects without their tasks
@@ -156,9 +159,18 @@ class ResourceManager(object):
 
     def initialize_pharos_tools(self, schema_path='pharos_schema'):
         """Read and store the schemas of Pharos tools
+
+        Args:
+            schema_path (String): the directory of the schema files (Only for test)
         """
         logger = Logger().get()
         logger.debug("start initialize_pharos_tools")
+
+        if self.db_manager.get_metadata_field("has_initialized_pharos") is True:
+            tool_list = self.get_all_tools()
+            print(f"{len(tool_list)} Pharos tools have been initialized. Skip this initialization.")
+            logger.debug(f"{len(tool_list)} Pharos tools have been initialized. Skip this initialization.")
+            return
 
         pharos_schema_path = schema_path
 
@@ -176,7 +188,10 @@ class ResourceManager(object):
         for schema in schema_list:
             self.db_manager.insert_new_tool(schema)
 
-        logger.debug(f"Initialize {len(schema_list)} Pharos tools.")
+        self.db_manager.set_metadata_field("has_initialized_pharos", True)
+
+        print(f"{len(schema_list)} Pharos tools have been initialized.")
+        logger.debug(f"{len(schema_list)} Pharos tools have been initialized.")
 
     def insert_new_job(self, new_job):
         """Insert a job with its tasks into the database
@@ -317,7 +332,14 @@ class ResourceManager(object):
             self.__jobs_collection = self.__db.jobs
             self.__tasks_collection = self.__db.tasks
             self.__tools_collection = self.__db.tools
+            self.__metadata_collection = self.__db.metadata
             self.__fs = gridfs.GridFS(self.__db)
+
+        def setup(self):
+            if "metadata" not in self.__db.list_collection_names() or self.__metadata_collection.count_documents({}) == 0:
+                # Not initialized
+                self.__metadata_collection.insert_one({"has_initialized_pharos": False})
+                print("DatabaseManager is initialized.")
 
         def get_all_jobs_without_tasks(self):
             """Return all jobs as Job objects without their tasks
@@ -441,6 +463,32 @@ class ResourceManager(object):
                 return self.__fs.get(file_id).read().decode('utf-8')
             except Exception as e:
                 logger.error(e)
+                return None
+
+        def get_metadata_field(self, field_name):
+            """Get the value of single field in metadata.
+
+            Args:
+                field_name (String): The key of the field
+
+            Returns:
+                value: The value of the field (Undefined type)
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_metadata_field for field:{field_name}")
+
+            if "metadata" not in self.__db.list_collection_names() or self.__metadata_collection.count_documents({}) == 0:
+                logger.error("Metadata has not been initialized.")
+                return None
+
+            try:
+                metadata = self.__metadata_collection.find()[0]
+                if field_name not in metadata.keys():
+                    logger.error("Metadata doesn't have this field.")
+                    return None
+                return metadata[field_name]
+            except Exception as e:
+                logger.error(f"Error when getting metadata. Exception: {e}")
                 return None
 
         def get_output_file(self, task_id, filename):
@@ -734,6 +782,7 @@ class ResourceManager(object):
                 job = self.__jobs_collection.find_one(condition)
                 job["status"] = Status.Successful.value
                 job["finished_time"] = datetime.now().replace(microsecond=0)
+
                 update_result = self.__jobs_collection.update_one(condition,
                                                                   {"$set": job})
                 if update_result.modified_count != 1:
@@ -761,6 +810,7 @@ class ResourceManager(object):
                 task["status"] = Status.Successful.value
                 finished_time = datetime.now().replace(microsecond=0)
                 task["finished_time"] = finished_time
+
                 update_result = self.__tasks_collection.update_one(condition,
                                 {"$set": task})
                 if update_result.modified_count != 1:
@@ -805,6 +855,13 @@ class ResourceManager(object):
                 # Get ids of all jobs
                 field = {"_id": 1}
                 delete_result = self.__tools_collection.delete_many({})
+
+                # Set the flag of initialization to False
+                metadata = self.__metadata_collection.find()[0]
+                metadata['has_initialized_pharos'] = False
+
+                condition = {"_id": metadata['_id']}
+                self.__metadata_collection.update_one(condition, {"$set": metadata})
 
                 logger.debug(f"Remove {delete_result.deleted_count} tools.")
             except Exception as e:
@@ -909,6 +966,7 @@ class ResourceManager(object):
                 task["stdout"] = stdout
                 task["stderr"] = stderr
                 # task["is_finished"] = True
+
                 update_result = self.__tasks_collection.update_one(condition,
                                                                    {"$set": task})
                 if update_result.modified_count != 1:
@@ -917,6 +975,35 @@ class ResourceManager(object):
             except Exception as e:
                 logger.error(f"something wrong in save_result, Exception: {e}")
 
+
+        def set_metadata_field(self, field_name, new_value):
+            """Set the value of single field in metadata.
+
+            Args:
+                field_name (String): The key of the field
+                new_value (Undefined): The new value of the field
+
+            Returns:
+                is_success: True for successful update, vice versa
+            """
+            logger = Logger().get()
+            logger.debug(f"start set_metadata_field for field:{field_name} "
+                         f"new_value:{new_value}")
+
+            if "metadata" not in self.__db.list_collection_names() or self.__metadata_collection.count_documents({}) == 0:
+                logger.error("Metadata has not been initialized.")
+                return False
+
+            try:
+                metadata = self.__metadata_collection.find()[0]
+                metadata[field_name] = new_value
+
+                condition = {"_id": metadata["_id"]}
+                self.__metadata_collection.update_one(condition, {"$set": metadata})
+                return True
+            except Exception as e:
+                logger.error(f"Error when setting metadata. Exception: {e}")
+                return False
 
         def update_job_status(self, job_id, new_status):
             """Update the status of a job
@@ -932,6 +1019,7 @@ class ResourceManager(object):
                 condition = {"_id": ObjectId(job_id)}
                 job = self.__jobs_collection.find_one(condition)
                 job["status"] = new_status.value
+
                 update_result = self.__jobs_collection.update_one(condition,
                                                                   {"$set": job})
                 if update_result.modified_count != 1:
@@ -956,6 +1044,7 @@ class ResourceManager(object):
                 condition = {"_id": ObjectId(task_id)}
                 task = self.__tasks_collection.find_one(condition)
                 task["status"] = new_status.value
+
                 update_result = self.__tasks_collection.update_one(condition,
                                                                    {"$set": task})
                 if update_result.modified_count != 1:

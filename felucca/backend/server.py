@@ -296,10 +296,12 @@ def setup_pharos_tools(app):
     # Remove the check for non-debug mode
     # It means "Only run when app has been loaded"
     # Flask will run it twice to enable the "reload" feature in debug mode
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        ResourceManager(db_name).initialize_pharos_tools()
-        tool_list = ResourceManager(db_name).get_all_tools()
-        print(len(tool_list))
+    ResourceManager(db_name).setup()
+    ResourceManager(db_name).initialize_pharos_tools()
+    # if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    #     ResourceManager(db_name).initialize_pharos_tools()
+    #     tool_list = ResourceManager(db_name).get_all_tools()
+    #     print(len(tool_list))
 setup_pharos_tools(app)
 
 if __name__ == '__main__':

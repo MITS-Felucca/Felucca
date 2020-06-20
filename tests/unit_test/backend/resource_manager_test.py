@@ -110,8 +110,6 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(rebuilt_task.status, Status.Pending)
 
         # Remove the inserted job & task after test
-        # self.manager.remove_job_by_id(job_id)
-        # self.manager.remove_tasks_by_job_id(job_id)
         self.manager.remove_all_jobs_and_tasks()
 
     def test_save_result(self):
@@ -326,6 +324,10 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(facts_file.encode('utf-8'), facts)
         self.assertEqual(results_file.encode('utf-8'), results)
 
+        # Retrive stdout & stderr
+        self.assertEqual(self.manager.get_stdout(task_id), stdout)
+        self.assertEqual(self.manager.get_stderr(task_id), stderr)
+
         # Remove the inserted jobs
         self.manager.remove_all_jobs_and_tasks()
 
@@ -446,6 +448,8 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_all_jobs_and_tasks()
 
     def test_tool(self):
+        self.manager.remove_all_tools()
+
         # Insert a sample schema
         with open("/vagrant/tests/sample_output/ooanalyzer.json") as f:
             schema_json = json.loads(f.read())
