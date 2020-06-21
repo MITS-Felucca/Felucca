@@ -122,6 +122,8 @@ class ExecutionManager(object):
         
         """
         logger = Logger().get()
+
+        print(task.task_id)
         
         for filename, path in task.files.items():
             print(f"src and dst: {path}")
@@ -143,6 +145,10 @@ class ExecutionManager(object):
             container_dir = os.path.dirname(dst)
             container.exec_run("mkdir -p "+container_dir)
             container.put_archive(container_dir, data)
+            _, r = container.exec_run("ls " + container_dir, stdout=True, stream=True)
+            for line in r:
+                print(line)
+
             
             #delete local tar and exe file
             if(os.path.exists(path)):
@@ -253,11 +259,13 @@ class ExecutionManager(object):
         
         container.start()
 
+        self.copy_to_container(task,container)
+        logger.debug(f"successfully copy exe into container({container.name})")
+
         t = Thread(target=self.run_container_flask, args=(container, ))
         t.start()
         
         #self.copy_to_container(task,task.executable_file,container)
-        self.copy_to_container(task,container)
-        logger.debug(f"successfully copy exe into container({container.name})")
+        
         
         return(True);
