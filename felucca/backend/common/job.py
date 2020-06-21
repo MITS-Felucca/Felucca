@@ -78,25 +78,23 @@ class Job(object):
         
         Returns:
             job (Job): Job object
+            
         """
     
         job_name = json["Job_Name"]
         job_comment = json["Job_Comment"]
-        # created_time = json["Created_Time"]
         job = Job(job_name, job_comment)
         job.tasks = []
-        
         for task_dict in json["Tasks"]:
             task = Task.from_json(task_dict)
-            job.tasks.append(task)
-            
+            job.tasks.append(task)     
         return(job)
     
     @classmethod
     def to_json(cls, job, need_task = False):
         
         """form a json-like dict output from a job instance, the predifined dict format is as follow:
-        {Name | Comment | Created_Time | Task_Number | Status | ID | Tasks(list of task dict) }  
+        {Name | Comment | Created_Time | Task_Number | Status | ID | Tasks(list of task dicts) }  
 
         Args:
             job (Job): a job instance
@@ -105,6 +103,7 @@ class Job(object):
             job_json (dict): a json-like dict of job object
 
         """
+
         job_json = {}
         job_json["Name"] = job.name
         job_json["Comment"] = job.comment
