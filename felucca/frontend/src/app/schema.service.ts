@@ -13,7 +13,7 @@ import { ArgumentType } from './argument-type.enum';
 @Injectable()
 export class SchemaService {
 
-  private backEndURL = 'http://localhost:5000/debug';
+  private backEndURL = 'http://localhost:5000';
 
   constructor(private http: HttpClient) { }
 

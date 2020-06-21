@@ -12,7 +12,7 @@ import { TaskInfo } from './task-info';
 @Injectable()
 export class JobService {
 
-  private backEndURL = 'http://localhost:5000/debug';
+  private backEndURL = 'http://localhost:5000';
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
