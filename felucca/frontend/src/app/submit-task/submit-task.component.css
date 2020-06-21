@@ -4,9 +4,6 @@ label {
   color: #607D8B;
   font-weight: bold;
 }
-table, th, td {
-  border: 1px solid black;
-}
 
 button:disabled {
   background: gray

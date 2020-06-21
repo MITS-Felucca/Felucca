@@ -74,19 +74,18 @@
     </table>
   </div>
   <div>
-      <div class="input-group mb-3">
-        <div class="input-group-prepend">
-          <label class="input-group-text" for="inputGroupSelect01" style="background-color:#28a745;color:#ffffff">Add Task</label>
-        </div>
-        <select class="custom-select" [(ngModel)]="chosenIndex" (change)="displayAddTaskPage()" place-holder="123">
-          <option [value]="0">Please choose a tool...</option>
+      <div class="input-group mb-3" style="width:20%">
+        <select class="custom-select bg-success text-white" [(ngModel)]="chosenIndex" (change)="displayAddTaskPage()" place-holder="123">
+          <option [value]="0">Choose a new tool...</option>
           <option *ngFor="let schema of schemas; index as i" [value]="i + 1" > {{schema.toolName}}</option>
         </select>
       </div>
 
       <app-submit-task [schema]="chosenSchema" (submission)="submitTask($event)"></app-submit-task>
   </div>
-   <div>
-     <button type="button" [disabled]="!isValidJob()" class="btn btn-primary" style="width:100px" (click)="submitJob()">Submit</button>
-   </div>
+    <div class="form-group"> 
+      <button [disabled]="!isValidJob()" class="btn btn-success btn-lg float-right rounded-lg" type="submit" style="width:150px" (click)="submitJob()">Submit</button> 
+    </div> 
+    <div style="height:80px">
+    </div>
 </div>
