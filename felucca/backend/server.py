@@ -1,13 +1,14 @@
 import json
 import os
 import base64
+import sys
 from datetime import datetime
 from flask import abort
 from flask import Flask
 from flask import request
 from flask import jsonify
 from flask import Response
-
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../tests/sample_output'))
 from time import sleep
 from execution_manager import ExecutionManager
 from job_manager import JobManager
@@ -65,46 +66,20 @@ def test():
     print(task.log)
     return {"status": "ok"}
 
-@app.route("/test_new_execution")
-def test_new_execution():
+@app.route("/test_new_execution/<task_id>",methods=['GET','POST'])
+def test_new_execution(task_id):
     """this is used for testing new execution manager after reconstrction
 
-    Test command: curl “http://0.0.0.0:5000/test_new_execution", to use this, we should put the input.json at the "backend" folder in advance 
-    """
-    exe_str="str"
-    {
-        "Job_Name": "dump_job",
-        "Job_Comment": "this is the test json input for resource manager",
-        "Tasks": [
-            {
-                "Files": {
-                "-f":exe_str
-                },
-                "Program_Name": "ooanalyzer",
-                "Input_File_Args": {
-                    "-f": "oo.exe"
-                },
-                "Input_Text_Args": { 
-                    "--timeout": "300"
-                },
-                "Input_Flag_Args": ["-v"],
-                "Output_File_Args": {
-                    "-j": "output.json",
-                    "-F": "facts",
-                    "-R": "results"
-                }
-            }
-        ]
-    }   
-    
-    
+    Test command: "curl http://0.0.0.0:5000/test_new_execution", to use this, we should put the input.json at the "backend" folder in advance 
+    """    
+    print(f"\n\n\n{task_id}\n\n\n")
     
     with open("input.json",'r') as f:
         json_data = json.load(f)
     job = Job.from_json(json_data)
     job.job_id = "this_is_a_test_job_id"
     task = job.tasks[0]
-    task.task_id = "this_is_a_test_task_id"
+    task.task_id = task_id
     
 
     file_dict = {}
