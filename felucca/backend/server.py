@@ -135,7 +135,6 @@ def get_job(id):
         7. Remember to modify the name of the database
     """
     job_dict = ResourceManager(db_name).get_job_info(id)
-    print(job_dict)
     return job_dict
 
 @app.route("/job-list/json", methods=['GET'])
