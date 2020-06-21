@@ -1,38 +1,70 @@
-<div class="card">
-  <h4 class="card-header"> New Task </h4>
-  <div class="card-body">
-      <form (ngSubmit) = "onSubmit()" [formGroup]="form">
-        <div>
-          <label>Tool Name</label> <strong> {{toolName}}</strong>
-        </div>
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col"> Flag </th>
-              <th scope="col"> Comment </th>
-              <th scope="col"> input </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let argument of arguments | keyvalue">
-              <td> {{argument.key}}
-                <span *ngIf="argument.value[1]">
-                  ({{argument.value[1]}})
-                </span>
-              </td>
-              <td> {{argument.value[2]}} </td>
-              <td [ngSwitch]="argument.value[0]">
-                <input *ngSwitchCase="argumentType.InputFile" type="file" (change) = "onFileChange($event, argument.key)">
-                <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
-                <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFlag" type="checkbox">
-                <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputText" type="Text">
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="form-row">
-            <button type="submit" [disabled]="!form.valid" class="btn btn-primary" style="width:100px">Save</button>
-        </div>
-    </form>
+<div class="card shadow p-3 mb-5 bg-white rounded" *ngIf="schema" >
+  <div class="card-header bg-primary text-white">
+    {{schema.toolName}}
   </div>
+  <div class="card-body">
+    <h6 class="card-subtitle mb-2 text-muted">{{schema.isPharos == true ? "Pharos Tool" : "Not Pharos Tool"}}</h6>
+  <form (ngSubmit) = "onSubmit()" [formGroup]="form">
+    <div class="card shadow p-3 mb-5 bg-white rounded" *ngFor="let argumentClass of schema.argumentClasses">
+      <div class="card-body">
+          <div class="p-3 mb-2 bg-info text-white">
+        {{argumentClass.name}}
+      </div>
+      <table class="table table-striped" style="width: 100%">
+        <colgroup>
+        <col span="1" style="width: 20%;">
+        <col span="1" style="width: 60%;">
+        <col span="1" style="width: 20%;">
+      </colgroup>
+    
+      <thead>
+        <th class="argument">Argument</th>
+        <th class="comment">Comment</th>
+        <th class="input">Input</th>
+      </thead>
+      <tbody>
+        <tr *ngFor="let argument of argumentClass.arguments">
+          <td> 
+            <span *ngIf="argument.abbreviation !== ''">
+              {{argument.abbreviation}}
+            </span>
+            <span *ngIf="argument.fullName !== '' && argument.abbreviation === ''">
+              {{argument.fullName}}
+            </span>
+            <span *ngIf="argument.fullName !== '' && argument.abbreviation !== ''">
+              ({{argument.fullName}})
+            </span>
+          </td>
+          <td> {{argument.description}} </td>
+          <td [ngSwitch]="argument.argumentType">
+            <!-- <div>
+              <input *ngSwitchCase="argumentType.InputFile" type="file" (change) = "onFileChange($event, argument.key)">
+            </div> -->
+            <div class="custom-file" *ngSwitchCase="argumentType.InputFile">
+              <input type="file" class="custom-file-input" id="customFile" (change) = "onFileChange($event, argument.key)">
+              <!-- <label class="custom-file-label" for="customFile">{{form.get("inputFile")[argument.key]}}</label> -->
+              <label class="custom-file-label" for="customFile">{{ this.form.get(['inputFile', argument.key]).value == "" ? "Choose a file" : this.form.get(['inputFile', argument.key]).value }}</label>
+            </div>
+            <div formGroupName="outputFile">
+              <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
+            </div>
+            <div formGroupName="inputFlag">
+              <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFlag" type="checkbox">
+            </div>
+            <div formGroupName="inputText">
+              <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputText" type="Text">
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+      </div>
+    </div>
+
+    <div class="form-group"> 
+      <button [disabled]="!form.valid" class="btn btn-success btn-lg float-right rounded-lg" type="submit" style="width:150px">Save</button> 
+    </div> 
+</form>
 </div>
+</div>
+

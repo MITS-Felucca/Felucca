@@ -26,12 +26,10 @@
           <tr>
             <th>ID</th>
             <th style="width:30%;">Arguments</th>
-            <th>Output Files</th>
-            <th>Log Files</th>
-            <th>Standard Output</th>
-            <th>Standard Error</th>
+            <th>Output</th>
             <th>Finish Time</th>
             <th>Status</th>
+            <th>Operations</th>
           </tr>
         </thead>
         <tbody>
@@ -41,34 +39,28 @@
               <dl class="row" style="margin: 0px 0px 0px 0px">
                   <ng-container *ngFor="let argument of task.arguments | keyvalue">
                     <dt class="col-sm-2" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
-                    <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
+                    <dd *ngIf="task.outputFilename.has(argument.value)" (click)="goToFile(task.taskID, 'output', argument.value);" class="col-sm-9 link" style="margin: 0px 0px 0px 0px" routerLinkActive="active-link"> {{argument.value}}</dd>
+                    <dd *ngIf="task.outputFilename.has(argument.value) === false" class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
                 </ng-container>
               </dl>
             </td>
             <td>
               <ul>
-                <li *ngFor="let filename of task.outputFilename" (click)="goToFile(task.taskID, 'output', filename);" routerLinkActive="active-link" class="link">
-                  {{filename}}
-                </li>
+                <li (click)="goToOutput(task.taskID, 'stdout');" routerLinkActive="active-link" class="link">
+                stdout</li>
+                <li (click)="goToOutput(task.taskID, 'stderr');" routerLinkActive="active-link" class="link">
+                stderr</li>
               </ul>
             </td>
 
-            <td>
-              <ul>
-                <li *ngFor="let filename of task.logFilename" (click)="goToFile(task.taskID, 'log', filename)" routerLinkActive="active-link" class="link">
-                  {{filename}}
-                </li>
-              </ul>
-            </td>
-
-            <td class="text">{{task.stdout}}</td>
-
-            <td class="text">{{task.stderr}}</td>
-
-            <td *ngIf="task.status == status.Successful">{{task.finishTime | date: 'medium'}}</td>
-            <td *ngIf="task.status != status.Successful"></td>
+            <td *ngIf="task.status === status.Successful">{{task.finishTime | date: 'medium'}}</td>
+            <td *ngIf="task.status !== status.Successful"></td>
 
             <td>{{task.status}} </td>
+
+            <td>
+              <button type="button" [disabled]="task.status === status.Successful" class="btn btn-primary" (click)="killTask(task.taskID)">Kill</button>
+            </td>
           </tr>
         </tbody>
       </table>

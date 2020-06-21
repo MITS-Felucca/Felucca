@@ -12,7 +12,7 @@ import { TaskInfo } from './task-info';
 @Injectable()
 export class JobService {
 
-  private backEndURL = 'http://localhost:5000';
+  private backEndURL = 'http://localhost:5000/debug';
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -56,13 +56,15 @@ export class JobService {
         }, tasks: []};
 
         for (let task of (data as any).Tasks) {
+          let outputFilename = new Set();
+          for (let name of (task as any).Output) {
+            outputFilename.add(name);
+          }
           jobInfo.tasks.push(
             {
+              programName: (task as any).Program_Name, 
               arguments: (task as any).Arguments,
-              outputFilename: (task as any).Output,
-              logFilename: (task as any).Log,
-              stdout: (task as any).Stdout,
-              stderr: (task as any).Stderr,
+              outputFilename: outputFilename,
               finishTime: new Date((task as any).Finished_Time * 1000),
               status: Status[(task as any).Status],
               taskID: (task as any).ID
@@ -76,10 +78,31 @@ export class JobService {
   submitJob(jobName: string, jobComment: string, tasks: TaskInfo[]): Observable<boolean> {
     let job = {Job_Name: jobName, Job_Comment: jobComment, Tasks: []};
     for (let task of tasks) {
-      job.Tasks.push({Tool_ID: 1, Files: task.files, Arguments: task.arguments});
+      job.Tasks.push({Program_Name: task.programName,
+                      Files: task.files,
+                      Input_File_Args: task.inputFileArguments,
+                      Input_Text_Args: task.inputTextArguments,
+                      Input_Flag_Args: task.inputFlagArguments,
+                      Output_File_Args: task.outputFileArguments});
     }
     const url = `${this.backEndURL}/job`;
     return this.http.post(url, JSON.stringify(job), this.httpOptions).pipe(map(data => {
+      return (data as any).Status == 'ok';
+      }
+    ));
+  }
+
+  killJob(jobID: string): Observable<boolean> {
+    const url = `${this.backEndURL}/kill-job/${jobID}`;
+    return this.http.get(url).pipe(map(data => {
+      return (data as any).Status == 'ok';
+      }
+    ));
+  }
+
+  killTask(taskID: string): Observable<boolean> {
+    const url = `${this.backEndURL}/kill-task/${taskID}`;
+    return this.http.get(url).pipe(map(data => {
       return (data as any).Status == 'ok';
       }
     ));

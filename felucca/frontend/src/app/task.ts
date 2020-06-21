@@ -1,11 +1,9 @@
 import { Status } from "./status.enum";
 
 export interface Task {
+  programName: string,
   arguments: {[key: string]: string},
-  outputFilename: string[],
-  logFilename: string[],
-  stdout: string,
-  stderr: string,
+  outputFilename: Set<string>,
   finishTime: Date,
   status: Status,
   taskID: string

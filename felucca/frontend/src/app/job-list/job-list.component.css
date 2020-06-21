@@ -1,3 +1,6 @@
 h2 {
   margin: 24px 0px 24px
 }
+button:disabled {
+  background: gray
+}

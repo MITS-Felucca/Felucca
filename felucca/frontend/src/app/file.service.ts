@@ -10,8 +10,15 @@ export class FileService {
 
   constructor(private http: HttpClient) { }
 
-  getFile(taskID: string, filetype: string, filename: string): Observable<string> {
-    let url = `${this.backEndURL}/task/${taskID}/${filetype}/${filename}/json`;
+  getFile(taskID: string, fileType: string, filename: string): Observable<string> {
+    let url = `${this.backEndURL}/task/${taskID}/${fileType}/${filename}/json`;
+    return this.http.get(url).pipe(map(data => {
+      return (data as any).Content;
+    }));
+  }
+
+  getOutput(taskID: string, outputType: string): Observable<string> {
+    let url = `${this.backEndURL}/task/${taskID}/${outputType}/json`;
     return this.http.get(url).pipe(map(data => {
       return (data as any).Content;
     }));
