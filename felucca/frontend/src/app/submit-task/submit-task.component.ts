@@ -89,6 +89,9 @@ export class SubmitTaskComponent implements OnChanges {
   }
 
   refreshForm() {
+    this.files = {};
+    this.defaultNames = {};
+
     let inputFileKeys = {};
     let inputTextKeys = {};
     let inputFlagKeys = {};
