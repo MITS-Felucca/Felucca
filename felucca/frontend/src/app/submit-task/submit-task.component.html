@@ -43,7 +43,7 @@
             <div class="custom-file" *ngSwitchCase="argumentType.InputFile">
               <input type="file" class="custom-file-input" id="customFile" (change) = "onFileChange($event, argument.key)">
               <!-- <label class="custom-file-label" for="customFile">{{form.get("inputFile")[argument.key]}}</label> -->
-              <label class="custom-file-label" for="customFile">{{ this.form.get(['inputFile', argument.key]).value == "" ? "Choose a file" : this.form.get(['inputFile', argument.key]).value }}</label>
+              <label class="custom-file-label" for="customFile" style="margin:0px 0px 0px 0px">{{ this.form.get(['inputFile', argument.key]).value == "" ? "Choose a file" : this.form.get(['inputFile', argument.key]).value }}</label>
             </div>
             <div formGroupName="outputFile">
               <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
