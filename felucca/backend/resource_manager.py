@@ -281,9 +281,11 @@ class ResourceManager(object):
                     logger.error(f"Failed to create directory {task_file_path}"
                                  f" with exception {e}")
 
-            for filename, content in new_job_dict["Tasks"][i]["Files"].items():
+            for param, content in new_job_dict["Tasks"][i]["Files"].items():
+                filename = new_job_dict["Tasks"][i]["Input_File_Args"][param]
                 file_path = os.path.join("/tmp/Felucca", f"{task.task_id}"
                                          f"/{filename}")
+                print("Debug Log: " + file_path)
                 with open(file_path, "wb") as f:
                     f.write(base64.b64decode(content.encode('utf-8')))
                 file_dict[filename] = file_path

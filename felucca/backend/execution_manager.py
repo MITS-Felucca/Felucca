@@ -38,32 +38,36 @@ class ExecutionManager(object):
             
             output_path = self.id_to_task_container[task_id][0].output
             container = self.id_to_task_container[task_id][1]
+
+            _, r = container.exec_run("ls",stdout=True, stderr=True, stream=True)
+            for line in r:
+                print(line)
     
             # get result from container
-            container.exec_run("tar -cvf result.docker %s" % (" ".join(output_path)))
-            bits, stat = container.get_archive("result.docker")
+            container.exec_run("tar -cvf {}.docker {}".format(task_id, " ".join(output_path)))
+            bits, stat = container.get_archive(f"{task_id}.docker")
     
             path = f"/tmp/Felucca/result/{task_id}"
     
             if not os.path.exists(path):
                 os.makedirs(path)
                 
-            file = open(f"{path}/result", "wb+")
+            file = open(f"{path}/{task_id}.tar", "wb+")
             for chunk in bits:
                 file.write(chunk)
             file.close()
     
             # extract result tar file
-            result_tar = tarfile.open(f"{path}/result","r")
+            result_tar = tarfile.open(f"{path}/{task_id}.tar","r")
             result_tar.extractall(path)
             result_tar.close()
-            result_tar = tarfile.open(f"{path}/result.docker","r")
+            result_tar = tarfile.open(f"{path}/{task_id}.docker","r")
             result_tar.extractall(path)
             result_tar.close()
             
             #delete temp tar file after extraction
-            os.remove(f"{path}/result")
-            os.remove(f"{path}/result.docker")
+            os.remove(f"{path}/{task_id}.tar")
+            os.remove(f"{path}/{task_id}.docker")
             
             #stop and remove this container
             container.stop()
