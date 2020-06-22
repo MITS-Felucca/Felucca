@@ -10,6 +10,7 @@
         <th>Finished Time</th>
         <th>Number of Tasks</th>
         <th>Status</th>
+        <th>Operations</th>
       </tr>
   </thead>
     <tbody>
@@ -22,6 +23,9 @@
         <td *ngIf="job.status != status.Successful"></td>
         <td>{{job.taskNumber}}</td>
         <td>{{job.status}}</td>
+        <td>
+              <button type="button" [disabled]="job.status === status.Successful" class="btn btn-primary" (click)="killJob(job.jobID)">Kill</button>
+          </td>
       </tr>
     </tbody>
   </table>

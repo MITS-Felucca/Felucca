@@ -37,6 +37,18 @@ export class JobInfoComponent implements OnInit {
       this.router.createUrlTree(['/task', taskID, filetype, filename])
     );
     window.open(url, '_blank');
-    
+  }
+
+  goToOutput(taskID: string, outputType: string): void {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/task', taskID, outputType])
+    );
+    window.open(url, '_blank');
+  }
+
+  killTask(taskID: string): void {
+    this.jobService.killTask(taskID).subscribe(data => {
+      this.router.navigate(['/job-info', this.jobID]);
+    });
   }
 }

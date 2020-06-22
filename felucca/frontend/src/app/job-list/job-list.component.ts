@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { JobService } from '../job.service';
 import { Status } from '../status.enum'
@@ -18,6 +18,7 @@ export class JobListComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private jobService: JobService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -26,5 +27,9 @@ export class JobListComponent implements OnInit {
 
   getJobList(): void {
     this.jobService.getJobList().subscribe(jobs => { this.jobs = jobs; })
+  }
+
+  killJob(jobID: string): void {
+    this.jobService.killJob(jobID).subscribe();
   }
 }

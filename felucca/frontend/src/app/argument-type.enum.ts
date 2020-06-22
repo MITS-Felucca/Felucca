@@ -1,6 +1,6 @@
 export enum ArgumentType {
-  InputFile = 0,
-  OutputFile = 1,
-  InputText = 2,
-  InputFlag = 3
+  InputFile = 'Input_File_Args',
+  OutputFile = 'Output_File_Args',
+  InputText = 'Input_Text_Args',
+  InputFlag = 'Input_Flag_Args'
 }
