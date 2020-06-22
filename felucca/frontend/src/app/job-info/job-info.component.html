@@ -14,8 +14,16 @@
       <dd *ngIf="job.status == status.Successful" class="col-sm-9">{{job.finishedTime | date: 'medium'}}</dd>
       <dt class="col-sm-3">Number of Tasks</dt>
       <dd class="col-sm-9">{{job.taskNumber}}</dd>
+
       <dt class="col-sm-3">Status</dt>
       <dd class="col-sm-9">{{job.status}}</dd>
+
+      <dt class="col-sm-3">Operations</dt>
+      <dd class="col-sm-9">
+        <td>
+              <button type="button" [disabled]="job.status === status.Successful" class="btn btn-primary" (click)="killJob()">Kill</button>
+            </td>
+      </dd>
     </dl>
   </div>
   <div *ngIf="tasks">

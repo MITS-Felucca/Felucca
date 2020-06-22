@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { saveAs } from 'file-saver';
 import { FileService } from '../file.service';
 
 @Component({
@@ -21,5 +22,10 @@ export class FileDisplayComponent implements OnInit {
     this.fileType = this.route.snapshot.paramMap.get('fileType');
     this.fileService.getFile(this.taskID,  this.fileType, this.filename).subscribe(
       content => {this.content = content});
+  }
+
+  saveFile() {
+    let blob = new Blob([this.content], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, this.taskID + "_" + this.filename);
   }
 }
