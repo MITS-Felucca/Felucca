@@ -168,7 +168,6 @@ class ResourceManager(object):
 
         if self.db_manager.get_metadata_field("has_initialized_pharos") is True:
             tool_list = self.get_all_tools()
-            print(f"{len(tool_list)} Pharos tools have been initialized. Skip this initialization.")
             logger.debug(f"{len(tool_list)} Pharos tools have been initialized. Skip this initialization.")
             return
 
@@ -179,7 +178,6 @@ class ResourceManager(object):
             for filename in files:
                 if not filename.endswith('.json'):
                     continue
-                print(filename)
                 path = os.path.join(root, filename)
                 with open(path, 'r') as f:
                     schema_json = json.loads(f.read())
@@ -190,7 +188,6 @@ class ResourceManager(object):
 
         self.db_manager.set_metadata_field("has_initialized_pharos", True)
 
-        print(f"{len(schema_list)} Pharos tools have been initialized.")
         logger.debug(f"{len(schema_list)} Pharos tools have been initialized.")
 
     def insert_new_job(self, new_job):
@@ -337,10 +334,11 @@ class ResourceManager(object):
             self.__fs = gridfs.GridFS(self.__db)
 
         def setup(self):
+            logger = Logger().get()
             if "metadata" not in self.__db.list_collection_names() or self.__metadata_collection.count_documents({}) == 0:
                 # Not initialized
                 self.__metadata_collection.insert_one({"has_initialized_pharos": False})
-                print("DatabaseManager is initialized.")
+                logger.debug("DatabaseManager is initialized.")
 
         def get_all_jobs_without_tasks(self):
             """Return all jobs as Job objects without their tasks
@@ -531,7 +529,7 @@ class ResourceManager(object):
                 task_id (String): the id of the task
 
             Return:
-                stderr (String): the stderr
+                stderr (String): the stderr, None for absence or error
             """
             logger = Logger().get()
             logger.debug(f"Start get_stderr from {task_id}")
@@ -544,7 +542,12 @@ class ResourceManager(object):
                 if task_doc is None:
                     raise Exception(f"The task of {task_id} does not exist.")
 
-                return task_doc['stderr']
+                stderr_id = task_doc['stderr']
+                if stderr_id is None:
+                    return None
+
+                stderr_str = self.__fs.get(stderr_id).read().decode('utf-8')
+                return stderr_str
             except Exception as e:
                 logger.error(f"Failed getting stderr from task {task_id}."
                              f"Exception: {e}")
@@ -557,7 +560,7 @@ class ResourceManager(object):
                 task_id (String): the id of the task
 
             Return:
-                stdout (String): the stdout
+                stdout (String): the stdout, None for absence or error
             """
             logger = Logger().get()
             logger.debug(f"Start get_stdout from {task_id}")
@@ -570,7 +573,12 @@ class ResourceManager(object):
                 if task_doc is None:
                     raise Exception(f"The task of {task_id} does not exist.")
 
-                return task_doc['stdout']
+                stdout_id = task_doc['stdout']
+                if stdout_id is None:
+                    return None
+
+                stdout_str = self.__fs.get(stdout_id).read().decode('utf-8')
+                return stdout_str
             except Exception as e:
                 logger.error(f"Failed getting stdout from task {task_id}."
                              f"Exception: {e}")
@@ -736,8 +744,8 @@ class ResourceManager(object):
                     "output_file_args": new_task.output_file_args,
                     "job_id": job_id,
                     "output_files": {},
-                    "stdout": "",
-                    "stderr": "",
+                    "stdout": None,
+                    "stderr": None,
                     "status": new_task.status.value,
                     "finished_time": new_task.finished_time,
                 }
@@ -944,8 +952,7 @@ class ResourceManager(object):
 
             try:
                 logger = Logger().get()
-                logger.debug(f"start save_result task_id:{task_id}, "
-                             f"output:{output}, stdout:{stdout}, stderr:{stderr}")
+                logger.debug(f"start save_result task_id:{task_id}")
 
                 # Cast task_id from String to ObjectId first
                 task_id = ObjectId(task_id)
@@ -964,13 +971,38 @@ class ResourceManager(object):
                 except Exception as e:
                     logger.error(f"Problem when storing file {output_file_path}. Exception{e}")
 
+            # TODO:Deal with excessively large stdout & stderr
+
+
             try:
                 # Update the output fields of the task
                 condition = {"_id": task_id}
                 task = self.__tasks_collection.find_one(condition)
+            except Exception as e:
+                logger.error(f"Error when searching for task with id {task_id}")
+
+            # Only update when the parameters are non-empty
+            update_stdout = False
+            if stdout is not None and stdout != "":
+                update_stdout = True
+            update_stderr = False
+            if stderr is not None and stderr != "":
+                update_stderr = True
+
+            # Store the id of the old results and insert the new one
+            if update_stdout:
+                old_stdout_id = task['stdout']
+                new_stdout_id = self.__fs.put(stdout, encoding='utf-8')
+            if update_stderr:
+                old_stderr_id = task['stderr']
+                new_stderr_id = self.__fs.put(stderr, encoding='utf-8')
+
+            try:
                 task["output_files"] = output_dict
-                task["stdout"] = stdout
-                task["stderr"] = stderr
+                if update_stdout and new_stdout_id:
+                    task["stdout"] = new_stdout_id
+                if update_stderr and new_stderr_id:
+                    task["stderr"] = new_stderr_id
 
                 update_result = self.__tasks_collection.update_one(condition,
                                                                    {"$set": task})
@@ -978,6 +1010,15 @@ class ResourceManager(object):
                     logger.error(f"save result failed")
             except Exception as e:
                 logger.error(f"something wrong in save_result, Exception: {e}")
+
+            try:
+                # Remove the old stdour & stderr after update
+                if update_stdout and old_stdout_id is not None:
+                    self.__fs.delete(old_stdout_id)
+                if update_stderr and old_stderr_id is not None:
+                    self.__fs.delete(old_stderr_id)
+            except Exception as e:
+                logger.error(f"Error when deleting old results. Exception: {e}")
 
 
         def set_metadata_field(self, field_name, new_value):

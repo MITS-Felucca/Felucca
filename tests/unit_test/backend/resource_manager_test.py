@@ -176,8 +176,6 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(self.manager.get_stderr(task_id), stderr)
 
         self.assertEqual(rebuilt_task.output, ["output.json", "facts", "results"])
-        self.assertEqual(rebuilt_task.stdout, stdout)
-        self.assertEqual(rebuilt_task.stderr, stderr)
         self.assertEqual(rebuilt_task.status, Status.Pending)
 
         # Remove the inserted job & task after test
@@ -403,7 +401,7 @@ class TestResourceManager(unittest.TestCase):
         # Save the result of the task
         task_id = job.tasks[0].task_id
         stdout = "sample stdout"
-        stderr = "sample stderr"
+        stderr = ""
         output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
 
@@ -424,8 +422,8 @@ class TestResourceManager(unittest.TestCase):
                 "-R": "results"
             },
             'Output': ['output.json', 'facts', 'results'],
-            'Stdout': 'sample stdout',
-            'Stderr': 'sample stderr',
+            'Stdout': True,
+            'Stderr': False,
             'Finished_Time': job_info["Tasks"][0]["Finished_Time"],
             'Status': Status.Successful.name,
             'ID': job_info["Tasks"][0]["ID"],
@@ -541,9 +539,14 @@ class TestResourceManager(unittest.TestCase):
         # Rebuild the task object and check the contents of files
         rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
         self.assertEqual(rebuilt_task.output, ["output.json", "results"])
-        self.assertEqual(rebuilt_task.stdout, None)
-        self.assertEqual(rebuilt_task.stderr, stderr)
 
+        retrieved_stdout = self.manager.get_stdout(task_id)
+        retrieved_stderr = self.manager.get_stderr(task_id)
+        self.assertEqual(retrieved_stdout, stdout)
+        self.assertEqual(retrieved_stderr, stderr)
+
+        # Remove the directory & inserted tasks
         shutil.rmtree(dir_path)
+        self.manager.remove_all_jobs_and_tasks()
 if __name__ == '__main__':
     unittest.main()

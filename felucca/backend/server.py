@@ -161,7 +161,7 @@ def get_task(task_id):
 
 
 @app.route("/task/<task_id>/output/<file_name>/json", methods=['GET'])
-def get_task_file(task_id, file_type, file_name):
+def get_task_file(task_id, file_name):
     print(task_id)
     file = ResourceManager(db_name).get_output_file(task_id,file_name)
     if file is None:
