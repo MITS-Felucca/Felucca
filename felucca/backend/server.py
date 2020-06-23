@@ -79,14 +79,13 @@ def test_new_execution(task_id):
     job.job_id = "this_is_a_test_job_id"
     task = job.tasks[0]
     task.task_id = task_id
-    
 
     file_dict = {}
     folder_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
 
     if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-    
+
     for input_flag, content in json_data["Tasks"][0]["Files"].items():
         filename = json_data["Tasks"][0]["Input_File_Args"][input_flag] #oo.exe
         file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
@@ -94,7 +93,7 @@ def test_new_execution(task_id):
         with open(file_path, "wb") as f:
             byte_stream = base64.b64decode(content.encode('utf-8'))
             f.write(byte_stream)
-    #this is the simulation for RM changing the task.files from task.files = {"-f":exe_str } to task.files = {"-f": path } 
+    #this is the simulation for RM changing the task.files from task.files = {"-f":exe_str } to task.files = {"-f": path }
         file_dict[filename] = file_path
         print(f"file_path: {file_path}")
     task.files = file_dict
@@ -161,16 +160,13 @@ def get_task(task_id):
     return {'command_line_input': command}
 
 
-@app.route("/task/<task_id>/<file_type>/<file_name>/json", methods=['GET'])
+@app.route("/task/<task_id>/output/<file_name>/json", methods=['GET'])
 def get_task_file(task_id, file_type, file_name):
     print(task_id)
-    if file_type == "output":
-        file = ResourceManager(db_name).get_output_file(task_id, file_name)
-        if file is None:
-            abort(404)
-        return {"Content": file}
-    else:
+    file = ResourceManager(db_name).get_output_file(task_id,file_name)
+    if file is None:
         abort(404)
+    return {"Content": file}
 
 @app.route("/task/<task_id>/stdout/json", methods=['GET'])
 def get_stdout(task_id):
