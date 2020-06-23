@@ -1,6 +1,6 @@
 {
-    "Job_Name": "dump_job",
-    "Job_Comment": "this is the test json input for job manager",
+    "Job_Name": "wrong_job",
+    "Job_Comment": "this is the wrong json input for job manager",
     "Tasks": [
         {
             "Files": {
