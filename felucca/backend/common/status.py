@@ -9,6 +9,7 @@ class Status(Enum):
     Error = 4
     Failed = 5
     Killed = 6
+    Finished = 7
 
     def __str__(self):
         return self.name
