@@ -14,8 +14,7 @@
                 "--timeout": "300"
             },
             "Input_Flag_Args": [
-                "-v",
-                "-wrong"],
+                "-v"],
             "Output_File_Args": {
                 "-j": "output.json",
                 "-F": "facts",
