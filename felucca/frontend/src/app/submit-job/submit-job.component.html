@@ -17,7 +17,7 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>Task ID</th>
+          <th>ID</th>
           <th>Tool Name</th>
           <th>Input File Arguments</th>
           <th>Input Text Arguments</th>
@@ -28,39 +28,30 @@
       </thead>
       <tbody *ngIf='tasks.length > 0'>
         <tr *ngFor='let task of tasks; index as i'>
-          <td>{{i + 1}}</td>
-          <td>{{task.toolName}}</td>
+          <td><div>{{i + 1}}</div></td>
+          <td><div>{{task.toolName}}</div></td>
           <td>
-            <dl class="row" style="margin: 0px 0px 0px 0px">
-              <ng-container *ngFor="let argument of task.inputFileArguments | keyvalue">
-                <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
-                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
-              </ng-container>
-            </dl>
+            <div class="overflow-auto">
+            <p *ngFor="let argument of task.inputFileArguments | keyvalue" style="margin: 0px 0px 0px 0px"><strong>{{argument.key}}</strong> {{argument.value}}</p>
+            </div>
           </td>
           <td>
-            <dl class="row" style="margin: 0px 0px 0px 0px">
-              <ng-container *ngFor="let argument of task.inputTextArguments | keyvalue">
-                <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
-                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
-              </ng-container>
-            </dl>
+            <div class="overflow-auto">
+            <p *ngFor="let argument of task.inputTextArguments | keyvalue" style="margin: 0px 0px 0px 0px"><strong>{{argument.key}}</strong> {{argument.value}}</p>
+
+            </div>
           </td>
           <td>
-            <dl class="row" style="margin: 0px 0px 0px 0px">
-              <ng-container *ngFor="let argument of task.inputFlagArguments | keyvalue">
-                <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
-                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
-              </ng-container>
-            </dl>
+            <div class="overflow-auto">
+            <p *ngFor="let argument of task.inputFlagArguments | keyvalue" style="margin: 0px 0px 0px 0px"><strong>{{argument.value}}</strong> </p>
+
+            </div>
           </td>
           <td>
-            <dl class="row" style="margin: 0px 0px 0px 0px">
-              <ng-container *ngFor="let argument of task.outputFileArguments | keyvalue">
-                <dt class="col-sm-3" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
-                <dd class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
-              </ng-container>
-            </dl>
+            <div class="overflow-auto">
+            <p *ngFor="let argument of task.outputFileArguments | keyvalue" style="margin: 0px 0px 0px 0px"><strong>{{argument.key}}</strong> {{argument.value}}</p>
+
+            </div>
           </td>
           <td>
             <ul>
