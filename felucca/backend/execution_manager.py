@@ -27,7 +27,7 @@ class ExecutionManager(object):
         """save the result from container to the database
 
         Args:
-            task_id (int): the result under this task_id
+            task_id (str): the result under this task_id
             status (str): the task status (Status.Successful.name or Status.Failed.name)
             stderr (byte[]): the output in std error
             stdout (byte[]): the output in std out
