@@ -13,6 +13,7 @@ import { Schema } from '../schema';
 export class SubmitTaskComponent implements OnChanges {
   @Input() schema: Schema;
   @Output() submission = new EventEmitter<TaskInfo>();
+
   files: {[key: string]: string} = {};
   form: FormGroup;
   defaultNames: {[key: string]: string} = {};
@@ -25,6 +26,7 @@ export class SubmitTaskComponent implements OnChanges {
   }
 
   onFileChange(event, key: string) {
+    console.log("called" + key);
     let reader = new FileReader();
 
     if (event.target.files && event.target.files.length) {
@@ -32,9 +34,18 @@ export class SubmitTaskComponent implements OnChanges {
       reader.readAsDataURL(file);
       reader.onload = () => {
         this.files[key] = (<string> reader.result).split(',')[1];
-        this.form.get('inputFile').patchValue({[key]: file.name});
+        this.form.get(['inputFile', key]).patchValue(file.name);
+        this.form.get(['inputFile', key]).markAsDirty();
       };
     }
+
+    event.srcElement.value = '';
+  }
+
+  fileClear(key: string) {
+    delete this.files[key];
+    this.form.get(['inputFile', key]).markAsPristine();
+    this.form.get(['inputFile', key]).patchValue('');
   }
 
   onSubmit() {

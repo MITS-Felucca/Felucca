@@ -27,61 +27,74 @@ class ExecutionManager(object):
         """save the result from container to the database
 
         Args:
-            task_id (int): the result under this task_id
-            status (STATUS): the task status
+            task_id (str): the result under this task_id
+            status (str): the task status (Status.Successful.name or Status.Failed.name)
             stderr (byte[]): the output in std error
             stdout (byte[]): the output in std out
         """
-        try:
-            logger = Logger().get()
-            logger.debug(f"start save_result: task_id: {task_id} status: {status}")
-            
-            output_path = self.id_to_task_container[task_id][0].output
-            container = self.id_to_task_container[task_id][1]
+        logger = Logger().get()
+        logger.debug(f"start save_result: task_id: {task_id} status: {status}")
+        print(f"start save_result: task_id: {task_id} status: {status}")
+        if status == Status.Successful.name:
+            try:
+                output_path = self.id_to_task_container[task_id][0].output
+                container = self.id_to_task_container[task_id][1]
+            except Exception as e:
+                logger.info(f"exception for finding container correspoding to {task_id}, status:{status} maybe the container is forced killed before, {e}")
+                ResourceManager().save_result(task_id, [], stdout, stderr)
+                ResourceManager().update_task_status(task_id, Status.Killed)
+            else:
+                self.id_to_task_container.pop(task_id, None)
+                try:
+                    # get result from container
+                    container.exec_run("tar -cvf {}.docker {}".format(task_id, " ".join(output_path)))
+                    bits, stat = container.get_archive(f"{task_id}.docker")
+                    path = f"/tmp/Felucca/result/{task_id}"
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    file = open(f"{path}/{task_id}.tar", "wb+")
+                    for chunk in bits:
+                        file.write(chunk)
+                    file.close()
+                    # extract result tar file
+                    result_tar = tarfile.open(f"{path}/{task_id}.tar","r")
+                    result_tar.extractall(path)
+                    result_tar.close()
+                    result_tar = tarfile.open(f"{path}/{task_id}.docker","r")
+                    result_tar.extractall(path)
+                    result_tar.close()
+                    #delete temp tar file after extraction
+                    os.remove(f"{path}/{task_id}.tar")
+                    os.remove(f"{path}/{task_id}.docker")
+                    logger.debug(f"for task:{task_id} execute and exit normally")
+                except Exception as e:
+                    logger.error(f"exception at copying result out of container and extrating the file for {task_id}, {e}")
+                    ResourceManager().save_result(task_id, [], stdout, stderr)
+                    ResourceManager().update_task_status(task_id, Status.Failed)
+                    container.stop()
+                    container.remove()
+                else:
+                    for index in range(len(output_path)):
+                        output_path[index] = os.path.join(path, output_path[index])
+                        print(output_path[index])
+                    ResourceManager().save_result(task_id, output_path, stdout, stderr)
+                    ResourceManager().mark_task_as_finished(task_id)
+                    container.stop()
+                    container.remove()
+        elif status == Status.Failed.name:
+            ResourceManager().save_result(task_id, [], stdout, stderr)
+            ResourceManager().update_task_status(task_id, Status.Failed)
+            try:
+                output_path = self.id_to_task_container[task_id][0].output
+                container = self.id_to_task_container[task_id][1]
+            except Exception as e:
+                logger.info(f"exception for finding container correspoding to {task_id}, status:{status}, maybe the container is forced killed before, {e}")
+            else:
+                self.id_to_task_container.pop(task_id, None)
+                container.stop()
+                container.remove()
+                logger.debug(f"for task:{task_id}, can't run cmd normally, exit normally")
 
-            _, r = container.exec_run("ls",stdout=True, stderr=True, stream=True)
-            for line in r:
-                print(line)
-    
-            # get result from container
-            container.exec_run("tar -cvf {}.docker {}".format(task_id, " ".join(output_path)))
-            bits, stat = container.get_archive(f"{task_id}.docker")
-    
-            path = f"/tmp/Felucca/result/{task_id}"
-    
-            if not os.path.exists(path):
-                os.makedirs(path)
-                
-            file = open(f"{path}/{task_id}.tar", "wb+")
-            for chunk in bits:
-                file.write(chunk)
-            file.close()
-    
-            # extract result tar file
-            result_tar = tarfile.open(f"{path}/{task_id}.tar","r")
-            result_tar.extractall(path)
-            result_tar.close()
-            result_tar = tarfile.open(f"{path}/{task_id}.docker","r")
-            result_tar.extractall(path)
-            result_tar.close()
-            
-            #delete temp tar file after extraction
-            os.remove(f"{path}/{task_id}.tar")
-            os.remove(f"{path}/{task_id}.docker")
-            
-            #stop and remove this container
-            container.stop()
-            container.remove()
-    
-    
-            for index in range(len(output_path)):
-                output_path[index] = os.path.join(path, output_path[index])
-                print(output_path[index])
-            ResourceManager().save_result(task_id, output_path, stdout, stderr)
-            ResourceManager().mark_task_as_finished(task_id);
-            self.id_to_task_container.pop(task_id, None)
-        except Exception as e:
-            logger.info(f"exception in save_result for {task_id}, maybe the container is forced killed before, {e}")
 
 
     def set_attr(self,task):
@@ -89,7 +102,7 @@ class ExecutionManager(object):
         """change a task's arguments corresponding to the exe path inside tge container
         For input file, the absolute path is the same as input file outside the container, i.e. "/tmp/Felucca/{task.task_id}/{input_filename}"
         For output file path, the absolute path is "/tmp/Felucca/{task.task_id}/{output_filename}"
-    
+        
         Args:
             task (Task): The task object to be executed
         
@@ -110,7 +123,7 @@ class ExecutionManager(object):
             task.input_file_args[key]  = os.path.join(task_file_path,task.input_file_args[key])
         
         logger.debug(f"for task({task.task_id}),set_task_output: {task.output}")
-    
+        
     def copy_to_container(self,task,container):
         
         """copy executable_file into the container
@@ -227,12 +240,12 @@ class ExecutionManager(object):
 
         """
         logger = Logger().get()
+        ResourceManager().update_task_status(task_id, Status.Killed)
         try:
             container = self.id_to_task_container[task_id][1]
             container.stop()
             container.remove()
             self.id_to_task_container.pop(task_id, None)
-            ResourceManager().update_task_status(task_id, Status.Killed);
         except Exception as e:
             logger.error(f"try to kill {task_id}'s container fail, maybe the container is not existed or already killed, exception: {e}")
      
@@ -266,6 +279,5 @@ class ExecutionManager(object):
         t.start()
         
         #self.copy_to_container(task,task.executable_file,container)
-        
-        
-        return(True);
+
+        return(True)

@@ -47,8 +47,10 @@ export class JobInfoComponent implements OnInit {
   }
 
   killTask(taskID: string): void {
-    this.jobService.killTask(taskID).subscribe(data => {
-      this.router.navigate(['/job-info', this.jobID]);
-    });
+    this.jobService.killTask(taskID).subscribe();
+  }
+
+  killJob(): void {
+    this.jobService.killJob(this.jobID).subscribe();
   }
 }

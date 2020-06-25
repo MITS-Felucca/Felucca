@@ -2,6 +2,7 @@ import base64
 import filecmp
 import json
 import os
+import shutil
 import sys
 import time
 import unittest
@@ -175,14 +176,12 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(self.manager.get_stderr(task_id), stderr)
 
         self.assertEqual(rebuilt_task.output, ["output.json", "facts", "results"])
-        self.assertEqual(rebuilt_task.stdout, stdout)
-        self.assertEqual(rebuilt_task.stderr, stderr)
         self.assertEqual(rebuilt_task.status, Status.Pending)
 
         # Remove the inserted job & task after test
         self.manager.remove_all_jobs_and_tasks()
 
-    def test_update_task_status(self):
+    def test_update_status(self):
         # Remove previous jobs & tasks
         self.manager.remove_all_jobs_and_tasks()
 
@@ -353,10 +352,10 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(task.output_file_args, task_json["Output_File_Args"])
 
         # Check the stored file
-        for filename, path in task.files.items():
+        for param, path in task.files.items():
             with open(path, "rb") as f:
                 saved_file = f.read()
-            self.assertEqual(saved_file, base64.b64decode(task_json["Files"][filename].encode('utf-8')))
+            self.assertEqual(saved_file, base64.b64decode(task_json["Files"][param].encode('utf-8')))
             # self.assertEqual(saved_file, bytes.fromhex(task_json["Files"][filename]))
             os.remove(path)
 
@@ -402,7 +401,7 @@ class TestResourceManager(unittest.TestCase):
         # Save the result of the task
         task_id = job.tasks[0].task_id
         stdout = "sample stdout"
-        stderr = "sample stderr"
+        stderr = ""
         output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
 
@@ -423,8 +422,8 @@ class TestResourceManager(unittest.TestCase):
                 "-R": "results"
             },
             'Output': ['output.json', 'facts', 'results'],
-            'Stdout': 'sample stdout',
-            'Stderr': 'sample stderr',
+            'Stdout': True,
+            'Stderr': False,
             'Finished_Time': job_info["Tasks"][0]["Finished_Time"],
             'Status': Status.Successful.name,
             'ID': job_info["Tasks"][0]["ID"],
@@ -477,5 +476,77 @@ class TestResourceManager(unittest.TestCase):
         self.assertGreater(len(tool_list), 0)
         self.manager.remove_all_tools()
 
+    def test_failure(self):
+        # Remove previous jobs & tasks
+        self.manager.remove_all_jobs_and_tasks()
+
+        # Create a sample task
+        program_name = "ooanalyzer"
+        input_file_args = {
+            "-f": "oo.exe"
+        }
+        input_text_args = {
+                "--timeout": "300"
+        }
+        input_flag_args = [
+            "-v",
+        ]
+        output_file_args = {
+            "-j": "output.json",
+            "-F": "facts",
+            "-R": "results"
+        }
+        new_task = Task()
+        new_task.program_name = program_name
+        new_task.input_file_args = input_file_args
+        new_task.input_text_args = input_text_args
+        new_task.input_flag_args = input_flag_args
+        new_task.output_file_args = output_file_args
+
+        # Create a sample job
+        job_name = "Test_job"
+        job_comment = "Just for test"
+        created_time = datetime.now()
+        new_job = Job(job_name, job_comment, created_time)
+        new_job.tasks = [new_task]
+
+        # Insert the sample job with the sample task
+        job_id, tasks_id = self.manager.insert_new_job(new_job)
+
+        # Create a empty directory & Generate two of the files
+        dir_path = "/tmp/Felucca/unit_test/test"
+        if os.path.exists(dir_path):
+            shutil.rmtree(dir_path)
+        os.makedirs(dir_path)
+        output_file_path = os.path.join(dir_path, "output.json")
+        results_file_path = os.path.join(dir_path, "results")
+        facts_file_path = os.path.join(dir_path, "facts")
+        output_content = "{}"
+        results_content = "test result content"
+        with open(output_file_path, 'w+') as f:
+            f.write(output_content)
+        with open(results_file_path, 'w+') as f:
+            f.write(results_content)
+
+        # Save the result of the task
+        task_id = tasks_id[0]
+        stdout = None
+        stderr = "sample stderr"
+        output_file_list = [output_file_path, results_file_path, facts_file_path]
+
+        self.manager.save_result(task_id, output_file_list, stdout, stderr)
+
+        # Rebuild the task object and check the contents of files
+        rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
+        self.assertEqual(rebuilt_task.output, ["output.json", "results"])
+
+        retrieved_stdout = self.manager.get_stdout(task_id)
+        retrieved_stderr = self.manager.get_stderr(task_id)
+        self.assertEqual(retrieved_stdout, stdout)
+        self.assertEqual(retrieved_stderr, stderr)
+
+        # Remove the directory & inserted tasks
+        shutil.rmtree(dir_path)
+        self.manager.remove_all_jobs_and_tasks()
 if __name__ == '__main__':
     unittest.main()

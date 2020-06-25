@@ -15,12 +15,19 @@ class TestTask(unittest.TestCase):
         self.execution_manager = ExecutionManager()
         
     def test_output(self):
-        task_id = "test"
-        requests.get('http://%s:%s/test_new_execution/%s' % (SERVER_IP, SERVER_PORT, task_id))
-        sleep(10)
-        self.assertTrue(os.path.exists("/tmp/Felucca/result/%s/facts"  % (task_id)))
-        self.assertTrue(os.path.exists("/tmp/Felucca/result/%s/output.json"% (task_id) ))
-        self.assertTrue(os.path.exists("/tmp/Felucca/result/%s/results"% (task_id) ))
+        #test execution manager to run a right command
+        task_true_id = "test_true"
+        requests.get('http://%s:%s/test_new_execution/true/%s' % (SERVER_IP, SERVER_PORT, task_true_id))
+        #test execution manager to run a wrong command
+        task_false_id = "test_false"
+        requests.get('http://%s:%s/test_new_execution/false/%s' % (SERVER_IP, SERVER_PORT, task_false_id))
+        sleep(30)
+        self.assertTrue(os.path.exists("/tmp/Felucca/result/%s/facts"  % (task_true_id)))
+        self.assertTrue(os.path.exists("/tmp/Felucca/result/%s/output.json"% (task_true_id) ))
+        self.assertTrue(os.path.exists("/tmp/Felucca/result/%s/results"% (task_true_id) ))
+        self.assertFalse(os.path.exists("/tmp/Felucca/result/%s/facts"  % (task_false_id)))
+        self.assertFalse(os.path.exists("/tmp/Felucca/result/%s/output.json"% (task_false_id) ))
+        self.assertFalse(os.path.exists("/tmp/Felucca/result/%s/results"% (task_false_id) ))
         
 
 if __name__ == '__main__':  

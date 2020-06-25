@@ -28,8 +28,4 @@ export class JobListComponent implements OnInit {
   getJobList(): void {
     this.jobService.getJobList().subscribe(jobs => { this.jobs = jobs; })
   }
-
-  killJob(jobID: string): void {
-    this.jobService.killJob(jobID).subscribe();
-  }
 }

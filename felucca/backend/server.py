@@ -8,13 +8,14 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 from flask import Response
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../tests/sample_output'))
+from threading import Thread
 from time import sleep
 from execution_manager import ExecutionManager
 from job_manager import JobManager
 from resource_manager import ResourceManager
 from common.task import Task
 from common.job import Job
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../tests/sample_output'))
 
 app = Flask(__name__)
 db_name = "test"
@@ -67,40 +68,21 @@ def test():
     print(task.log)
     return {"status": "ok"}
 
-@app.route("/test_new_execution/<task_id>",methods=['GET','POST'])
-def test_new_execution(task_id):
-    """this is used for testing new execution manager after reconstrction
-
-    Test command: curl “http://0.0.0.0:5000/test_new_execution", to use this, we should put the input.json at the "backend" folder in advance
+@app.route("/test_new_execution/<task_type>/<task_id>",methods=['GET','POST'])
+def test_new_execution(task_type, task_id):
+    """this is used for testing new execution manager after reconstrction, it will start a thread to load the json and run the cmd
+    
+    Args:
+    task_type (str): if task_type == "false", this method will load a json with simulated wrong cmd to run, otherwise it will load a correct cmd
+    task_id (str): the result under this task_id
+    Example test command: curl “http://0.0.0.0:5000/test_new_execution/true/toytest"
+    To use this method, we should put the "input.json" and "input_wrong.json" at sample_output" folder in advance
     """
-    with open("input.json",'r') as f:
-        json_data = json.load(f)
-    job = Job.from_json(json_data)
-    job.job_id = "this_is_a_test_job_id"
-    task = job.tasks[0]
-    task.task_id = task_id
-    
 
-    file_dict = {}
-    folder_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
+    t = Thread(target = thread_test_new_execution, args = (task_type, task_id, ))
+    t.start()
 
-    if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-    
-    for input_flag, content in json_data["Tasks"][0]["Files"].items():
-        filename = json_data["Tasks"][0]["Input_File_Args"][input_flag] #oo.exe
-        file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
-
-        with open(file_path, "wb") as f:
-            byte_stream = base64.b64decode(content.encode('utf-8'))
-            f.write(byte_stream)
-    #this is the simulation for RM changing the task.files from task.files = {"-f":exe_str } to task.files = {"-f": path } 
-        file_dict[filename] = file_path
-        print(f"file_path: {file_path}")
-    task.files = file_dict
-    ExecutionManager().submit_task(task)
-
-    return ("test2 finished\n")
+    return ("start testing: task_type:{task_type} task_id:{task_id}\n")
 
 @app.route("/clean-all", methods=['GET'])
 def clean_all():
@@ -144,6 +126,11 @@ def get_job_list():
     job_list = ResourceManager(db_name).get_job_list()
     return {"Job_List": job_list}
 
+@app.route("/kill-task/<task_id>", methods=['GET'])
+def kill_task(task_id):
+    ExecutionManager().kill_task()
+    return {"status": "ok"}
+
 @app.route("/result", methods=['POST'])
 def get_result():
     status = request.form['status']
@@ -161,16 +148,13 @@ def get_task(task_id):
     return {'command_line_input': command}
 
 
-@app.route("/task/<task_id>/<file_type>/<file_name>/json", methods=['GET'])
-def get_task_file(task_id, file_type, file_name):
+@app.route("/task/<task_id>/output/<file_name>/json", methods=['GET'])
+def get_task_file(task_id, file_name):
     print(task_id)
-    if file_type == "output":
-        file = ResourceManager(db_name).get_output_file(task_id, file_name)
-        if file is None:
-            abort(404)
-        return {"Content": file}
-    else:
+    file = ResourceManager(db_name).get_output_file(task_id,file_name)
+    if file is None:
         abort(404)
+    return {"Content": file}
 
 @app.route("/task/<task_id>/stdout/json", methods=['GET'])
 def get_stdout(task_id):
@@ -3582,5 +3566,43 @@ def setup_pharos_tools(app):
     #     print(len(tool_list))
 setup_pharos_tools(app)
 
+def thread_test_new_execution(task_type, task_id):
+    """this is the implementation for testing new execution manager
+
+    """
+    if task_type == "false":
+        with open("/home/vagrant/new-felucca/tests/sample_output/input_wrong.json",'r') as f:
+            json_data = json.load(f)
+        job = Job.from_json(json_data)
+        job.job_id = "job_id_false"
+        task = job.tasks[0]
+        task.task_id = task_id
+    else:
+        with open("/home/vagrant/new-felucca/tests/sample_output/input.json",'r') as f:
+            json_data = json.load(f)
+        job = Job.from_json(json_data)
+        job.job_id = "job_id_for_true"
+        task = job.tasks[0]
+        task.task_id = task_id
+
+    file_dict = {}
+    folder_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
+
+    if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+    for input_flag, content in json_data["Tasks"][0]["Files"].items():
+        filename = json_data["Tasks"][0]["Input_File_Args"][input_flag] #oo.exe
+        file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
+
+        with open(file_path, "wb") as f:
+            byte_stream = base64.b64decode(content.encode('utf-8'))
+            f.write(byte_stream)
+    #this is the simulation for RM changing the task.files from task.files = {"-f":exe_str } to task.files = {"-f": path } 
+        file_dict[filename] = file_path
+        print(f"file_path: {file_path}")
+    task.files = file_dict
+    ExecutionManager().submit_task(task)
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
