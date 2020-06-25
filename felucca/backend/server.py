@@ -128,7 +128,7 @@ def get_job_list():
 
 @app.route("/kill-task/<task_id>", methods=['GET'])
 def kill_task(task_id):
-    ExecutionManager().kill_task()
+    ExecutionManager().kill_task(task_id)
     return {"status": "ok"}
 
 @app.route("/result", methods=['POST'])

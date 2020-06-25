@@ -240,12 +240,12 @@ class ExecutionManager(object):
 
         """
         logger = Logger().get()
-        ResourceManager().update_task_status(task_id, Status.Killed)
         try:
             container = self.id_to_task_container[task_id][1]
             container.stop()
             container.remove()
             self.id_to_task_container.pop(task_id, None)
+            ResourceManager().update_task_status(task_id, Status.Killed)
         except Exception as e:
             logger.error(f"try to kill {task_id}'s container fail, maybe the container is not existed or already killed, exception: {e}")
      

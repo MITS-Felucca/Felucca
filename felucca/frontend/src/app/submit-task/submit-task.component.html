@@ -39,7 +39,7 @@
           <td [ngSwitch]="argument.argumentType">
             <div *ngSwitchCase="argumentType.InputFile" style="width:100%;height:100%">
               <div class="custom-file" style="width:90%;float:left;">
-                <input #fileInput type="file" class="custom-file-input" id="customFile" (change) = "onFileChange($event, argument.key)">
+                <input #fileInput type="file" class="custom-file-input" (change) = "onFileChange($event, argument.key)">
                 
                 <label class="custom-file-label" for="customFile" style="margin:0px 0px 0px 0px">{{ this.form.get(['inputFile', argument.key]).value === '' ? 'Choose a file' : this.form.get(['inputFile', argument.key]).value }}</label>
               </div>
