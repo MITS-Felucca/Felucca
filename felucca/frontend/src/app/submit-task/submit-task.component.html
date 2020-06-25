@@ -13,8 +13,8 @@
       <table class="table table-striped" style="width: 100%">
         <colgroup>
         <col span="1" style="width: 20%;">
-        <col span="1" style="width: 60%;">
-        <col span="1" style="width: 20%;">
+        <col span="1" style="width: 55%;">
+        <col span="1" style="width: 25%;">
       </colgroup>
     
       <thead>
@@ -37,15 +37,17 @@
           </td>
           <td> {{argument.description}} </td>
           <td [ngSwitch]="argument.argumentType">
-            <!-- <div>
-              <input *ngSwitchCase="argumentType.InputFile" type="file" (change) = "onFileChange($event, argument.key)">
-            </div> -->
-            <div class="custom-file" *ngSwitchCase="argumentType.InputFile">
-              <input #fileInput type="file" class="custom-file-input" id="customFile" (change) = "onFileChange($event, argument.key)">
-              <!-- <label class="custom-file-label" for="customFile">{{form.get("inputFile")[argument.key]}}</label> -->
-              <label class="custom-file-label" for="customFile" style="margin:0px 0px 0px 0px">{{ this.form.get(['inputFile', argument.key]).value === '' ? 'Choose a file' : this.form.get(['inputFile', argument.key]).value }}</label>
-
-              <button [disabled]="this.form.get(['inputFile', argument.key]).pristine" class="btn btn-primary" type="button" (click)="fileClear(argument.key)">Refresh</button>
+            <div *ngSwitchCase="argumentType.InputFile" style="width:100%;height:100%">
+              <div class="custom-file" style="width:90%;float:left;">
+                <input #fileInput type="file" class="custom-file-input" id="customFile" (change) = "onFileChange($event, argument.key)">
+                
+                <label class="custom-file-label" for="customFile" style="margin:0px 0px 0px 0px">{{ this.form.get(['inputFile', argument.key]).value === '' ? 'Choose a file' : this.form.get(['inputFile', argument.key]).value }}</label>
+              </div>
+              <div style="width:10%;float:right;">
+              <button type="button" class="close" aria-label="Close" style="padding: 5px 5px" (click)="fileClear(argument.key)">
+                <span aria-hidden="true">&times;</span>
+              </button>
+              </div>
             </div>
             <div formGroupName="outputFile">
               <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
@@ -54,7 +56,7 @@
               <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFlag" type="checkbox">
             </div>
             <div formGroupName="inputText">
-              <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputText" type="Text">
+              <input [formControlName]="argument.key" type="text" *ngSwitchCase="argumentType.InputText" class="form-control" placeholder="argument" aria-describedby="basic-addon1">
             </div>
           </td>
         </tr>
@@ -65,7 +67,8 @@
 
     <div class="form-group"> 
       <button [disabled]="!form.valid" class="btn btn-success btn-lg float-right rounded-lg" type="submit" style="width:150px">Save</button> 
-      <button class="btn btn-success btn-lg float-right rounded-lg" type="button" (click)="refreshForm()" style="width:150px">Refresh</button> 
+      <button class="btn btn-success btn-lg float-right rounded-lg" type="button" (click)="refreshForm()" style="width:150px; margin-right:50px">Refresh</button> 
+     
     </div> 
 </form>
 </div>

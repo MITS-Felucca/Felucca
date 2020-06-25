@@ -1,11 +1,8 @@
 <div>
   <div *ngIf="job">
-    <h2> Job Details </h2>
+    <h2> Job {{job.jobName}} </h2>
     <dl class="row">
-      <dt class="col-sm-3">Job Name</dt>
-      <dd class="col-sm-9">{{job.jobName}}</dd>
-
-      <dt class="col-sm-3">Job Comment</dt>
+      <dt class="col-sm-3">Comment</dt>
       <dd class="col-sm-9">{{job.comment}}</dd>
 
       <dt class="col-sm-3">Job Created Time</dt>
@@ -16,24 +13,39 @@
       <dd class="col-sm-9">{{job.taskNumber}}</dd>
 
       <dt class="col-sm-3">Status</dt>
-      <dd class="col-sm-9">{{job.status}}</dd>
+      <dd class="col-sm-9">
+        <div>
+          <svg class="bi bi-check" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" *ngIf="job.status === status.Successful">
+            <path fill-rule="evenodd" d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.236.236 0 0 1 .02-.022z"/>
+          </svg>
+          <div class="spinner-border" style="width: 1rem; height: 1rem;" role="status"  *ngIf="job.status === status.Pending">
+          </div> 
+          {{job.status}} 
+          </div>
+      </dd>
 
       <dt class="col-sm-3">Operations</dt>
       <dd class="col-sm-9">
-        <td>
-              <button type="button" [disabled]="job.status === status.Successful" class="btn btn-primary" (click)="killJob()">Kill</button>
-            </td>
+        <button type="button" [disabled]="job.status === status.Successful" class="btn btn-primary" (click)="killJob()">Kill Job</button>
       </dd>
     </dl>
   </div>
   <div *ngIf="tasks">
     <h3> Tasks </h3>
     <div class="table-responsive">
-      <table class="table table-striped">
+      <table class="table table-striped" style="width: 100%;height: 80px">
+        <colgroup>
+          <col span="1" style="width: 10%;">
+          <col span="1" style="width: 35%;">
+          <col span="1" style="width: 10%;">
+          <col span="1" style="width: 20%;">
+          <col span="1" style="width: 15%;">
+          <col span="1" style="width: 10%;">
+        </colgroup>
         <thead>
           <tr>
             <th>ID</th>
-            <th style="width:30%;">Arguments</th>
+            <th >Arguments</th>
             <th>Output</th>
             <th>Finish Time</th>
             <th>Status</th>
@@ -42,32 +54,53 @@
         </thead>
         <tbody>
           <tr *ngFor="let task of tasks; index as i">
-            <th>{{i + 1}}</th>
+            <td><div>{{i + 1}}</div></td>
             <td>
-              <dl class="row" style="margin: 0px 0px 0px 0px">
+              <div class="overflow-auto" >
+                <ng-container *ngFor="let argument of task.arguments | keyvalue">
+
+                  <p style="margin: 0px 0px 0px 0px; padding:0px 10px; display:inline"><strong>{{argument.key}}</strong></p>
+                  <p *ngIf="task.outputFilename.has(argument.value)" (click)="goToFile(task.taskID, 'output', argument.value);" style="margin: 0px 0px 0px 0px; display:inline" class="link" routerLinkActive="active-link">{{argument.value}}</p>
+                  <p *ngIf="task.outputFilename.has(argument.value) === false" style="margin: 0px 0px 0px 0px; display:inline"> {{argument.value}}</p>
+                  <p style="margin: 0px 0px 0px 0px; display:clear">
+                </ng-container>
+                <!-- <dl class="row" style="margin: 0px 0px 0px 0px">
                   <ng-container *ngFor="let argument of task.arguments | keyvalue">
                     <dt class="col-sm-2" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
                     <dd *ngIf="task.outputFilename.has(argument.value)" (click)="goToFile(task.taskID, 'output', argument.value);" class="col-sm-9 link" style="margin: 0px 0px 0px 0px" routerLinkActive="active-link"> {{argument.value}}</dd>
                     <dd *ngIf="task.outputFilename.has(argument.value) === false" class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
                 </ng-container>
-              </dl>
+              </dl> -->
+              </div>
             </td>
             <td>
+              <div>
               <ul>
                 <li (click)="goToOutput(task.taskID, 'stdout');" routerLinkActive="active-link" class="link">
                 stdout</li>
                 <li (click)="goToOutput(task.taskID, 'stderr');" routerLinkActive="active-link" class="link">
                 stderr</li>
               </ul>
+              </div>
             </td>
 
-            <td *ngIf="task.status === status.Successful">{{task.finishTime | date: 'medium'}}</td>
-            <td *ngIf="task.status !== status.Successful"></td>
-
-            <td>{{task.status}} </td>
+            <td *ngIf="task.status === status.Successful"><div *ngIf="task.status === status.Successful">{{task.finishTime | date: 'medium'}}</div></td>
+            <td *ngIf="task.status !== status.Successful"><div></div></td>
 
             <td>
-              <button type="button" [disabled]="task.status === status.Successful" class="btn btn-primary" (click)="killTask(task.taskID)">Kill</button>
+              <div>
+                <svg class="bi bi-check" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" *ngIf="task.status === status.Successful">
+                  <path fill-rule="evenodd" d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.236.236 0 0 1 .02-.022z"/>
+                </svg>
+                <div class="spinner-border" style="width: 1rem; height: 1rem;" role="status"  *ngIf="task.status === status.Pending">
+                </div> 
+                {{task.status}} 
+              </div>
+            </td>
+            <td>
+              <div>
+              <button type="button" [disabled]="task.status === status.Successful" class="btn btn-primary" (click)="killTask(task.taskID)">Kill Task</button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -75,3 +108,4 @@
     </div>
   </div>
 </div>
+

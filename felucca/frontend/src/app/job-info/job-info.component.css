@@ -15,3 +15,16 @@ ul {
 button:disabled {
   background: gray
 }
+
+button {
+  width: 120px
+}
+
+td > div {
+    width: 100%;
+    height: 100%;
+    overflow:hidden;
+}
+td {
+    height: 130px;
+}
