@@ -212,8 +212,8 @@ class Task(object):
 
         task_dict["Arguments"] = argument
         task_dict["Output"] = task.output
-        task_dict["Stdout"] = task.stdout
-        task_dict["Stderr"] = task.stderr
+        task_dict["Stdout"] = (task.stdout is not None)
+        task_dict["Stderr"] = (task.stderr is not None)
         if task.finished_time is None:
             task_dict["Finished_Time"] = 0
         else:
