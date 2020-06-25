@@ -99,7 +99,7 @@
             </td>
             <td>
               <div>
-              <button type="button" [disabled]="task.status === status.Successful" class="btn btn-primary" (click)="killTask(task.taskID)">Kill Task</button>
+              <button type="button" [disabled]="!(task.status === status.Pending || task.status === status.Running)" class="btn btn-primary" (click)="killTask(task.taskID)">Kill Task</button>
               </div>
             </td>
           </tr>
