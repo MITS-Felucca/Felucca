@@ -26,10 +26,7 @@ export class JobInfoComponent implements OnInit {
 
   ngOnInit() {
     this.jobID = this.route.snapshot.paramMap.get('jobID');
-    this.jobService.getJobInfoById(this.jobID).subscribe(jobInfo => {
-      this.job = jobInfo.job;
-      this.tasks = jobInfo.tasks;
-    });
+    this.fetchJobData();
   }
 
   goToFile(taskID: string, filetype: string, filename: string): void {
@@ -47,10 +44,22 @@ export class JobInfoComponent implements OnInit {
   }
 
   killTask(taskID: string): void {
-    this.jobService.killTask(taskID).subscribe();
+    this.jobService.killTask(taskID).subscribe(data => {
+      this.fetchJobData();
+    });
   }
 
   killJob(): void {
-    this.jobService.killJob(this.jobID).subscribe();
+    this.jobService.killJob(this.jobID).subscribe(data => {
+      this.fetchJobData();
+    });
   }
+
+  fetchJobData(): void {
+    this.jobService.getJobInfoById(this.jobID).subscribe(jobInfo => {
+      this.job = jobInfo.job;
+      this.tasks = jobInfo.tasks;
+    });
+  }
+
 }

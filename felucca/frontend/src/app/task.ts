@@ -5,6 +5,8 @@ export interface Task {
   arguments: {[key: string]: string},
   outputFilename: Set<string>,
   finishTime: Date,
+  stdout: boolean,
+  stderr: boolean,
   status: Status,
   taskID: string
 }
