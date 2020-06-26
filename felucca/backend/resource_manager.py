@@ -426,6 +426,7 @@ class ResourceManager(object):
                 job = Job(job_doc["name"], job_doc["comment"],
                           job_doc["created_time"], status=Status(job_doc["status"]))
                 job.job_id = job_id
+                job.finished_time = job_doc["finished_time"]
 
                 return job
             except Exception as e:
@@ -792,7 +793,7 @@ class ResourceManager(object):
 
                 condition = {"_id": ObjectId(job_id)}
                 job = self.__jobs_collection.find_one(condition)
-                job["status"] = Status.Successful.value
+                job["status"] = Status.Finished.value
                 job["finished_time"] = datetime.now().replace(microsecond=0)
 
                 update_result = self.__jobs_collection.update_one(condition,

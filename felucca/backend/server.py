@@ -102,7 +102,7 @@ def submit_job():
     request_json = request.get_json()
     print(request.get_json())
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
-    thread = Thread(target=self.submit_job_through_job_manager, args=(job, ))
+    thread = Thread(target=submit_job_through_job_manager, args=(job, ))
     thread.start()
     # JobManager().submit_job(job)
     return {"status": "ok"}

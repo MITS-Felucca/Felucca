@@ -46,7 +46,7 @@ class JobManager(object):
         logger = Logger().get()
 
         try:
-            ResourceManager(db_name).update_job_status(job_id, Status.Finished)
+            ResourceManager(db_name).mark_job_as_finished(job_id)
 
             job = self.job_metadata[job_id]
             for task in job.tasks:

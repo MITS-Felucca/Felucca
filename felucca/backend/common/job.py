@@ -116,7 +116,7 @@ class Job(object):
         if job.finished_time is None:
             job_json["Finished_Time"] = 0
         else:
-            job_json["Finished_Time"] = time.mktime(job.created_time.timetuple())
+            job_json["Finished_Time"] = time.mktime(job.finished_time.timetuple())
         
         job_json["Task_Number"] = len(job.tasks)
         job_json["Status"] = job.status.name
