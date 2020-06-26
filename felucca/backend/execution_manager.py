@@ -32,6 +32,7 @@ class ExecutionManager(object):
             stderr (byte[]): the output in std error
             stdout (byte[]): the output in std out
         """
+        from job_manager import JobManager
         logger = Logger().get()
         logger.debug(f"start save_result: task_id: {task_id} status: {status}")
         print(f"start save_result: task_id: {task_id} status: {status}")
@@ -79,11 +80,13 @@ class ExecutionManager(object):
                         print(output_path[index])
                     ResourceManager().save_result(task_id, output_path, stdout, stderr)
                     ResourceManager().mark_task_as_finished(task_id)
+                    JobManager().finish_task(task_id)
                     container.stop()
                     container.remove()
         elif status == Status.Failed.name:
             ResourceManager().save_result(task_id, [], stdout, stderr)
             ResourceManager().update_task_status(task_id, Status.Failed)
+            JobManager().finish_task(task_id)
             try:
                 output_path = self.id_to_task_container[task_id][0].output
                 container = self.id_to_task_container[task_id][1]
@@ -246,6 +249,7 @@ class ExecutionManager(object):
             container.remove()
             self.id_to_task_container.pop(task_id, None)
             ResourceManager().update_task_status(task_id, Status.Killed)
+            JobManager().finish_task(task_id)
         except Exception as e:
             logger.error(f"try to kill {task_id}'s container fail, maybe the container is not existed or already killed, exception: {e}")
      
@@ -275,9 +279,12 @@ class ExecutionManager(object):
         self.copy_to_container(task,container)
         logger.debug(f"successfully copy exe into container({container.name})")
 
+        ResourceManager().update_task_status(task.task_id, Status.Running)
+
         t = Thread(target=self.run_container_flask, args=(container, ))
         t.start()
-        
+
+
         #self.copy_to_container(task,task.executable_file,container)
 
         return(True)
