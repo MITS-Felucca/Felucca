@@ -5,5 +5,6 @@ export enum Status {
   Successful = 'Successful',
   Error = 'Error',
   Failed = 'Failed',
-  Killed = 'Killed'
+  Killed = 'Killed',
+  Finished = 'Finished'
 }
