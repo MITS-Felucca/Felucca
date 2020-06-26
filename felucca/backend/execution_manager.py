@@ -249,6 +249,7 @@ class ExecutionManager(object):
             container.remove()
             self.id_to_task_container.pop(task_id, None)
             ResourceManager().update_task_status(task_id, Status.Killed)
+            from job_manager import JobManager
             JobManager().finish_task(task_id)
         except Exception as e:
             logger.error(f"try to kill {task_id}'s container fail, maybe the container is not existed or already killed, exception: {e}")
