@@ -29,7 +29,7 @@ export class JobListComponent implements OnInit {
     this.jobService.getJobList().subscribe(jobs => {
       this.jobs = jobs;
       this.jobs.sort((a, b) => {
-        return a.createdTime.getTime() - b.createdTime.getTime();
+        return b.createdTime.getTime() - a.createdTime.getTime();
       });
     });
   }
