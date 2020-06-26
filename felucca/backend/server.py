@@ -92,6 +92,9 @@ def clean_all():
     ResourceManager("test").remove_all_jobs_and_tasks()
     return {"status": "ok"}
 
+def submit_job_through_job_manager(job):
+    JobManager().submit_job(job)
+
 @app.route("/job", methods=['POST'])
 def submit_job():
     """Test command: curl -H "Content-Type: application/json" --request POST -d @/vagrant/tests/sample_output/input.json http://localhost:5000/job"
@@ -99,7 +102,9 @@ def submit_job():
     request_json = request.get_json()
     print(request.get_json())
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
-    JobManager().submit_job(job)
+    thread = Thread(target=self.submit_job_through_job_manager, args=(job, ))
+    thread.start()
+    # JobManager().submit_job(job)
     return {"status": "ok"}
 
 
