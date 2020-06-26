@@ -126,6 +126,11 @@ def get_job_list():
     job_list = ResourceManager(db_name).get_job_list()
     return {"Job_List": job_list}
 
+@app.route("/kill-job/<job_id>", methods=['GET'])
+def kill_job(job_id):
+    JobManager().kill_job(job_id)
+    return {"status": "ok"}
+
 @app.route("/kill-task/<task_id>", methods=['GET'])
 def kill_task(task_id):
     ExecutionManager().kill_task(task_id)
