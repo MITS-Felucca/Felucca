@@ -45,13 +45,14 @@ export class JobInfoComponent implements OnInit {
 
   killTask(taskID: string): void {
     this.jobService.killTask(taskID).subscribe(data => {
-      console.log("jmp");
       this.fetchJobData();
     });
   }
 
   killJob(): void {
-    this.jobService.killJob(this.jobID).subscribe();
+    this.jobService.killJob(this.jobID).subscribe(data => {
+      this.fetchJobData();
+    });
   }
 
   fetchJobData(): void {

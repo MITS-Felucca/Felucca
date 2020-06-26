@@ -26,7 +26,7 @@
 
       <dt class="col-sm-3">Operations</dt>
       <dd class="col-sm-9">
-        <button type="button" [disabled]="job.status === status.Successful" class="btn btn-primary" (click)="killJob()">Kill Job</button>
+        <button type="button" [disabled]="!(job.status === status.Pending || job.status === status.Running)" class="btn btn-primary" (click)="killJob()">Kill Job</button>
       </dd>
     </dl>
   </div>
@@ -76,9 +76,9 @@
             <td>
               <div>
               <ul>
-                <li (click)="goToOutput(task.taskID, 'stdout');" routerLinkActive="active-link" class="link">
+                <li *ngIf="task.stdout" (click)="goToOutput(task.taskID, 'stdout');" routerLinkActive="active-link" class="link">
                 stdout</li>
-                <li (click)="goToOutput(task.taskID, 'stderr');" routerLinkActive="active-link" class="link">
+                <li *ngIf="task.stderr" (click)="goToOutput(task.taskID, 'stderr');" routerLinkActive="active-link" class="link">
                 stderr</li>
               </ul>
               </div>

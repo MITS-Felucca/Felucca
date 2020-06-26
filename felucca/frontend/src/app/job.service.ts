@@ -66,6 +66,8 @@ export class JobService {
               arguments: (task as any).Arguments,
               outputFilename: outputFilename,
               finishTime: new Date((task as any).Finished_Time * 1000),
+              stdout: (task as any).Stdout,
+              stderr: (task as any).Stderr,
               status: Status[(task as any).Status],
               taskID: (task as any).ID
             }
