@@ -189,6 +189,29 @@ def get_tool_list():
     tool_list = ResourceManager(db_name).get_all_tools()
     return {"Schemas": tool_list}
 
+@app.route("/tool/<tool_id>/json", methods=["GET"])
+def get_single_tool(tool_id):
+    tool = ResourceManager(db_name).get_tool_by_id(tool_id)
+    if tool is None:
+        abort(404)
+    else:
+        return {"Content": tool}
+
+@app.route("/tool", methods=["POST"])
+def insert_new_tool(tool_id):
+    request_json = request.get_json()
+    ResourceManager(db_name).insert_new_tool(request_json)
+    return {"status": "ok"}
+
+@app.route("/tool/<tool_id>/delete", methods=["GET"])
+def remove_tool(tool_id):
+    ResourceManager(db_name).remove_tool_by_id(tool_id)
+    return {"status": "ok"}
+
+@app.route("/tool/<tool_id>", methods=["POST"])
+def update_tool(tool_id):
+    request_json = request.get_json()
+    ResourceManager(db_name).update_tool(tool_id, request_json)
 
 @app.route("/debug/job-list/json")
 def debug_get_job_list():
