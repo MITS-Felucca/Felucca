@@ -201,7 +201,7 @@ def get_single_tool(tool_id):
         return tool
 
 @app.route("/tool", methods=["POST"])
-def insert_new_tool(tool_id):
+def insert_new_tool():
     request_json = request.get_json()
     ResourceManager(db_name).insert_new_tool(request_json)
     return {"status": "ok"}
@@ -215,6 +215,7 @@ def remove_tool(tool_id):
 def update_tool(tool_id):
     request_json = request.get_json()
     ResourceManager(db_name).update_tool(tool_id, request_json)
+    return {"status": "ok"}
 
 @app.route("/debug/job-list/json")
 def debug_get_job_list():
