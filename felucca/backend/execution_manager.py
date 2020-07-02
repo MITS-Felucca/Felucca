@@ -307,8 +307,8 @@ class ExecutionManager(object):
         
         this method should be called from Front-end when users want to update the Phraos tool the container used in the Back-end
         """
-        #TODO: send updating kernel signal to RM
         
+        ResourceManager.set_updating_kernel(True)
         self.pull_image()
         
         #try killing all the tasks currently running
@@ -323,7 +323,8 @@ class ExecutionManager(object):
         
         for line in build_output:
             print(line)
+            
+        ResourceManager.set_updating_kernel(False)
         
-        #TODO: send finsh updating kernel signal to RM
         
         
