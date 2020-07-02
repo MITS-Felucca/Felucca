@@ -158,6 +158,14 @@ class ResourceManager(object):
         """
         return self.db_manager.get_tool_by_id(tool_id)
 
+    def get_updating_kernel(self):
+        """Return a boolean value that indicates if the kernel is updating.
+
+        Returns:
+            is_updating (boolean): The value of the metadata field
+        """
+        return self.db_manager.get_metadata_field("is_updating_kernel")
+
     def initialize_pharos_tools(self, schema_path='pharos_schema'):
         """Read and store the schemas of Pharos tools
 
@@ -309,6 +317,17 @@ class ResourceManager(object):
         """
         self.db_manager.save_result(task_id, output, stdout, stderr)
         return
+
+    def set_updating_kernel(self, new_value):
+        """Set the status of metadata field "is_updating_kernel"
+
+        Args:
+            new_value (boolean): The new value of "is_updating_kernel" in metadata
+
+        Return:
+            is_successful (boolean)
+        """
+        return self.db_manager.set_metadata_field("is_updating_kernel", new_value)
 
     def update_job_status(self, job_id, new_status):
         """Update the status of a job

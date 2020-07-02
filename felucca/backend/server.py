@@ -99,6 +99,9 @@ def submit_job_through_job_manager(job):
 def submit_job():
     """Test command: curl -H "Content-Type: application/json" --request POST -d @/vagrant/tests/sample_output/input.json http://localhost:5000/job"
     """
+    if ResourceManager(db_name).get_updating_kernel() is True:
+        return {"status": "Currently the Pharos toolset is updating. Try later please."}
+
     request_json = request.get_json()
     print(request.get_json())
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
@@ -195,7 +198,7 @@ def get_single_tool(tool_id):
     if tool is None:
         abort(404)
     else:
-        return {"Content": tool}
+        return tool
 
 @app.route("/tool", methods=["POST"])
 def insert_new_tool(tool_id):

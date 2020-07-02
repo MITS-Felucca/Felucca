@@ -558,5 +558,16 @@ class TestResourceManager(unittest.TestCase):
         # Remove the directory & inserted tasks
         shutil.rmtree(dir_path)
         self.manager.remove_all_jobs_and_tasks()
+
+    def test_metadata(self):
+        self.manager.setup()
+        self.assertEqual(self.manager.get_updating_kernel(), False)
+
+        self.manager.set_updating_kernel(True)
+        self.assertEqual(self.manager.get_updating_kernel(), True)
+
+        self.manager.set_updating_kernel(False)
+        self.assertEqual(self.manager.get_updating_kernel(), False)
+
 if __name__ == '__main__':
     unittest.main()
