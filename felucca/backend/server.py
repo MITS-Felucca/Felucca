@@ -67,7 +67,15 @@ def test():
     print(task.output)
     print(task.log)
     return {"status": "ok"}
-
+@app.route("/update_kernel", methods=['GET'])
+def test_update_kernel():
+    """update backend Phraos tool from docker hub
+    
+    Test command: curl http://localhost:5000/update_kernel
+    """
+    ExecutionManager().update_kernel()
+    return {"status": "ok"}
+    
 @app.route("/test_new_execution/<task_type>/<task_id>",methods=['GET','POST'])
 def test_new_execution(task_type, task_id):
     """this is used for testing new execution manager after reconstrction, it will start a thread to load the json and run the cmd
