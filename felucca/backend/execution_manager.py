@@ -309,7 +309,7 @@ class ExecutionManager(object):
         """
         logger = Logger().get()
         
-        ResourceManager.set_updating_kernel(True)
+        ResourceManager().set_updating_kernel(True)
         self.pull_image()
         logger.debug(f"kill all current tes because of updating")
         #try killing all the tasks currently running
@@ -319,12 +319,12 @@ class ExecutionManager(object):
         fname="/home/vagrant/docker/DockerFile"
         path = os.path.dirname(fname)
         logger.debug(f"build new felucca/pharos from new seipharos/pharos")
-        _, build_output = client.images.build(path = path, dockerfile=fname, tag = "felucca/pharos:latest")
+        _, build_output = client.images.build(path=path, dockerfile=fname, tag="felucca/pharos:latest", rm=True)
         
         for line in build_output:
             print(line)
             
-        ResourceManager.set_updating_kernel(False)
+        ResourceManager().set_updating_kernel(False)
 
         
         
