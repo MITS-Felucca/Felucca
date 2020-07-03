@@ -450,9 +450,9 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_all_tools()
 
         # Insert a sample schema
-        with open("/vagrant/tests/sample_output/ooanalyzer.json") as f:
+        with open("/vagrant/felucca/backend/pharos_schema/ooanalyzer.json") as f:
             schema_json = json.loads(f.read())
-        self.manager.db_manager.insert_new_tool(schema_json)
+        self.manager.insert_new_tool(schema_json)
 
         tool_list = self.manager.get_all_tools()
 
@@ -461,12 +461,22 @@ class TestResourceManager(unittest.TestCase):
         schema_json['Tool_ID'] = rebuild_schema['Tool_ID']
         self.assertEqual(rebuild_schema, schema_json)
 
+        tool_id = schema_json['Tool_ID']
         rebuild_schema_by_get = self.manager.get_tool_by_id(
-            schema_json['Tool_ID'])
+            tool_id)
         self.assertEqual(rebuild_schema_by_get, schema_json)
 
+        # Update the inserted tool
+        new_schema = {
+            "test": "felucca"
+        }
+        self.manager.update_tool(tool_id, new_schema)
+        rebuild_schema = self.manager.get_tool_by_id(tool_id)
+        new_schema['Tool_ID'] = tool_id
+        self.assertEqual(rebuild_schema, new_schema)
+
         # Remove the inserted sample
-        self.manager.remove_tool_by_id(schema_json['Tool_ID'])
+        self.manager.remove_tool_by_id(tool_id)
 
         # Initialize Pharos tools
         self.manager.initialize_pharos_tools('/vagrant/felucca/backend/pharos_schema')
@@ -548,5 +558,16 @@ class TestResourceManager(unittest.TestCase):
         # Remove the directory & inserted tasks
         shutil.rmtree(dir_path)
         self.manager.remove_all_jobs_and_tasks()
+
+    def test_metadata(self):
+        self.manager.setup()
+        self.assertEqual(self.manager.get_updating_kernel(), False)
+
+        self.manager.set_updating_kernel(True)
+        self.assertEqual(self.manager.get_updating_kernel(), True)
+
+        self.manager.set_updating_kernel(False)
+        self.assertEqual(self.manager.get_updating_kernel(), False)
+
 if __name__ == '__main__':
     unittest.main()
