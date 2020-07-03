@@ -18,6 +18,9 @@ import { SchemaService } from './schema.service';
 import { OutputDisplayComponent } from './output-display/output-display.component';
 import { ToolListComponent } from './tool-list/tool-list.component';
 import { EditToolComponent } from './edit-tool/edit-tool.component';
+import { SubmitResultComponent } from './submit-job/submit-job.component'; 
+import { NavbarComponent } from './navbar/navbar.component';
+import { UpdatePharosComponent } from './navbar/navbar.component';
 
 @NgModule({
   imports:      [ BrowserModule,
@@ -36,7 +39,10 @@ import { EditToolComponent } from './edit-tool/edit-tool.component';
                   FileDisplayComponent,
                   OutputDisplayComponent,
                   ToolListComponent,
-                  EditToolComponent],
+                  EditToolComponent,
+                  SubmitResultComponent,
+                  NavbarComponent,
+                  UpdatePharosComponent],
   bootstrap:    [ AppComponent ],
   providers: [ JobService, FileService, SchemaService ]
 })

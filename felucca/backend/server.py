@@ -26,6 +26,12 @@ db_name = "test"
 def hello():
     return "Hello World!"
 
+@app.route("/test/pharos", methods=['POST'])
+def update_pharos():
+    request_json = request.get_json()
+    print(request.get_json())
+    print("udpatepharos")
+    return {"status": "ok"}
 
 @app.route("/test")
 def test():
