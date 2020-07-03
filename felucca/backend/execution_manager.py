@@ -254,7 +254,7 @@ class ExecutionManager(object):
         except Exception as e:
             logger.error(f"try to kill {task_id}'s container fail, maybe the container is not existed or already killed, exception: {e}")
      
-        
+    
     def submit_task(self,task):
         """Job Manager call this method and submit a task. This method will launch the whole procedure (i.e. parse cmd, create container, run exe with phraos and insert result into Resource Manager) of the Execution Manager
     
@@ -289,3 +289,42 @@ class ExecutionManager(object):
         #self.copy_to_container(task,task.executable_file,container)
 
         return(True)
+        
+    def pull_image(self):
+        """
+        pull the latest seipharos/pharos FROM docker hub
+        """
+        logger = Logger().get()
+        logger.debug(f"pull seipharos/pharos from docker hub")
+        obj = os.popen("sudo docker pull seipharos/pharos")
+        print(obj.read())
+
+    def update_kernel(self):
+        """
+        Pull the latest seipharos/pharos from docker hub and build a new image using the latest pulled seipharos/pharos, Back-end will used latest tool hereafter
+        
+        WARNING: this method will kill all of the current running tasks
+        
+        this method should be called from Front-end when users want to update the Phraos tool the container used in the Back-end
+        """
+        logger = Logger().get()
+        
+        ResourceManager().set_updating_kernel(True)
+        self.pull_image()
+        logger.debug(f"kill all current tes because of updating")
+        #try killing all the tasks currently running
+        for task_id in list(self.id_to_task_container):
+            self.kill_task(self, task_id)
+        client = docker.from_env()
+        fname="/home/vagrant/docker/DockerFile"
+        path = os.path.dirname(fname)
+        logger.debug(f"build new felucca/pharos from new seipharos/pharos")
+        _, build_output = client.images.build(path=path, dockerfile=fname, tag="felucca/pharos:latest", rm=True)
+        
+        for line in build_output:
+            print(line)
+            
+        ResourceManager().set_updating_kernel(False)
+
+        
+        

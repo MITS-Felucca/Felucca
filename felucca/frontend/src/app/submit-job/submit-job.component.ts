@@ -1,10 +1,49 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit, Input} from '@angular/core';
 import { Router } from '@angular/router';
 
 import { TaskInfo } from '../task-info'
 import { JobService } from '../job.service';
 import { Schema } from '../schema';
 import { SchemaService } from '../schema.service';
+import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
+@Component({
+  selector: 'ngbd-modal-content',
+  template: `
+    <div class="modal-header">
+      <h4 class="modal-title">{{statusMessage}}</h4>
+      <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>{{message}}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-dark" (click)="close()">Close</button>
+    </div>
+  `
+})
+export class SubmitResultComponent {
+  @Input() status;
+  @Input() message;
+  @Input() statusMessage;
+
+
+  constructor(public activeModal: NgbActiveModal,
+              private router: Router) {
+  }
+  close() {
+    console.log(this.status);
+    if (this.status) {
+      this.router.navigate(['/job-list']);
+      this.activeModal.close('Close click');
+    } else {
+      this.activeModal.close('Close click');
+    }
+  }
+}
+
 
 @Component({
   selector: 'app-submit-job',
@@ -21,7 +60,7 @@ export class SubmitJobComponent implements OnInit{
 
   constructor(private jobService: JobService,
               private schemaService: SchemaService,
-              private router: Router) { }
+              private modalService: NgbModal) { }
 
   ngOnInit() {
     this.tasks = [];
@@ -52,8 +91,17 @@ export class SubmitJobComponent implements OnInit{
     if (!this.comment) {
       this.comment = '';
     }
-    this.jobService.submitJob(this.name, this.comment, this.tasks).subscribe(data => {
-      this.router.navigate(['/job-list']);
+    this.jobService.submitJob(this.name, this.comment, this.tasks).subscribe(result => {
+      console.log(result);
+      const modalRef = this.modalService.open(SubmitResultComponent);
+      modalRef.componentInstance.status = result;
+      if (result) {
+        modalRef.componentInstance.statusMessage = "Submitted successfully";
+        modalRef.componentInstance.message = `Job ${this.name} submit successfully.`;
+      } else {
+        modalRef.componentInstance.statusMessage = 'Submitted failed';
+        modalRef.componentInstance.message = 'The server is being upgraded, please try again later.';
+      }
     });
   }
 
