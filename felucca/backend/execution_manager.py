@@ -307,24 +307,24 @@ class ExecutionManager(object):
         
         this method should be called from Front-end when users want to update the Phraos tool the container used in the Back-end
         """
+        logger = Logger().get()
         
         ResourceManager.set_updating_kernel(True)
         self.pull_image()
-        
+        logger.debug(f"kill all current tes because of updating")
         #try killing all the tasks currently running
         for task_id in list(self.id_to_task_container):
             self.kill_task(self, task_id)
-
         client = docker.from_env()
-        
         fname="/home/vagrant/docker/DockerFile"
         path = os.path.dirname(fname)
+        logger.debug(f"build new felucca/pharos from new seipharos/pharos")
         _, build_output = client.images.build(path = path, dockerfile=fname, tag = "felucca/pharos:latest")
         
         for line in build_output:
             print(line)
             
         ResourceManager.set_updating_kernel(False)
-        
+
         
         

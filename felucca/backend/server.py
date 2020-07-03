@@ -67,15 +67,20 @@ def test():
     print(task.output)
     print(task.log)
     return {"status": "ok"}
-@app.route("/update_kernel", methods=['GET'])
-def test_update_kernel():
+@app.route("/pharos", methods=['POST'])
+def update_kernel():
     """update backend Phraos tool from docker hub
     
     Test command: curl http://localhost:5000/update_kernel
     """
-    ExecutionManager().update_kernel()
+    t = Thread(target =  thread_update_kernel)
+    t.start()
     return {"status": "ok"}
+
+def thread_update_kernel():    
+    ExecutionManager().update_kernel()
     
+
 @app.route("/test_new_execution/<task_type>/<task_id>",methods=['GET','POST'])
 def test_new_execution(task_type, task_id):
     """this is used for testing new execution manager after reconstrction, it will start a thread to load the json and run the cmd
@@ -89,7 +94,6 @@ def test_new_execution(task_type, task_id):
 
     t = Thread(target = thread_test_new_execution, args = (task_type, task_id, ))
     t.start()
-
     return ("start testing: task_type:{task_type} task_id:{task_id}\n")
 
 @app.route("/clean-all", methods=['GET'])
