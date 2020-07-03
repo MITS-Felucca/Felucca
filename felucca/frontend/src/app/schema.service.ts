@@ -173,4 +173,13 @@ export class SchemaService {
     }));
   }
 
+  updatePharos(dockerDir: string): Observable<boolean> {
+    let data= {content: dockerDir};
+    const url = `${this.backEndURL}/pharos`;
+    return this.http.post(url, JSON.stringify(data), this.httpOptions).pipe(map(data => {
+        return (data as any).status === 'ok';
+      }
+    ));
+  }
+
 }

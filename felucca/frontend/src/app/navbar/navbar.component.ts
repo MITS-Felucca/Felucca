@@ -31,12 +31,14 @@ import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   `
 })
 export class UpdatePharosComponent {
-  dockerDir: String;
+  dockerDir: string;
   constructor(public activeModal: NgbActiveModal,
-              private router: Router) {
+              private router: Router,
+              private schemaService: SchemaService,) {
   }
   update() {
     console.log(this.dockerDir);
+    this.schemaService.updatePharos(this.dockerDir).subscribe();
     this.activeModal.close('Close click');
   }
 }
