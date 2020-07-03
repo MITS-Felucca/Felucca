@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient} from '@angular/common/http';
+import { HttpClient, HttpHeaders} from '@angular/common/http';
 
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -14,6 +14,10 @@ import { ArgumentType } from './argument-type.enum';
 export class SchemaService {
 
   private backEndURL = 'http://localhost:5000';
+
+  httpOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  };
 
   constructor(private http: HttpClient) { }
 
@@ -50,11 +54,122 @@ export class SchemaService {
         schemas.push({
           toolName: (schema as any).Tool_Name,
           programName: (schema as any).Program_Name,
+          toolID: (schema as any).Tool_ID,
           isPharos: (schema as any).Is_Pharos,
           argumentClasses: classes
         });
       }
       return schemas;
+    }));
+  }
+
+  getSchemaByID(schemaID: string): Observable<Schema> {
+    let url = `${this.backEndURL}/tool/${schemaID}/json`;
+    return this.http.get(url).pipe(map(data => {
+      console.log(data);
+      let classes: ArgumentClass[] = [];
+      for (let argumentClass of (data as any).Classes) {
+        let toolArguments: Argument[] = [];
+        for (let argument of (argumentClass as any).Arguments) {
+          let key: string;
+          if ((argument as any).Abbreviation === '') {
+            key = (argument as any).Full_Name;
+          } else {
+            key = (argument as any).Abbreviation;
+          }
+          toolArguments.push({
+            key: key,
+            fullName: (argument as any).Full_Name,
+            abbreviation: (argument as any).Abbreviation,
+            description: (argument as any).Description,
+            isRequired: (argument as any).Is_Required,
+            defaultValue: (argument as any).Default_Value,
+            argumentType: (argument as any).Type as ArgumentType
+          });
+        }
+        classes.push({
+          name: (argumentClass as any).Name,
+          arguments: toolArguments
+        });
+      }
+      return {
+        toolName: (data as any).Tool_Name,
+        programName: (data as any).Program_Name,
+        toolID: (data as any).Tool_ID,
+        isPharos: (data as any).Is_Pharos,
+        argumentClasses: classes};
+    }));
+  }
+
+  deleteSchemaByID(schemaID: string): Observable<boolean> {
+    let url = `${this.backEndURL}/tool/${schemaID}/delete`;
+    return this.http.get(url).pipe(map(data => {
+      return (data as any).Status === 'ok';
+    }))
+  }
+
+  createSchema(schema: Schema): Observable<boolean> {
+    console.log(schema);
+    let url = `${this.backEndURL}/tool`;
+    let schemaInfo = {
+      Tool_Name: schema.toolName,
+      Program_Name: schema.programName,
+      Is_Pharos: schema.isPharos,
+      Classes: []
+    };
+
+    for (let argumentClass of schema.argumentClasses) {
+      let argumentsInfo = [];
+      for (let argumentInfo of argumentClass.arguments) {
+        argumentsInfo.push({
+          Full_Name: argumentInfo.fullName,
+          Abbreviation: argumentInfo.abbreviation,
+          Description: argumentInfo.description,
+          Is_Required: argumentInfo.isRequired,
+          Default_Value: argumentInfo.defaultValue,
+          Type: argumentInfo.argumentType
+        });
+      }
+      schemaInfo.Classes.push({
+        Name: argumentClass.name,
+        Arguments: argumentsInfo
+      });
+    }
+
+    return this.http.post(url, JSON.stringify(schemaInfo), this.httpOptions).pipe(map(data => {
+      return (data as any).Status === 'ok';
+    }));
+  }
+
+  updateSchema(schema: Schema, schemaID: string): Observable<boolean> {
+    let url = `${this.backEndURL}/tool/${schemaID}`;
+    let schemaInfo = {
+      Tool_Name: schema.toolName,
+      Program_Name: schema.programName,
+      Is_Pharos: schema.isPharos,
+      Classes: []
+    };
+
+    for (let argumentClass of schema.argumentClasses) {
+      let argumentsInfo = [];
+      for (let argumentInfo of argumentClass.arguments) {
+        argumentsInfo.push({
+          Full_Name: argumentInfo.fullName,
+          Abbreviation: argumentInfo.abbreviation,
+          Description: argumentInfo.description,
+          Is_Required: argumentInfo.isRequired,
+          Default_Value: argumentInfo.defaultValue,
+          Type: argumentInfo.argumentType
+        });
+      }
+      schemaInfo.Classes.push({
+        Name: argumentClass.name,
+        Arguments: argumentsInfo
+      });
+    }
+
+    return this.http.post(url, JSON.stringify(schemaInfo), this.httpOptions).pipe(map(data => {
+      return (data as any).Status === 'ok';
     }));
   }
 

@@ -1,0 +1,38 @@
+<div>
+  <h2 class="bd-title"> Tool List </h2>
+  <table class="table table-striped"> 
+    <thead>
+      <th>Index</th>
+      <th>Tool Name</th>
+      <th>Operation</th>
+    </thead>
+    <tbody>
+      <tr *ngFor="let schema of schemas; index as i">
+        <td>
+          <div>
+            {{i + 1}}
+          </div>
+        </td>
+        <td>
+          <div>
+            {{schema.toolName}}
+          </div>
+        </td>
+        <td>
+          <button class="btn btn-success btn-lg" (click)="editSchema(schema.toolID)">Edit</button>
+          <button class="btn btn-success btn-lg" (click)="deleteSchema(schema.toolID)">delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <dl class="row">
+    <dd>Start From:</dd>
+    <dt>
+      <select class="custom-select bg-success text-white" [(ngModel)]="chosenIndex" place-holder="123">
+        <option [value]="0">Start from scratch</option>
+        <option *ngFor="let schema of schemas; index as i" [value]="i + 1" > {{schema.toolName}}</option>
+      </select>
+    </dt>
+  </dl>
+  <button class="btn btn-success btn-lg" (click)="createSchema()">Create</button>
+</div>

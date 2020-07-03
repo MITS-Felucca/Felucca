@@ -1,0 +1,85 @@
+<div>
+  <h2> Tool Metadata </h2>
+  <form *ngIf="metadata" (ngSubmit) = "onSubmit()" [formGroup]="metadata">
+    <dl>
+      <dd> Tool Name: </dd>
+      <dt>
+        <input formControlName="toolName" type="text">
+      </dt>
+    </dl>
+    <dl>
+      <dd> Program Name: </dd>
+      <dt>
+        <input formControlName="programName" type="text">
+      </dt>
+    </dl>
+    <dl>
+      <dd> Is Pharos: </dd>
+      <dt>
+        <input formControlName="isPharos" type="checkbox">
+      </dt>
+    </dl>
+    <div formArrayName="argumentClasses">
+      <div class="card shadow p-3 mb-5 bg-white rounded" *ngFor="let argumentClass of classGroups.controls; index as i;">
+        <div [formGroupName]="i">
+          <div class="card-body">
+            <div class="p-3 mb-2 bg-info text-white">
+              <dl>
+                <dt>Class Name:</dt>
+                <dd>
+                  <input formControlName="name" type="text">
+                </dd>
+              </dl>
+            </div>
+          </div>
+
+          <div formArrayName="arguments">
+            <table class="table table-striped" style="width: 100%">
+              <thead>
+                <th>Full Name</th>
+                <th>Abbreviation</th>
+                <th>Description</th>
+                <th>isRequired</th>
+                <th>Default Value</th>
+                <th>Argument Type</th>
+                <th>Operation</th>
+              </thead>
+              <tbody>
+                <tr *ngFor="let argument of getArgumentGroups(i).controls; index as j;" [formGroupName]="j">
+                    <td>
+                      <input formControlName="fullName" type="text">
+                    </td>
+                    <td>
+                      <input formControlName="abbreviation" type="text">
+                    </td>
+                    <td>
+                      <input formControlName="description" type="text">
+                    </td>
+                    <td>
+                      <input formControlName="isRequired" type="checkbox">
+                    </td>
+                    <td>
+                      <input formControlName="defaultValue" type="text">
+                    </td>
+                    <td>
+                      <select class="custom-select bg-success text-white" formControlName="argumentType">
+                        <option *ngFor="let type of argumentType | keyvalue" [ngValue]="type.value"> {{type.value}}</option>
+                      </select>
+                    </td>
+                    <td>
+                      <button class="btn btn-success btn-lg" type="button" (click)="deleteArgument(i, j)">Delete</button>
+                    </td>
+                </tr>
+              </tbody>
+            </table>
+            <button class="btn btn-success btn-lg" type="button" (click)="addArgument(i)">Add</button>
+            <button class="btn btn-success btn-lg" type="button" (click)="deleteClass(i)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-success btn-lg" type="button" (click)="addClass()">Add</button>
+    <button [disabled]="!metadata.valid" class="btn btn-success btn-lg float-right rounded-lg" type="submit" style="width:150px">Save</button> 
+  </form>
+</div>
+

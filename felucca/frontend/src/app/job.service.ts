@@ -89,7 +89,7 @@ export class JobService {
     }
     const url = `${this.backEndURL}/job`;
     return this.http.post(url, JSON.stringify(job), this.httpOptions).pipe(map(data => {
-      return (data as any).Status == 'ok';
+      return (data as any).Status === 'ok';
       }
     ));
   }
@@ -97,7 +97,7 @@ export class JobService {
   killJob(jobID: string): Observable<boolean> {
     const url = `${this.backEndURL}/kill-job/${jobID}`;
     return this.http.get(url).pipe(map(data => {
-      return (data as any).Status == 'ok';
+      return (data as any).Status === 'ok';
       }
     ));
   }
@@ -105,7 +105,7 @@ export class JobService {
   killTask(taskID: string): Observable<boolean> {
     const url = `${this.backEndURL}/kill-task/${taskID}`;
     return this.http.get(url).pipe(map(data => {
-      return (data as any).Status == 'ok';
+      return (data as any).Status === 'ok';
       }
     ));
   }

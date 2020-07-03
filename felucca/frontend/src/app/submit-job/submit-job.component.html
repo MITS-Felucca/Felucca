@@ -27,7 +27,7 @@
         </tr>
       </thead>
       <tbody *ngIf='tasks.length > 0'>
-        <tr *ngFor='let task of tasks; index as i'>
+        <tr *ngFor="let task of tasks; index as i">
           <td><div>{{i + 1}}</div></td>
           <td><div>{{task.toolName}}</div></td>
           <td>
