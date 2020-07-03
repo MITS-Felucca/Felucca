@@ -311,6 +311,16 @@ class ResourceManager(object):
         self.db_manager.update_job_status(job_id, new_status)
         return
 
+    def update_stdout_and_stderr(self, task_id, stdout, stderr):
+        """Update the stdout & stderr of the task.
+
+        Args:
+            task_id (String): The id of the task
+            stdout (String): The new stdout
+            stderr (String): The new stderr
+        """
+        self.db_manager.update_stdout_and_stderr(task_id, stdout, stderr)
+
     def update_task_status(self, task_id, new_status):
         """Update the status of a task
 
@@ -972,9 +982,6 @@ class ResourceManager(object):
                 except Exception as e:
                     logger.error(f"Problem when storing file {output_file_path}. Exception{e}")
 
-            # TODO:Deal with excessively large stdout & stderr
-
-
             try:
                 # Update the output fields of the task
                 condition = {"_id": task_id}
@@ -1073,6 +1080,81 @@ class ResourceManager(object):
             except Exception as e:
                 logger.error(f"Failed when updating job status. Exception: {e}")
 
+        def update_stdout_and_stderr(self, task_id, stdout, stderr):
+            """Update the stdout & stderr of the task.
+
+            Args:
+                task_id (String): The id of the task
+                stdout (String): The new stdout
+                stderr (String): The new stderr
+            """
+            try:
+                logger = Logger().get()
+                logger.debug(f"start update_stdout_and_stderr task_id:{task_id}")
+
+                # Cast task_id from String to ObjectId first
+                task_id = ObjectId(task_id)
+            except Exception as e:
+                logger.error(f"Problem with the parameters: {e}")
+
+            try:
+                # Update the output fields of the task
+                condition = {"_id": task_id}
+                task = self.__tasks_collection.find_one(condition)
+            except Exception as e:
+                logger.error(f"Error when searching for task with id {task_id}")
+
+            # Only update when the parameters are non-empty
+            update_stdout = False
+            if stdout is not None and stdout != "":
+                update_stdout = True
+            update_stderr = False
+            if stderr is not None and stderr != "":
+                update_stderr = True
+
+            if not update_stdout and not update_stderr:
+                return
+
+            # Store the id of the old results and insert the new one
+            if update_stdout:
+                old_stdout_id = task['stdout']
+                new_stdout_id = self.__fs.put(stdout, encoding='utf-8')
+            if update_stderr:
+                old_stderr_id = task['stderr']
+                new_stderr_id = self.__fs.put(stderr, encoding='utf-8')
+
+            try:
+                if update_stdout and new_stdout_id:
+                    task["stdout"] = new_stdout_id
+            except Exception as e:
+                logger.error(f"Error when updating stdout of Task {task_id}")
+
+            try:
+                if update_stderr and new_stderr_id:
+                    task["stderr"] = new_stderr_id
+            except Exception as e:
+                logger.error(f"Error when updating stderr of Task {task_id}")
+
+            try:
+                update_result = self.__tasks_collection.update_one(condition,
+                                                                   {"$set": task})
+                if update_result.modified_count != 1:
+                    logger.error(f"save result failed")
+            except Exception as e:
+                logger.error(f"Error when updating stderr of Task {task_id}")
+            try:
+                # Remove the old stdout after update
+                if update_stdout and old_stdout_id is not None:
+                    self.__fs.delete(old_stdout_id)
+            except Exception as e:
+                logger.error(f"Error when deleting old stdout. Exception: {e}")
+
+            try:
+                # Remove the old stderr after update
+                if update_stderr and old_stderr_id is not None:
+                    self.__fs.delete(old_stderr_id)
+            except Exception as e:
+                logger.error(f"Error when deleting old stderr. Exception: {e}")
 
         def update_task_status(self, task_id, new_status):
             """Update the status of a task
@@ -1098,3 +1180,4 @@ class ResourceManager(object):
             except Exception as e:
                 logger.error(f"something wrong in update_task_status,"
                              f" Exception: {e}")
+

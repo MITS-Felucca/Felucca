@@ -178,6 +178,12 @@ class TestResourceManager(unittest.TestCase):
         self.assertEqual(rebuilt_task.output, ["output.json", "facts", "results"])
         self.assertEqual(rebuilt_task.status, Status.Pending)
 
+        new_stdout = "New stdout"
+        new_stderr = "New stderr"
+        self.manager.update_stdout_and_stderr(task_id, new_stdout, new_stderr)
+        self.assertEqual(self.manager.get_stdout(task_id), new_stdout)
+        self.assertEqual(self.manager.get_stderr(task_id), new_stderr)
+
         # Remove the inserted job & task after test
         self.manager.remove_all_jobs_and_tasks()
 
@@ -450,7 +456,7 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_all_tools()
 
         # Insert a sample schema
-        with open("/vagrant/tests/sample_output/ooanalyzer.json") as f:
+        with open("/vagrant/felucca/backend/pharos_schema/ooanalyzer.json") as f:
             schema_json = json.loads(f.read())
         self.manager.db_manager.insert_new_tool(schema_json)
 
