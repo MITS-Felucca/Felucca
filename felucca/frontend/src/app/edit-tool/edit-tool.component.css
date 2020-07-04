@@ -1,8 +1,20 @@
 th {
     text-align: center; 
     vertical-align: middle;
-  }
-  td {
-    text-align: center; 
-    vertical-align: middle;
-  }
+}
+td {
+  text-align: center; 
+  vertical-align: middle;
+}
+
+tr.argument-group.ng-invalid:not(form) {
+  border: 5px solid #a94442; /* red */
+}
+
+div.class-group.ng-invalid:not(form) {
+  border: 5px solid #a94442; /* red */
+}
+
+button:disabled {
+  background: gray
+}

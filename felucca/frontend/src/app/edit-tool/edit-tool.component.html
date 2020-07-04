@@ -24,7 +24,7 @@
   </div>
     <div formArrayName="argumentClasses">
       <div class="card shadow p-3 mb-5 bg-white rounded" *ngFor="let argumentClass of classGroups.controls; index as i;">
-        <div [formGroupName]="i">
+        <div class="class-group" [formGroupName]="i">
           <div class="card-body">
             <div class="p-3 mb-2 bg-info text-white" style="height:80px">
               <div style="float:left">
@@ -61,7 +61,7 @@
                 <th>Operation</th>
               </thead>
               <tbody>
-                <tr *ngFor="let argument of getArgumentGroups(i).controls; index as j;" [formGroupName]="j">
+                <tr *ngFor="let argument of getArgumentGroups(i).controls; index as j;" [formGroupName]="j" class="argument-group">
                     <td>
                       <div class="input-group">
                         <input formControlName="fullName" type="text" class="form-control" aria-label="Text input with checkbox">

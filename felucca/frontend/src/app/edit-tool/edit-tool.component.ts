@@ -67,7 +67,7 @@ export class EditToolComponent implements OnInit {
           isRequired: new FormControl(argumentInfo.isRequired),
           defaultValue: new FormControl(argumentInfo.defaultValue),
           argumentType: new FormControl(argumentInfo.argumentType, Validators.required)
-        }));
+        }, this.argumentValidator));
       }
       (this.metadata.get('argumentClasses') as FormArray).push(new FormGroup({
         name: new FormControl(argumentClass.name, Validators.required),
@@ -92,7 +92,7 @@ export class EditToolComponent implements OnInit {
       isRequired: new FormControl(''),
       defaultValue: new FormControl(''),
       argumentType: new FormControl('', Validators.required)
-    }));
+    }, this.argumentValidator));
   }
 
   deleteArgument(classIndex: number, argumentIndex: number): void {
@@ -120,6 +120,22 @@ export class EditToolComponent implements OnInit {
         this.router.navigate(['tool-list']);
       });
     }
+  }
+
+  argumentValidator(formGroup: FormGroup) {
+    let errors = {};
+    if (formGroup.get('fullName').value === '' && formGroup.get('abbreviation').value === '') {
+      errors['emptyKey'] = true;
+    }
+
+    if (formGroup.get('argumentType').value === ArgumentType.OutputFile && formGroup.get('defaultValue').value === '') {
+      errors['emptyDefaultValue'] = true;
+    }
+
+    if (JSON.stringify(errors) === '{}') {
+      return null;
+    }
+    return errors;
   }
 }
   
