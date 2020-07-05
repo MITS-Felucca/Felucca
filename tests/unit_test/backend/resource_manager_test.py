@@ -223,6 +223,9 @@ class TestResourceManager(unittest.TestCase):
         self.manager.update_job_status(job_id, Status.Failed)
         self.manager.update_task_status(task_id, Status.Successful)
 
+        # Retrieve the status of task & job
+        self.assertEqual(self.manager.get_status(task_id), Status.Successful.name)
+
         # Rebuild the job object and check the status
         rebuilt_job = self.manager.db_manager.get_job_by_id_without_tasks(job_id)
         self.assertEqual(rebuilt_job.status, Status.Failed)

@@ -31,7 +31,7 @@ def update_pharos():
     request_json = request.get_json()
     print(request.get_json())
     print("udpatepharos")
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/test")
 def test():
@@ -72,16 +72,19 @@ def test():
     print(task.stderr)
     print(task.output)
     print(task.log)
-    return {"status": "ok"}
+    return {"Status": "ok"}
 @app.route("/pharos", methods=['POST'])
 def update_kernel():
     """update backend Phraos tool from docker hub
 
     Test command: curl http://localhost:5000/update_kernel
     """
+    if ResourceManager(db_name).get_updating_kernel() is True:
+        return {"Status": "Currently the Pharos toolset is updating. Try later please."}
+
     t = Thread(target =  thread_update_kernel)
     t.start()
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 def thread_update_kernel():
     JobManager().kill_all_jobs()
@@ -109,7 +112,7 @@ def clean_all():
     Command: curl --request GET http://localhost:5000/clean-all
     """
     ResourceManager("test").remove_all_jobs_and_tasks()
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 def submit_job_through_job_manager(job):
     JobManager().submit_job(job)
@@ -119,14 +122,14 @@ def submit_job():
     """Test command: curl -H "Content-Type: application/json" --request POST -d @/vagrant/tests/sample_output/input.json http://localhost:5000/job"
     """
     if ResourceManager(db_name).get_updating_kernel() is True:
-        return {"status": "Currently the Pharos toolset is updating. Try later please."}
+        return {"Status": "Currently the Pharos toolset is updating. Try later please."}
 
     request_json = request.get_json()
     print(request.get_json())
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
     thread = Thread(target=submit_job_through_job_manager, args=(job, ))
     thread.start()
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/job-info/<id>/json", methods=['GET'])
 def get_job(id):
@@ -154,12 +157,12 @@ def get_job_list():
 @app.route("/kill-job/<job_id>", methods=['GET'])
 def kill_job(job_id):
     JobManager().kill_job(job_id)
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/kill-task/<task_id>", methods=['GET'])
 def kill_task(task_id):
     ExecutionManager().kill_task(task_id)
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/pharos/metadata", methods=['GET'])
 def get_metadata():
@@ -197,7 +200,11 @@ def get_stdout(task_id):
     if stdout is None:
         abort(404)
     else:
-        return {"Content": stdout}
+        status_str = ResourceManager(db_name).get_status(task_id)
+        return {
+            "Status": status_str,
+            "Content": stdout
+        }
 
 @app.route("/task/<task_id>/stderr/json", methods=['GET'])
 def get_stderr(task_id):
@@ -206,7 +213,11 @@ def get_stderr(task_id):
     if stderr is None:
         abort(404)
     else:
-        return {"Content": stderr}
+        status_str = ResourceManager(db_name).get_status(task_id)
+        return {
+            "Status": status_str,
+            "Content": stderr
+        }
 
 @app.route("/tool-list/json", methods=["GET"])
 def get_tool_list():
@@ -225,18 +236,18 @@ def get_single_tool(tool_id):
 def insert_new_tool():
     request_json = request.get_json()
     ResourceManager(db_name).insert_new_tool(request_json)
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/tool/<tool_id>/delete", methods=["GET"])
 def remove_tool(tool_id):
     ResourceManager(db_name).remove_tool_by_id(tool_id)
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/tool/<tool_id>", methods=["POST"])
 def update_tool(tool_id):
     request_json = request.get_json()
     ResourceManager(db_name).update_tool(tool_id, request_json)
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/debug/job-list/json")
 def debug_get_job_list():
