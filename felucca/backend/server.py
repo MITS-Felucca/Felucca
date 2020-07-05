@@ -76,21 +76,22 @@ def test():
 @app.route("/pharos", methods=['POST'])
 def update_kernel():
     """update backend Phraos tool from docker hub
-    
+
     Test command: curl http://localhost:5000/update_kernel
     """
     t = Thread(target =  thread_update_kernel)
     t.start()
     return {"status": "ok"}
 
-def thread_update_kernel():    
+def thread_update_kernel():
+    JobManager().kill_all_jobs()
     ExecutionManager().update_kernel()
-    
+
 
 @app.route("/test_new_execution/<task_type>/<task_id>",methods=['GET','POST'])
 def test_new_execution(task_type, task_id):
     """this is used for testing new execution manager after reconstrction, it will start a thread to load the json and run the cmd
-    
+
     Args:
     task_type (str): if task_type == "false", this method will load a json with simulated wrong cmd to run, otherwise it will load a correct cmd
     task_id (str): the result under this task_id

@@ -21,7 +21,7 @@ class TestJobManager(unittest.TestCase):
         # Use "test" database for unit tests instead of "felucca"
         self.resource_manager = ResourceManager("test")
         self.job_manager = JobManager()
-    
+
     def test_job_status(self):
         self.resource_manager.remove_all_jobs_and_tasks()
 
@@ -65,6 +65,31 @@ class TestJobManager(unittest.TestCase):
 
         job = self.resource_manager.get_job_by_id(job_id)
         self.assertEqual(job.status, Status.Finished)
+
+    def test_kill_job(self):
+        self.resource_manager.remove_all_jobs_and_tasks()
+
+        # Create a job without tasks
+        input_json = {
+            "Job_Name": "dump_job",
+            "Job_Comment": "this is the test json input for job manager",
+            "Tasks": []
+        }
+        job = self.resource_manager.save_new_job_and_tasks(input_json)
+        job_id = job.job_id
+
+        # Initialize the metadata in JM
+        self.job_manager.initialize_job(job)
+        self.job_manager.kill_job(job_id)
+        self.assertEqual(job_id in self.job_manager.job_metadata, False)
+
+        job = self.resource_manager.save_new_job_and_tasks(input_json)
+        job_id = job.job_id
+        self.job_manager.initialize_job(job)
+        self.job_manager.kill_all_jobs()
+        self.assertEqual(job_id in self.job_manager.job_metadata, False)
+
+        self.resource_manager.remove_all_jobs_and_tasks()
 
 if __name__ == '__main__':
     # Not finished yet, don't run
