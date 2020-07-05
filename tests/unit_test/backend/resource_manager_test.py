@@ -180,7 +180,9 @@ class TestResourceManager(unittest.TestCase):
 
         new_stdout = "New stdout"
         new_stderr = "New stderr"
-        self.manager.update_stdout_and_stderr(task_id, new_stdout, new_stderr)
+        # self.manager.update_stdout_and_stderr(task_id, new_stdout, new_stderr)
+        self.manager.update_stdout(task_id, new_stdout)
+        self.manager.update_stderr(task_id, new_stderr)
         self.assertEqual(self.manager.get_stdout(task_id), new_stdout)
         self.assertEqual(self.manager.get_stderr(task_id), new_stderr)
 
