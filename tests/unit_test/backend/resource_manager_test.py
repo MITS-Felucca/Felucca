@@ -158,6 +158,8 @@ class TestResourceManager(unittest.TestCase):
         log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
 
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.update_stdout(task_id, stdout)
+        self.manager.update_stderr(task_id, stderr)
 
         # Rebuild the task object and check the contents of files
         rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
@@ -183,8 +185,8 @@ class TestResourceManager(unittest.TestCase):
         # self.manager.update_stdout_and_stderr(task_id, new_stdout, new_stderr)
         self.manager.update_stdout(task_id, new_stdout)
         self.manager.update_stderr(task_id, new_stderr)
-        self.assertEqual(self.manager.get_stdout(task_id), new_stdout)
-        self.assertEqual(self.manager.get_stderr(task_id), new_stderr)
+        self.assertEqual(self.manager.get_stdout(task_id), stdout + new_stdout)
+        self.assertEqual(self.manager.get_stderr(task_id), stderr + new_stderr)
 
         # Remove the inserted job & task after test
         self.manager.remove_all_jobs_and_tasks()
@@ -314,6 +316,8 @@ class TestResourceManager(unittest.TestCase):
         output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
 
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.update_stdout(task_id, stdout)
+        self.manager.update_stderr(task_id, stderr)
 
         # Retrive the output file
         file = self.manager.get_output_file(task_id, "output.json")
@@ -412,6 +416,8 @@ class TestResourceManager(unittest.TestCase):
         stderr = ""
         output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.update_stdout(task_id, stdout)
+        self.manager.update_stderr(task_id, stderr)
 
         # Mark task as finished
         self.manager.mark_task_as_finished(task_id)
@@ -543,6 +549,8 @@ class TestResourceManager(unittest.TestCase):
         output_file_list = [output_file_path, results_file_path, facts_file_path]
 
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.update_stdout(task_id, stdout)
+        self.manager.update_stderr(task_id, stderr)
 
         # Rebuild the task object and check the contents of files
         rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)

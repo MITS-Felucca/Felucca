@@ -143,14 +143,16 @@ def kill_task(task_id):
 
 @app.route("/intermediate-result/stdout", methods=['POST'])
 def save_realtime_stdout():
-    ResourceManager(db_name).update_stdout(request.form['task_id'],
-                                           request.form['stdout'])
+    Thread(target=lambda task_id, stdout: ResourceManager(db_name).update_stdout(task_id, stdout),
+           args=(request.form['task_id'], request.form['stdout'], )).start()
+    print("New stdout: " + request.form['stdout'])
     return {"status": "ok"}
 
 @app.route("/intermediate-result/stderr", methods=['POST'])
 def save_realtime_stderr():
-    ResourceManager(db_name).update_stderr(request.form['task_id'],
-                                           request.form['stderr'])
+    Thread(target=lambda task_id, stderr: ResourceManager(db_name).update_stderr(task_id, stderr),
+           args=(request.form['task_id'], request.form['stderr'], )).start()
+    print("New stderr: " + request.form['stderr'])
     return {"status": "ok"}
 
 @app.route("/result", methods=['POST'])

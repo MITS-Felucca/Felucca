@@ -999,11 +999,11 @@ class ResourceManager(object):
 
             # Only update when the parameters are non-empty
             update_stdout = False
-            if stdout is not None and stdout != "":
-                update_stdout = True
+            # if stdout is not None and stdout != "":
+            #     update_stdout = True
             update_stderr = False
-            if stderr is not None and stderr != "":
-                update_stderr = True
+            # if stderr is not None and stderr != "":
+            #     update_stderr = True
 
             # Store the id of the old results and insert the new one
             if update_stdout:
@@ -1124,6 +1124,9 @@ class ResourceManager(object):
             # Store the id of the old results and insert the new one
             if update_stderr:
                 old_stderr_id = task['stderr']
+                if old_stderr_id is not None:
+                    old_stderr = self.__fs.get(old_stderr_id).read().decode('utf-8')
+                    stderr = old_stderr + stderr
                 new_stderr_id = self.__fs.put(stderr, encoding='utf-8')
 
             try:
@@ -1176,6 +1179,9 @@ class ResourceManager(object):
             # Store the id of the old results and insert the new one
             if update_stdout:
                 old_stdout_id = task['stdout']
+                if old_stdout_id is not None:
+                    old_stdout = self.__fs.get(old_stdout_id).read().decode('utf-8')
+                    stdout = old_stdout + stdout
                 new_stdout_id = self.__fs.put(stdout, encoding='utf-8')
 
             try:

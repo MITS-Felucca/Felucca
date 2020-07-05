@@ -11,44 +11,42 @@ SERVER_IP = '172.17.0.1'
 SERVER_PORT = '5000'
 app = Flask(__name__)
 
-update_period = 1 # In seconds
+update_period = 0.5 # In seconds
 stdout_file_name = 'stdout.log'
 stderr_file_name = 'stderr.log'
 
-def read_stdout(process):
-    """Continuously read the stdout & stderr from the running process,
+def read_stderr(process):
+    """Continuously read the stderr from the running process,
     then store them in the log files.
 
     Args:
         process (Return value of subprocess.Popen): The running process
     """
-    stdout = open(stdout_file_name, 'w')
-    stderr = open(stderr_file_name, 'w')
+    stderr = ""
+    last_time = time.time()
 
-    # Read stdout & stderr concurrently
+    # Read stderr continuously
     while process.poll() is None:
-        out_line = process.stdout.readline()
-        out_line = out_line.decode('utf-8')
-        stdout.write(out_line)
-        stdout.flush()
-
         err_line = process.stderr.readline().decode('utf-8')
-        stderr.write(err_line)
-        stderr.flush()
+        stderr += err_line
+        current_time = time.time()
+        if stderr != "" and current_time - last_time > update_period:
+            last_time = current_time
+            # Send the new stderr to the server
+            requests.post('http://%s:%s/intermediate-result/stderr' % (SERVER_IP, SERVER_PORT),
+                          data={'task_id': task_id,
+                                'stderr': stderr})
+            stderr = ""
 
-    stdout.close()
-    stderr.close()
-    return
+    # Read all stderr left after the process finished
+    for line in iter(lambda: process.stderr.readline(), b''):
+        err_line = line.decode('utf-8')
+        stderr += err_line
 
-    # Read all stdout & stderr left after the process finished
-    for line in iter(lambda: process.stdout.readline(), b''):
-        out_line = process.stdout.readline().decode('utf-8')
-        stdout.write(out_line)
-        stdout.flush()
-    for line in iter(lambda: process.stdout.readline(), b''):
-        err_line = process.stderr.readline().decode('utf-8')
-        stderr.write(err_line)
-        stderr.flush()
+    if stderr != "":
+        requests.post('http://%s:%s/intermediate-result/stderr' % (SERVER_IP, SERVER_PORT),
+                      data={'task_id': task_id,
+                            'stderr': stderr})
 
 def task_execute():
     """Execute a task using its command line input.
@@ -60,45 +58,36 @@ def task_execute():
     """
     try:
         process = subprocess.Popen(command_line_input, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        thread = Thread(target=read_stdout, args=(process, ))
+        thread = Thread(target=read_stderr, args=(process, ))
 
+        stdout = ""
         last_time = time.time()
         thread.start()
-        old_stdout = None
-        old_stderr = None
+
+        # Read stdout continuously
         while process.poll() is None:
+            out_line = process.stdout.readline().decode('utf-8')
+            stdout += out_line
             current_time = time.time()
-            if current_time - last_time < update_period:
-                continue
-            last_time = current_time
-            with open(stdout_file_name, 'r') as f:
-                stdout = f.read()
-            with open(stderr_file_name, 'r') as f:
-                stderr = f.read()
+            if stdout != "" and current_time - last_time > update_period:
+                last_time = current_time
+                # Send the new stdout to the server
+                requests.post('http://%s:%s/intermediate-result/stdout' % (SERVER_IP, SERVER_PORT),
+                              data={'task_id': task_id,
+                                    'stdout': stdout})
+                stdout = ""
 
-            # Send the outputs to host server
-            if old_stdout != stdout or old_stderr != stderr:
-                old_stdout = stdout
-                old_stderr = stderr
-                requests.post('http://%s:%s/intermediate-result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
-                                                                              'stdout': stdout,
-                                                                              'stderr': stderr})
+        # Read all stdout left after the process finished
+        for line in iter(lambda: process.stdout.readline(), b''):
+            out_line = line.decode('utf-8')
+            stdout += out_line
 
-        # Read all stdout & stderr left after the process finished
-        with open(stdout_file_name, 'a') as stdout:
-            for line in iter(lambda: process.stdout.readline(), b''):
-                out_line = line.decode('utf-8')
-                stdout.write(out_line)
-        with open(stderr_file_name, 'a') as stderr:
-            for line in iter(lambda: process.stdout.readline(), b''):
-                err_line = line.decode('utf-8')
-                stderr.write(err_line)
+        if stdout != "":
+            requests.post('http://%s:%s/intermediate-result/stdout' % (SERVER_IP, SERVER_PORT),
+                          data={'task_id': task_id,
+                                'stdout': stdout})
 
-        # Save the final result after the process finishes
-        with open(stdout_file_name, 'r') as f:
-            stdout = f.read()
-        with open(stderr_file_name, 'r') as f:
-            stderr = f.read()
+        thread.join()
 
         status = Status.Successful.name
         if process.returncode != 0:
@@ -106,8 +95,8 @@ def task_execute():
 
         requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
                                                                           'status': status,
-                                                                          'stdout': stdout,
-                                                                          'stderr': stderr})
+                                                                          'stdout': "",
+                                                                          'stderr': ""})
     except Exception as e:
         requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
                                                                               'status': Status.Error.name,
