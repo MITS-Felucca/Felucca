@@ -2,6 +2,7 @@ import json
 import os
 import base64
 import sys
+import time
 from datetime import datetime
 from flask import abort
 from flask import Flask
@@ -19,6 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../tests/sample_o
 
 app = Flask(__name__)
 db_name = "test"
+debug_page_string = ""
 
 # db_name = "felucca"
 
@@ -234,6 +236,23 @@ def update_tool(tool_id):
     request_json = request.get_json()
     ResourceManager(db_name).update_tool(tool_id, request_json)
     return {"status": "ok"}
+
+
+@app.route("/debug/task/<task_id>/stdout/json", methods=['GET'])
+def debug_get_stdout(task_id):
+    global debug_page_string
+    debug_page_string += task_id + " " + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + "\n"
+    return {"Content": debug_page_string,
+            "Status": "Running"}
+
+
+@app.route("/debug/task/<task_id>/stderr/json", methods=['GET'])
+def debug_get_stderr(task_id):
+    global debug_page_string
+    debug_page_string += task_id + " " + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + "\n"
+    return {"Content": debug_page_string,
+            "Status": "Successful"}
+
 
 @app.route("/debug/job-list/json")
 def debug_get_job_list():
