@@ -569,5 +569,21 @@ class TestResourceManager(unittest.TestCase):
         self.manager.set_updating_kernel(False)
         self.assertEqual(self.manager.get_updating_kernel(), False)
 
+        docker_directory = "seipharos/pharos:latest"
+        digest = "sha256:30a3cbee093fa97d8ea1dd23148802e5de526d0c7b64881e20bf7e7001b0a789"
+        self.manager.set_kernel_metadata(docker_directory, digest)
+
+        kernel_metadata = self.manager.get_kernel_metadata()
+        self.assertEqual(kernel_metadata['docker_directory'], docker_directory)
+        self.assertEqual(kernel_metadata['digest'], digest)
+
+        metadata = self.manager.get_all_metadata()
+        metadata_json = {
+            "is_updating_kernel": False,
+            "docker_directory": docker_directory,
+            "digest": digest
+        }
+        self.assertEqual(metadata, metadata_json)
+
 if __name__ == '__main__':
     unittest.main()

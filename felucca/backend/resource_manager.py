@@ -44,6 +44,16 @@ class ResourceManager(object):
             job.tasks = self.db_manager.get_tasks_by_job_id(job.job_id)
         return job_list
 
+    def get_all_metadata(self):
+        is_updating_kernel = self.get_updating_kernel()
+        kernel_metadata = self.get_kernel_metadata()
+        metadata_json = {
+            "is_updating_kernel": is_updating_kernel,
+            "docker_directory": kernel_metadata['docker_directory'],
+            "digest": kernel_metadata['digest']
+        }
+        return metadata_json
+
     def get_all_tools(self):
         """Return the schemas of all tools with id
 
@@ -99,6 +109,20 @@ class ResourceManager(object):
             job_list.append(Job.to_json(job))
 
         return job_list
+
+    def get_kernel_metadata(self):
+        """Get the metadata of kernel(docker image).
+
+        Return:
+            metadata (dict)
+        """
+        docker_directory = self.db_manager.get_metadata_field("docker_directory")
+        digest = self.db_manager.get_metadata_field("digest")
+        metadata = {
+            "docker_directory": docker_directory,
+            "digest": digest
+        }
+        return metadata
 
     def get_log_file(self, task_id, filename):
         """Return an log file of a task
@@ -318,6 +342,20 @@ class ResourceManager(object):
         self.db_manager.save_result(task_id, output, stdout, stderr)
         return
 
+    def set_kernel_metadata(self, docker_directory, digest):
+        """Update the metadata of kernel(docker image).
+
+        Args:
+            docker_directory (String): The dockerhub registry of the image
+            digest (String): The digest of the image
+
+        Return:
+            is_successful (boolean)
+        """
+        is_successful_directory = self.db_manager.set_metadata_field("docker_directory", docker_directory)
+        is_successful_digest = self.db_manager.set_metadata_field("digest", digest)
+        return is_successful_directory and is_successful_digest
+
     def set_updating_kernel(self, new_value):
         """Set the status of metadata field "is_updating_kernel"
 
@@ -359,6 +397,14 @@ class ResourceManager(object):
         self.db_manager.update_tool(tool_id, new_schema)
 
     class DatabaseManager(object):
+
+        initial_metadata = {
+            "has_initialized_pharos": False,
+            "is_updating_kernel": False,
+            "docker_directory": "",
+            "digest": ""
+        }
+
         def __init__(self, db_name="felucca"):
             super().__init__()
             self.db_name = db_name
@@ -374,11 +420,7 @@ class ResourceManager(object):
             logger = Logger().get()
             if "metadata" not in self.__db.list_collection_names() or self.__metadata_collection.count_documents({}) == 0:
                 # Not initialized
-                metadata = {
-                    "has_initialized_pharos": False,
-                    "is_updating_kernel": False
-                }
-                self.__metadata_collection.insert_one(metadata)
+                self.__metadata_collection.insert_one(self.initial_metadata)
                 logger.debug("DatabaseManager is initialized.")
 
         def get_all_jobs_without_tasks(self):
@@ -1072,6 +1114,8 @@ class ResourceManager(object):
             All fields at present:
             1. has_initialized_pharos(bool)
             2. is_updating_kernel(bool)
+            3. docker_directory(String)
+            4. digest(String)
 
             Args:
                 field_name (String): The key of the field

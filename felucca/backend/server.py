@@ -126,9 +126,7 @@ def submit_job():
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
     thread = Thread(target=submit_job_through_job_manager, args=(job, ))
     thread.start()
-    # JobManager().submit_job(job)
     return {"status": "ok"}
-
 
 @app.route("/job-info/<id>/json", methods=['GET'])
 def get_job(id):
@@ -162,6 +160,10 @@ def kill_job(job_id):
 def kill_task(task_id):
     ExecutionManager().kill_task(task_id)
     return {"status": "ok"}
+
+@app.route("/pharos/metadata", methods=['GET'])
+def get_metadata():
+    return ResourceManager(db_name).get_all_metadata()
 
 @app.route("/result", methods=['POST'])
 def get_result():
@@ -3616,6 +3618,8 @@ def setup_pharos_tools(app):
     # Flask will run it twice to enable the "reload" feature in debug mode
     ResourceManager(db_name).setup()
     ResourceManager(db_name).initialize_pharos_tools()
+    t = Thread(target =  thread_update_kernel)
+    t.start()
     # if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     #     ResourceManager(db_name).initialize_pharos_tools()
     #     tool_list = ResourceManager(db_name).get_all_tools()
