@@ -2,6 +2,7 @@ import json
 import os
 import base64
 import sys
+import time
 from datetime import datetime
 from flask import abort
 from flask import Flask
@@ -19,6 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../tests/sample_o
 
 app = Flask(__name__)
 db_name = "test"
+debug_page_string = ""
 
 # db_name = "felucca"
 
@@ -26,6 +28,12 @@ db_name = "test"
 def hello():
     return "Hello World!"
 
+@app.route("/test/pharos", methods=['POST'])
+def update_pharos():
+    request_json = request.get_json()
+    print(request.get_json())
+    print("udpatepharos")
+    return {"status": "ok"}
 
 @app.route("/test")
 def test():
@@ -67,6 +75,19 @@ def test():
     print(task.output)
     print(task.log)
     return {"status": "ok"}
+@app.route("/pharos", methods=['POST'])
+def update_kernel():
+    """update backend Phraos tool from docker hub
+    
+    Test command: curl http://localhost:5000/update_kernel
+    """
+    t = Thread(target =  thread_update_kernel)
+    t.start()
+    return {"status": "ok"}
+
+def thread_update_kernel():    
+    ExecutionManager().update_kernel()
+    
 
 @app.route("/test_new_execution/<task_type>/<task_id>",methods=['GET','POST'])
 def test_new_execution(task_type, task_id):
@@ -81,7 +102,6 @@ def test_new_execution(task_type, task_id):
 
     t = Thread(target = thread_test_new_execution, args = (task_type, task_id, ))
     t.start()
-
     return ("start testing: task_type:{task_type} task_id:{task_id}\n")
 
 @app.route("/clean-all", methods=['GET'])
@@ -99,6 +119,9 @@ def submit_job_through_job_manager(job):
 def submit_job():
     """Test command: curl -H "Content-Type: application/json" --request POST -d @/vagrant/tests/sample_output/input.json http://localhost:5000/job"
     """
+    if ResourceManager(db_name).get_updating_kernel() is True:
+        return {"status": "Currently the Pharos toolset is updating. Try later please."}
+
     request_json = request.get_json()
     print(request.get_json())
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
@@ -210,6 +233,47 @@ def get_stderr(task_id):
 def get_tool_list():
     tool_list = ResourceManager(db_name).get_all_tools()
     return {"Schemas": tool_list}
+
+@app.route("/tool/<tool_id>/json", methods=["GET"])
+def get_single_tool(tool_id):
+    tool = ResourceManager(db_name).get_tool_by_id(tool_id)
+    if tool is None:
+        abort(404)
+    else:
+        return tool
+
+@app.route("/tool", methods=["POST"])
+def insert_new_tool():
+    request_json = request.get_json()
+    ResourceManager(db_name).insert_new_tool(request_json)
+    return {"status": "ok"}
+
+@app.route("/tool/<tool_id>/delete", methods=["GET"])
+def remove_tool(tool_id):
+    ResourceManager(db_name).remove_tool_by_id(tool_id)
+    return {"status": "ok"}
+
+@app.route("/tool/<tool_id>", methods=["POST"])
+def update_tool(tool_id):
+    request_json = request.get_json()
+    ResourceManager(db_name).update_tool(tool_id, request_json)
+    return {"status": "ok"}
+
+
+@app.route("/debug/task/<task_id>/stdout/json", methods=['GET'])
+def debug_get_stdout(task_id):
+    global debug_page_string
+    debug_page_string += task_id + " " + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + "\n"
+    return {"Content": debug_page_string,
+            "Status": "Running"}
+
+
+@app.route("/debug/task/<task_id>/stderr/json", methods=['GET'])
+def debug_get_stderr(task_id):
+    global debug_page_string
+    debug_page_string += task_id + " " + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + "\n"
+    return {"Content": debug_page_string,
+            "Status": "Successful"}
 
 
 @app.route("/debug/job-list/json")

@@ -6,6 +6,8 @@ import { JobListComponent } from './job-list/job-list.component';
 import { SubmitJobComponent } from './submit-job/submit-job.component'
 import { FileDisplayComponent } from './file-display/file-display.component'
 import { OutputDisplayComponent } from './output-display/output-display.component';
+import { ToolListComponent } from './tool-list/tool-list.component';
+import { EditToolComponent } from './edit-tool/edit-tool.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/job-list', pathMatch: 'full' },
@@ -13,7 +15,10 @@ const routes: Routes = [
   { path: 'submit-job', component: SubmitJobComponent},
   { path: 'job-list', component: JobListComponent },
   { path: 'task/:taskID/:fileType/:filename', component: FileDisplayComponent },
-  { path: 'task/:taskID/:outputType', component: OutputDisplayComponent }
+  { path: 'task/:taskID/:outputType', component: OutputDisplayComponent },
+  { path: 'tool-list', component: ToolListComponent},
+  { path: 'tool/:operation/:toolID', component: EditToolComponent},
+  { path: 'tool/:operation', component: EditToolComponent}
 ];
 
 @NgModule({

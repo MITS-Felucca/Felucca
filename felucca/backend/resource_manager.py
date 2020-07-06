@@ -163,8 +163,17 @@ class ResourceManager(object):
 
         Return:
             tool_dict (dict): The schema of the tool with id
+            None for "Not found" or "Error"
         """
         return self.db_manager.get_tool_by_id(tool_id)
+
+    def get_updating_kernel(self):
+        """Return a boolean value that indicates if the kernel is updating.
+
+        Returns:
+            is_updating (boolean): The value of the metadata field
+        """
+        return self.db_manager.get_metadata_field("is_updating_kernel")
 
     def initialize_pharos_tools(self, schema_path='pharos_schema'):
         """Read and store the schemas of Pharos tools
@@ -211,6 +220,14 @@ class ResourceManager(object):
                     tasks of the job, where the order remains the same
         """
         return self.db_manager.insert_new_job(new_job)
+
+    def insert_new_tool(self, new_schema):
+        """Insert a new tool.
+
+        Args:
+            new_schema (dict): The schema of the new tool
+        """
+        self.db_manager.insert_new_tool(new_schema)
 
     def mark_job_as_finished(self, job_id):
         """Mark a job as "Successful" and update its "finished_time"
@@ -310,6 +327,17 @@ class ResourceManager(object):
         self.db_manager.save_result(task_id, output, stdout, stderr)
         return
 
+    def set_updating_kernel(self, new_value):
+        """Set the status of metadata field "is_updating_kernel"
+
+        Args:
+            new_value (boolean): The new value of "is_updating_kernel" in metadata
+
+        Return:
+            is_successful (boolean)
+        """
+        return self.db_manager.set_metadata_field("is_updating_kernel", new_value)
+
     def update_job_status(self, job_id, new_status):
         """Update the status of a job
 
@@ -348,6 +376,15 @@ class ResourceManager(object):
         self.db_manager.update_task_status(task_id, new_status)
         return
 
+    def update_tool(self, tool_id, new_schema):
+        """Update the schema of the tool.
+
+        Args:
+            tool_id (String): The id of the tool
+            new_schema (dict): The new schema of the tool
+        """
+        self.db_manager.update_tool(tool_id, new_schema)
+
     class DatabaseManager(object):
         def __init__(self, db_name="felucca"):
             super().__init__()
@@ -364,7 +401,11 @@ class ResourceManager(object):
             logger = Logger().get()
             if "metadata" not in self.__db.list_collection_names() or self.__metadata_collection.count_documents({}) == 0:
                 # Not initialized
-                self.__metadata_collection.insert_one({"has_initialized_pharos": False})
+                metadata = {
+                    "has_initialized_pharos": False,
+                    "is_updating_kernel": False
+                }
+                self.__metadata_collection.insert_one(metadata)
                 logger.debug("DatabaseManager is initialized.")
 
         def get_all_jobs_without_tasks(self):
@@ -722,6 +763,10 @@ class ResourceManager(object):
                 condition = {"_id": ObjectId(tool_id)}
                 tool_doc = self.__tools_collection.find_one(condition)
 
+                # Return None is not found
+                if tool_doc is None:
+                    return None
+
                 # Rebuild the tool with id
                 tool_dict = tool_doc['schema']
                 tool_dict["Tool_ID"] = str(tool_doc['_id'])
@@ -730,6 +775,7 @@ class ResourceManager(object):
             except Exception as e:
                 logger.error(f"something wrong in get_tool_by_id,"
                              f" Exception: {e}")
+                return None
 
         def insert_new_job(self, new_job):
             """Insert a job with its tasks into the database
@@ -914,7 +960,6 @@ class ResourceManager(object):
 
             try:
                 # Get ids of all jobs
-                field = {"_id": 1}
                 delete_result = self.__tools_collection.delete_many({})
 
                 # Set the flag of initialization to False
@@ -1068,6 +1113,9 @@ class ResourceManager(object):
 
         def set_metadata_field(self, field_name, new_value):
             """Set the value of single field in metadata.
+            All fields at present:
+            1. has_initialized_pharos(bool)
+            2. is_updating_kernel(bool)
 
             Args:
                 field_name (String): The key of the field
@@ -1247,8 +1295,34 @@ class ResourceManager(object):
                                                                    {"$set": task})
                 if update_result.modified_count != 1:
                     raise Exception("update_result.modified_count != 1")
-                pass
             except Exception as e:
                 logger.error(f"something wrong in update_task_status,"
                              f" Exception: {e}")
 
+        def update_tool(self, tool_id, new_schema):
+            """Update the schema of the tool.
+
+            Args:
+                tool_id (String): The id of the tool
+                new_schema (dict): The new schema of the tool
+            """
+            logger = Logger().get()
+            logger.debug(f"start update_tool, tool_id:{tool_id}, "
+                         f"new_schema:{new_schema}")
+
+            try:
+                condition = {"_id": ObjectId(tool_id)}
+                tool = self.__tools_collection.find_one(condition)
+
+                if tool is None:
+                    logger.error("The tool to be updated doesn't exist.")
+                    return
+
+                tool["schema"] = new_schema
+                update_result = self.__tools_collection.update_one(condition,
+                                                                   {"$set": tool})
+                if update_result.modified_count != 1:
+                    raise Exception("update_result.modified_count != 1")
+            except Exception as e:
+                logger.error(f"something wrong in update_tool,"
+                             f" Exception: {e}")

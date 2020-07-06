@@ -1,0 +1,107 @@
+<div>
+  <h2> Tool Metadata </h2>
+  <form *ngIf="metadata" (ngSubmit) = "onSubmit()" [formGroup]="metadata">
+    <div class="input-group mb-3">
+      <div class="input-group-prepend" >
+        <span class="input-group-text" id="basic-addon1" style="width:150px">Tool Name</span>
+      </div>
+      <input formControlName="toolName" type="text" class="form-control" placeholder="Tool Name" aria-describedby="basic-addon1">
+    </div>
+
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text" id="basic-addon1" style="width:150px">Program Name</span>
+      </div>
+      <input formControlName="programName" type="text" class="form-control" placeholder="Program Name" aria-describedby="basic-addon1">
+    </div>
+
+  <div class="form-check mb-2 mr-sm-2">
+    <input formControlName="isPharos" class="form-check-input" type="checkbox" id="inlineFormCheck">
+        <label class="form-check-label" for="inlineFormCheck">
+      Is Pharos
+    </label>
+
+  </div>
+    <div formArrayName="argumentClasses">
+      <div class="card shadow p-3 mb-5 bg-white rounded" *ngFor="let argumentClass of classGroups.controls; index as i;">
+        <div [formGroupName]="i">
+          <div class="card-body">
+            <div class="p-3 mb-2 bg-info text-white" style="height:80px">
+              <div style="float:left">
+                <div class="input-group-prepend" >
+                  <span class="input-group-text" id="basic-addon1">Class Name</span>
+                </div>
+              </div>
+              <input formControlName="name" type="text" class="form-control" aria-describedby="basic-addon1" style="width:400px;float:left">
+
+              <button class="btn btn-danger" type="button" data-toggle="tooltip" data-placement="top" title="" data-original-title="Delete" (click)="deleteClass(i)" style="float:right;width:38px;height:38px">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0v-7z"/>
+                </svg>
+              </button>
+              <button class="btn btn-success btn-lg" type="button" (click)="addArgument(i)" style="float:right;width:38px;height:38px;padding:4px 8px;margin-right:15px">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-plus" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M8 3.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z"/>
+                  <path fill-rule="evenodd" d="M7.5 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0V8z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+
+          <div formArrayName="arguments">
+            <table class="table table-striped" style="width: 100%">
+              <thead>
+                <th>Full Name</th>
+                <th>Abbreviation</th>
+                <th>Description</th>
+                <th>isRequired</th>
+                <th>Default Value</th>
+                <th>Argument Type</th>
+                <th>Operation</th>
+              </thead>
+              <tbody>
+                <tr *ngFor="let argument of getArgumentGroups(i).controls; index as j;" [formGroupName]="j">
+                    <td>
+                      <div class="input-group">
+                        <input formControlName="fullName" type="text" class="form-control" aria-label="Text input with checkbox">
+                      </div>
+                    <td>
+                      <div class="input-group">
+                        <input formControlName="abbreviation" type="text" class="form-control" aria-label="Text input with checkbox">
+                      </div>
+                    </td>
+                    <td>
+                      <input formControlName="description" type="text">
+                    </td>
+                    <td id="center">
+                      <input formControlName="isRequired" type="checkbox">
+                    </td>
+                    <td>
+                      <input formControlName="defaultValue" type="text">
+                    </td>
+                    <td>
+                      <select class="custom-select bg-success text-white" formControlName="argumentType">
+                        <option *ngFor="let type of argumentType | keyvalue" [ngValue]="type.value"> {{type.value}}</option>
+                      </select>
+                    </td>
+                    <td id="center">
+
+                    <button class="btn btn-danger" type="button" data-toggle="tooltip" data-placement="top" title="" data-original-title="Delete" (click)="deleteArgument(i, j)">
+                      <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0v-7z"/>
+                      </svg>
+                    </button>
+                    </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-success btn-lg" type="button" (click)="addClass()">Add</button>
+    <button [disabled]="!metadata.valid" class="btn btn-success btn-lg float-right rounded-lg" type="submit" style="width:150px">Save</button> 
+  </form>
+</div>
+
