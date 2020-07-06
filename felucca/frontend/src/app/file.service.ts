@@ -18,7 +18,7 @@ export class FileService {
   }
 
   getOutput(taskID: string, outputType: string): Observable<{[key: string]: string}> {
-    let url = `${this.backEndURL}/debug/task/${taskID}/${outputType}/json`;
+    let url = `${this.backEndURL}/task/${taskID}/${outputType}/json`;
 
     return this.http.get(url).pipe(map(data => {
       return {
