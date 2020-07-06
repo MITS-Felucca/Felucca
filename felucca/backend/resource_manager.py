@@ -124,6 +124,15 @@ class ResourceManager(object):
         """
         return self.db_manager.get_output_file(task_id, filename)
 
+    def get_status(self, task_id):
+        """Get the status string of the task.
+        Args:
+            task_id (String): The id of the task
+        Returns:
+            status (String): The name of the status
+        """
+        return self.db_manager.get_task_status_by_id(task_id).name
+
     def get_stderr(self, task_id):
         """Return the stderr of a task
 
@@ -675,6 +684,26 @@ class ResourceManager(object):
                 logger.error(f"something wrong in get_tasks_by_job_id,"
                              f" Exception: {e}")
                 return []
+
+        def get_task_status_by_id(self, task_id):
+            """Get the status of the task.
+            Args:
+                task_id (String): The id of the task
+            Return:
+                status (Status): The status of the task
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_task_status_by_id, task_id:{task_id}")
+            try:
+                # Find the task using id
+                field = {"status"}
+                condition = {"_id": ObjectId(task_id)}
+                task_doc = self.__tasks_collection.find_one(condition, field)
+
+                return Status(task_doc['status'])
+            except Exception as e:
+                logger.error(f"something wrong in get_task_status_by_id, Exception: {e}")
+                return None
 
         def get_tool_by_id(self, tool_id):
             """Get the schema of the specific tool.

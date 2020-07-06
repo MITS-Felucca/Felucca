@@ -145,14 +145,14 @@ def kill_task(task_id):
 def save_realtime_stdout():
     Thread(target=lambda task_id, stdout: ResourceManager(db_name).update_stdout(task_id, stdout),
            args=(request.form['task_id'], request.form['stdout'], )).start()
-    print("New stdout: " + request.form['stdout'])
+    # print("New stdout: " + request.form['stdout'])
     return {"status": "ok"}
 
 @app.route("/intermediate-result/stderr", methods=['POST'])
 def save_realtime_stderr():
     Thread(target=lambda task_id, stderr: ResourceManager(db_name).update_stderr(task_id, stderr),
            args=(request.form['task_id'], request.form['stderr'], )).start()
-    print("New stderr: " + request.form['stderr'])
+    # print("New stderr: " + request.form['stderr'])
     return {"status": "ok"}
 
 @app.route("/result", methods=['POST'])
@@ -187,7 +187,11 @@ def get_stdout(task_id):
     if stdout is None:
         abort(404)
     else:
-        return {"Content": stdout}
+        status_str = ResourceManager(db_name).get_status(task_id)
+        return {
+            "Status": status_str,
+            "Content": stdout
+        }
 
 @app.route("/task/<task_id>/stderr/json", methods=['GET'])
 def get_stderr(task_id):
@@ -196,7 +200,11 @@ def get_stderr(task_id):
     if stderr is None:
         abort(404)
     else:
-        return {"Content": stderr}
+        status_str = ResourceManager(db_name).get_status(task_id)
+        return {
+            "Status": status_str,
+            "Content": stderr
+        }
 
 @app.route("/tool-list/json", methods=["GET"])
 def get_tool_list():
