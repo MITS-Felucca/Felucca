@@ -25,7 +25,7 @@ export class OutputDisplayComponent implements OnInit {
     this.outputType = this.route.snapshot.paramMap.get('outputType');
     this.status = Status.Running;
 
-    interval(1000).pipe(
+    interval(500).pipe(
       takeWhile(() => this.status === Status.Running),
       map(() => this.fileService.getOutput(this.taskID, this.outputType)),
       concatAll(),
