@@ -35,16 +35,18 @@
     <div class="table-responsive">
       <table class="table table-striped" style="width: 100%;height: 80px">
         <colgroup>
+          <col span="1" style="width: 5%;">
           <col span="1" style="width: 10%;">
-          <col span="1" style="width: 35%;">
+          <col span="1" style="width: 40%;">
           <col span="1" style="width: 10%;">
-          <col span="1" style="width: 20%;">
           <col span="1" style="width: 15%;">
+          <col span="1" style="width: 10%;">
           <col span="1" style="width: 10%;">
         </colgroup>
         <thead>
           <tr>
             <th>ID</th>
+            <th>Too Name</th>
             <th >Arguments</th>
             <th>Output</th>
             <th>Finish Time</th>
@@ -55,6 +57,7 @@
         <tbody>
           <tr *ngFor="let task of tasks; index as i">
             <td><div>{{i + 1}}</div></td>
+            <td><div>{{task.programName}}</div></td>
             <td>
               <div class="overflow-auto" >
                 <ng-container *ngFor="let argument of task.arguments | keyvalue">
@@ -64,13 +67,6 @@
                   <p *ngIf="task.outputFilename.has(argument.value) === false" style="margin: 0px 0px 0px 0px; display:inline"> {{argument.value}}</p>
                   <p style="margin: 0px 0px 0px 0px; display:clear">
                 </ng-container>
-                <!-- <dl class="row" style="margin: 0px 0px 0px 0px">
-                  <ng-container *ngFor="let argument of task.arguments | keyvalue">
-                    <dt class="col-sm-2" style="margin: 0px 0px 0px 0px">{{argument.key}}</dt>
-                    <dd *ngIf="task.outputFilename.has(argument.value)" (click)="goToFile(task.taskID, 'output', argument.value);" class="col-sm-9 link" style="margin: 0px 0px 0px 0px" routerLinkActive="active-link"> {{argument.value}}</dd>
-                    <dd *ngIf="task.outputFilename.has(argument.value) === false" class="col-sm-9" style="margin: 0px 0px 0px 0px"> {{argument.value}}</dd>
-                </ng-container>
-              </dl> -->
               </div>
             </td>
             <td>

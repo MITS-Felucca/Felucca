@@ -1,8 +1,26 @@
 th {
-    text-align: center; 
-    vertical-align: middle;
-  }
-  td {
-    text-align: center; 
-    vertical-align: middle;
-  }
+  text-align: center; 
+  vertical-align: middle;
+}
+td {
+text-align: center; 
+vertical-align: middle;
+}
+
+tr.argument-group.ng-invalid:not(form) {
+border: 3px solid #a94442; /* red */
+}
+
+input.class-group.ng-invalid:not(form) {
+border: 3px solid #a94442; /* red */
+}
+
+button:disabled {
+background: gray
+}
+
+.my-custom-class .tooltip-inner {
+max-width: 320px;
+white-space: break-spaces;
+word-break: break-all;
+}

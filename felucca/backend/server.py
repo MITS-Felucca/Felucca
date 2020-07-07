@@ -251,6 +251,14 @@ def update_tool(tool_id):
     ResourceManager(db_name).update_tool(tool_id, request_json)
     return {"Status": "ok"}
 
+@app.route("/debug/pharos/metadata", methods=['GET'])
+def debug_get_pharos_metadata():
+    return {
+        "Is_Updating_Kernel": False,
+        "Docker_Directory": "test_dir",
+        "Digest": "!$%@MF123BSDFHJSKADFN"
+    }
+
 @app.route("/debug/job-list/json")
 def debug_get_job_list():
     return {

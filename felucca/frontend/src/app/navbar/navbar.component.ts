@@ -17,6 +17,12 @@ import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
+    <div style="text-align:center">
+      <span class="badge badge-warning">Warning</span>
+      <span>
+        Update kernel will kill all the running jobs
+      </span>
+    </div>
     <div class="modal-body">
       <div class="input-group mb-3">
         <div class="input-group-prepend">
@@ -31,6 +37,12 @@ import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   `
 })
 export class UpdatePharosComponent {
+  @Input()
+  currentDockerDirectory: string;
+
+  @Input()
+  digest: string;
+
   dockerDir: string;
   constructor(public activeModal: NgbActiveModal,
               private router: Router,
@@ -50,10 +62,26 @@ export class UpdatePharosComponent {
 })
 
 export class NavbarComponent {
-  constructor (private modalService: NgbModal) {
+  isUpdating: boolean = true;
+  dockerDirectory: string;
+  digest: string;
+
+  constructor (private modalService: NgbModal,
+               private schemaService: SchemaService) {
 
   }
+
+  ngOnInit() {
+    this.schemaService.getUpdateStatus().subscribe(data => {
+      this.isUpdating = data.isUpdating;
+      this.dockerDirectory = data.dockerDirectory;
+      this.digest = data.digest;
+    });
+  }
+
   updatePharos() {
       const modalRef = this.modalService.open(UpdatePharosComponent);
+      modalRef.componentInstance.currentDockerDirectory = this.dockerDirectory;
+      modalRef.componentInstance.digest = this.digest;
   }
 }

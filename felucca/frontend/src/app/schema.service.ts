@@ -182,4 +182,15 @@ export class SchemaService {
     ));
   }
 
+  getUpdateStatus() {
+    const url = `${this.backEndURL}/debug/pharos/metadata`;
+    return this.http.get(url).pipe(map(data => {
+        return {
+          isUpdating: (data as any).Is_Updating_Kernel,
+          dockerDirectory: (data as any).Docker_Directory,
+          digest: (data as any).Digest
+        }
+      }
+    ));
+  }
 }
