@@ -289,41 +289,82 @@ class ExecutionManager(object):
         #self.copy_to_container(task,task.executable_file,container)
 
         return(True)
-        
-    def pull_image(self):
-        """
-        pull the latest seipharos/pharos FROM docker hub
-        """
-        logger = Logger().get()
-        logger.debug(f"pull seipharos/pharos from docker hub")
-        obj = os.popen("sudo docker pull seipharos/pharos")
-        print(obj.read())
 
-    def update_kernel(self):
+    def update_kernel(self,BASE_IMAGE="seipharos/pharos:latest"):
         """
         Pull the latest seipharos/pharos from docker hub and build a new image using the latest pulled seipharos/pharos, Back-end will used latest tool hereafter
         
         WARNING: this method will kill all of the current running tasks
+        Procedure:
+
+            1. Pull image according to the BASE_IMAGE String
+            2. update Stirng-digest to RM
+            3. Tag pulled image to "felucca/temp:latest"
+            4. Build felucca/pharos with "felucca/temp:latest" using "DockerFile_for_updating"
+            5. Remove all images except : 1.felucca/temp:latest 2.felucca/pharos:latest
         
         this method should be called from Front-end when users want to update the Phraos tool the container used in the Back-end
         """
         logger = Logger().get()
-        
+        logger.debug(f"receive request to update kernel from fetching {BASE_IMAGE}")
         ResourceManager().set_updating_kernel(True)
-        self.pull_image()
-        logger.debug(f"kill all current tes because of updating")
-        #try killing all the tasks currently running
-        for task_id in list(self.id_to_task_container):
-            self.kill_task(self, task_id)
         client = docker.from_env()
-        fname="/home/vagrant/docker/DockerFile"
-        path = os.path.dirname(fname)
-        logger.debug(f"build new felucca/pharos from new seipharos/pharos")
-        _, build_output = client.images.build(path=path, dockerfile=fname, tag="felucca/pharos:latest", rm=True)
         
-        for line in build_output:
-            print(line)
+        
+        #pull the BASE_IMAGE FROM docker hub
+        
+        #handle different possible forms of input image name
+        try:
+            repository, tag = BASE_IMAGE.split(":")
+        except:
+            repository = BASE_IMAGE
+            tag = "latest"
+
+        try:
+            pull_image = client.images.pull(repository=repository,tag=tag)
+        except:
+            logger.error(f"cannot pull image: {repository}:{tag}")
+        else:
+            logger.debug(f"image: {repository}:{tag} successfully")
             
+            #truncate the digest after the ":", here the list attrs['RepoDigests'] should only have one String element like BASE_IMAGE@sha256:xxxxxxx
+            try:
+                digest = pull_image.attrs['RepoDigests'][0].split(":")[1]
+            except:
+                digest = pull_image.attrs['RepoDigests'][0]
+                
+            #update Stirng-digest to RM
+            logger.debug(f"send metadata repository: {BASE_IMAGE}, digest: {digest} to RM")
+            ResourceManager().set_kernel_metadata(BASE_IMAGE,digest)
+            
+            pull_image.tag("felucca/temp", tag="latest")
+            
+            logger.debug(f"kill all current tes because of updating")
+            #try killing all the tasks currently running
+            for task_id in list(self.id_to_task_container):
+                self.kill_task(self, task_id)
+
+            fname="/home/vagrant/docker/DockerFile_for_updating"
+            path = os.path.dirname(fname)
+
+            logger.debug(f"build new image felucca/pharos:latest from {BASE_IMAGE}")
+            try:
+                built_image, build_output = client.images.build(path=path, dockerfile=fname, tag="felucca/pharos:latest", rm=True, buildargs={"BASE_IMAGE":BASE_IMAGE})
+                for line in build_output:
+                    print(line)
+            except:
+                logger.error(f"update kernel fail, use previous kernel")
+            else:    
+                logger.debug(f"update kernel successfully, the new felucca/pharos:latest is based on {BASE_IMAGE}")
+                keep_list = ["felucca/temp:latest","felucca/pharos:latest"]
+                for image in client.images.list():
+                    for image_name in image.attrs['RepoTags']:
+                        if image_name not in keep_list:
+                            client.images.remove(image_name)
+                            
+            #remove all the image with <none> tag
+            client.images.prune()
+
         ResourceManager().set_updating_kernel(False)
 
         
