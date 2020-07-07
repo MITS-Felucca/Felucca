@@ -17,17 +17,10 @@ import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
-    <div>
-      <dl>
-        <dt>Current Docker Directroy:</dt>
-        <dd>{{currentDockerDirectory}}</dd>
-        <dt>Digest:</dt>
-        <dd>{{digest}}</dd>
-      </dl>
-    </div>
-    <div>
+    <div style="text-align:center">
+      <span class="badge badge-warning">Warning</span>
       <span>
-        Warning: update kernel will kill all the running jobs.
+        Update kernel will kill all the running jobs
       </span>
     </div>
     <div class="modal-body">

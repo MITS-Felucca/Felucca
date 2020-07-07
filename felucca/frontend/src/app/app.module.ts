@@ -17,6 +17,7 @@ import { FileService } from './file.service';
 import { SchemaService } from './schema.service';
 import { OutputDisplayComponent } from './output-display/output-display.component';
 import { ToolListComponent } from './tool-list/tool-list.component';
+import { DeleteToolComponent } from './tool-list/tool-list.component';
 import { EditToolComponent } from './edit-tool/edit-tool.component';
 import { SubmitResultComponent } from './submit-job/submit-job.component'; 
 import { NavbarComponent } from './navbar/navbar.component';
@@ -42,7 +43,8 @@ import { UpdatePharosComponent } from './navbar/navbar.component';
                   EditToolComponent,
                   SubmitResultComponent,
                   NavbarComponent,
-                  UpdatePharosComponent],
+                  UpdatePharosComponent,
+                  DeleteToolComponent],
   bootstrap:    [ AppComponent ],
   providers: [ JobService, FileService, SchemaService ]
 })

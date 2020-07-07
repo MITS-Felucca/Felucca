@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, Validators, FormControlName, FormArray } from '@angular/forms';
 
@@ -9,6 +9,7 @@ import { ArgumentType } from '../argument-type.enum'
 @Component({
   selector: 'app-edit-tool',
   templateUrl: './edit-tool.component.html',
+  encapsulation: ViewEncapsulation.None,
   styleUrls: ['./edit-tool.component.css']
 })
 export class EditToolComponent implements OnInit {
@@ -67,7 +68,7 @@ export class EditToolComponent implements OnInit {
           isRequired: new FormControl(argumentInfo.isRequired),
           defaultValue: new FormControl(argumentInfo.defaultValue),
           argumentType: new FormControl(argumentInfo.argumentType, Validators.required)
-        }, this.argumentValidator));
+        }));
       }
       (this.metadata.get('argumentClasses') as FormArray).push(new FormGroup({
         name: new FormControl(argumentClass.name, Validators.required),
