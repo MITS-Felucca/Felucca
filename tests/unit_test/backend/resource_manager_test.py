@@ -158,6 +158,8 @@ class TestResourceManager(unittest.TestCase):
         log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
 
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.update_stdout(task_id, stdout)
+        self.manager.update_stderr(task_id, stderr)
 
         # Rebuild the task object and check the contents of files
         rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
@@ -177,6 +179,14 @@ class TestResourceManager(unittest.TestCase):
 
         self.assertEqual(rebuilt_task.output, ["output.json", "facts", "results"])
         self.assertEqual(rebuilt_task.status, Status.Pending)
+
+        new_stdout = "New stdout"
+        new_stderr = "New stderr"
+        # self.manager.update_stdout_and_stderr(task_id, new_stdout, new_stderr)
+        self.manager.update_stdout(task_id, new_stdout)
+        self.manager.update_stderr(task_id, new_stderr)
+        self.assertEqual(self.manager.get_stdout(task_id), stdout + new_stdout)
+        self.assertEqual(self.manager.get_stderr(task_id), stderr + new_stderr)
 
         # Remove the inserted job & task after test
         self.manager.remove_all_jobs_and_tasks()
@@ -222,6 +232,9 @@ class TestResourceManager(unittest.TestCase):
         # Update the status
         self.manager.update_job_status(job_id, Status.Failed)
         self.manager.update_task_status(task_id, Status.Successful)
+
+        # Retrieve the status of task & job
+        self.assertEqual(self.manager.get_status(task_id), Status.Successful.name)
 
         # Rebuild the job object and check the status
         rebuilt_job = self.manager.db_manager.get_job_by_id_without_tasks(job_id)
@@ -306,6 +319,8 @@ class TestResourceManager(unittest.TestCase):
         output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
 
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.update_stdout(task_id, stdout)
+        self.manager.update_stderr(task_id, stderr)
 
         # Retrive the output file
         file = self.manager.get_output_file(task_id, "output.json")
@@ -404,6 +419,8 @@ class TestResourceManager(unittest.TestCase):
         stderr = ""
         output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.update_stdout(task_id, stdout)
+        self.manager.update_stderr(task_id, stderr)
 
         # Mark task as finished
         self.manager.mark_task_as_finished(task_id)
@@ -545,6 +562,8 @@ class TestResourceManager(unittest.TestCase):
         output_file_list = [output_file_path, results_file_path, facts_file_path]
 
         self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.update_stdout(task_id, stdout)
+        self.manager.update_stderr(task_id, stderr)
 
         # Rebuild the task object and check the contents of files
         rebuilt_task = self.manager.db_manager.get_task_by_id(task_id)
@@ -568,6 +587,22 @@ class TestResourceManager(unittest.TestCase):
 
         self.manager.set_updating_kernel(False)
         self.assertEqual(self.manager.get_updating_kernel(), False)
+
+        docker_directory = "seipharos/pharos:latest"
+        digest = "sha256:30a3cbee093fa97d8ea1dd23148802e5de526d0c7b64881e20bf7e7001b0a789"
+        self.manager.set_kernel_metadata(docker_directory, digest)
+
+        kernel_metadata = self.manager.get_kernel_metadata()
+        self.assertEqual(kernel_metadata['docker_directory'], docker_directory)
+        self.assertEqual(kernel_metadata['digest'], digest)
+
+        metadata = self.manager.get_all_metadata()
+        metadata_json = {
+            "is_updating_kernel": False,
+            "docker_directory": docker_directory,
+            "digest": digest
+        }
+        self.assertEqual(metadata, metadata_json)
 
 if __name__ == '__main__':
     unittest.main()

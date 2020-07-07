@@ -174,12 +174,23 @@ export class SchemaService {
   }
 
   updatePharos(dockerDir: string): Observable<boolean> {
-    let data= {content: dockerDir};
+    let data= {Content: dockerDir};
     const url = `${this.backEndURL}/pharos`;
     return this.http.post(url, JSON.stringify(data), this.httpOptions).pipe(map(data => {
-        return (data as any).status === 'ok';
+        return (data as any).Status === 'ok';
       }
     ));
   }
 
+  getUpdateStatus() {
+    const url = `${this.backEndURL}/pharos/metadata`;
+    return this.http.get(url).pipe(map(data => {
+        return {
+          isUpdating: (data as any).Is_Updating_Kernel,
+          dockerDirectory: (data as any).Docker_Directory,
+          digest: (data as any).Digest
+        }
+      }
+    ));
+  }
 }

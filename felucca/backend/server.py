@@ -2,6 +2,7 @@ import json
 import os
 import base64
 import sys
+import time
 from datetime import datetime
 from flask import abort
 from flask import Flask
@@ -19,6 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../tests/sample_o
 
 app = Flask(__name__)
 db_name = "test"
+debug_page_string = ""
 
 # db_name = "felucca"
 
@@ -31,7 +33,7 @@ def update_pharos():
     request_json = request.get_json()
     print(request.get_json())
     print("udpatepharos")
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/test")
 def test():
@@ -73,31 +75,37 @@ def test():
     print(task.output)
     print(task.log)
     return {"status": "ok"}
+
 @app.route("/pharos", methods=['POST'])
 def update_kernel():
     """update backend Phraos tool from docker hub
-    
-    Test command: curl http://localhost:5000/update_kernel
+    The form of the POST format: {Content: seipharos/pharos:latest}
+    Test command: curl http://localhost:5000/pharos -X POST -d "Content=seipharos/pharos:latest"
+                  curl http://localhost:5000/pharos -X POST -d "Content=ubuntu"
     """
-    t = Thread(target =  thread_update_kernel)
+    if ResourceManager(db_name).get_updating_kernel() is True:
+        return {"Status": "Currently the Pharos toolset is updating. Try later please."}
+    BASE_IMAGE = request.get_json()['Content']
+    t = Thread(target =  thread_update_kernel,args = (BASE_IMAGE, ))
     t.start()
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
-def thread_update_kernel():    
-    ExecutionManager().update_kernel()
-    
+def thread_update_kernel(BASE_IMAGE = "seipharos/pharos:latest"):
+    JobManager().kill_all_jobs()
+    ExecutionManager().update_kernel(BASE_IMAGE)
+
 
 @app.route("/test_new_execution/<task_type>/<task_id>",methods=['GET','POST'])
 def test_new_execution(task_type, task_id):
     """this is used for testing new execution manager after reconstrction, it will start a thread to load the json and run the cmd
-    
+
     Args:
     task_type (str): if task_type == "false", this method will load a json with simulated wrong cmd to run, otherwise it will load a correct cmd
     task_id (str): the result under this task_id
     Example test command: curl “http://0.0.0.0:5000/test_new_execution/true/toytest"
     To use this method, we should put the "input.json" and "input_wrong.json" at sample_output" folder in advance
     """
-
+    
     t = Thread(target = thread_test_new_execution, args = (task_type, task_id, ))
     t.start()
     return ("start testing: task_type:{task_type} task_id:{task_id}\n")
@@ -108,7 +116,7 @@ def clean_all():
     Command: curl --request GET http://localhost:5000/clean-all
     """
     ResourceManager("test").remove_all_jobs_and_tasks()
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 def submit_job_through_job_manager(job):
     JobManager().submit_job(job)
@@ -118,16 +126,14 @@ def submit_job():
     """Test command: curl -H "Content-Type: application/json" --request POST -d @/vagrant/tests/sample_output/input.json http://localhost:5000/job"
     """
     if ResourceManager(db_name).get_updating_kernel() is True:
-        return {"status": "Currently the Pharos toolset is updating. Try later please."}
+        return {"Status": "Currently the Pharos toolset is updating. Try later please."}
 
     request_json = request.get_json()
     print(request.get_json())
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
     thread = Thread(target=submit_job_through_job_manager, args=(job, ))
     thread.start()
-    # JobManager().submit_job(job)
-    return {"status": "ok"}
-
+    return {"Status": "ok"}
 
 @app.route("/job-info/<id>/json", methods=['GET'])
 def get_job(id):
@@ -155,11 +161,29 @@ def get_job_list():
 @app.route("/kill-job/<job_id>", methods=['GET'])
 def kill_job(job_id):
     JobManager().kill_job(job_id)
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/kill-task/<task_id>", methods=['GET'])
 def kill_task(task_id):
     ExecutionManager().kill_task(task_id)
+    return {"Status": "ok"}
+
+@app.route("/pharos/metadata", methods=['GET'])
+def get_metadata():
+    return ResourceManager(db_name).get_all_metadata()
+
+@app.route("/intermediate-result/stdout", methods=['POST'])
+def save_realtime_stdout():
+    Thread(target=lambda task_id, stdout: ResourceManager(db_name).update_stdout(task_id, stdout),
+           args=(request.form['task_id'], request.form['stdout'], )).start()
+    # print("New stdout: " + request.form['stdout'])
+    return {"status": "ok"}
+
+@app.route("/intermediate-result/stderr", methods=['POST'])
+def save_realtime_stderr():
+    Thread(target=lambda task_id, stderr: ResourceManager(db_name).update_stderr(task_id, stderr),
+           args=(request.form['task_id'], request.form['stderr'], )).start()
+    # print("New stderr: " + request.form['stderr'])
     return {"status": "ok"}
 
 @app.route("/result", methods=['POST'])
@@ -194,7 +218,11 @@ def get_stdout(task_id):
     if stdout is None:
         abort(404)
     else:
-        return {"Content": stdout}
+        status_str = ResourceManager(db_name).get_status(task_id)
+        return {
+            "Status": status_str,
+            "Content": stdout
+        }
 
 @app.route("/task/<task_id>/stderr/json", methods=['GET'])
 def get_stderr(task_id):
@@ -203,7 +231,11 @@ def get_stderr(task_id):
     if stderr is None:
         abort(404)
     else:
-        return {"Content": stderr}
+        status_str = ResourceManager(db_name).get_status(task_id)
+        return {
+            "Status": status_str,
+            "Content": stderr
+        }
 
 @app.route("/tool-list/json", methods=["GET"])
 def get_tool_list():
@@ -222,18 +254,43 @@ def get_single_tool(tool_id):
 def insert_new_tool():
     request_json = request.get_json()
     ResourceManager(db_name).insert_new_tool(request_json)
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/tool/<tool_id>/delete", methods=["GET"])
 def remove_tool(tool_id):
     ResourceManager(db_name).remove_tool_by_id(tool_id)
-    return {"status": "ok"}
+    return {"Status": "ok"}
 
 @app.route("/tool/<tool_id>", methods=["POST"])
 def update_tool(tool_id):
     request_json = request.get_json()
     ResourceManager(db_name).update_tool(tool_id, request_json)
-    return {"status": "ok"}
+    return {"Status": "ok"}
+
+@app.route("/debug/pharos/metadata", methods=['GET'])
+def debug_get_pharos_metadata():
+    return {
+        "Is_Updating_Kernel": False,
+        "Docker_Directory": "test_dir",
+        "Digest": "!$%@MF123BSDFHJSKADFN"
+    }
+
+
+@app.route("/debug/task/<task_id>/stdout/json", methods=['GET'])
+def debug_get_stdout(task_id):
+    global debug_page_string
+    debug_page_string += task_id + " " + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + "\n"
+    return {"Content": debug_page_string,
+            "Status": "Running"}
+
+
+@app.route("/debug/task/<task_id>/stderr/json", methods=['GET'])
+def debug_get_stderr(task_id):
+    global debug_page_string
+    debug_page_string += task_id + " " + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + "\n"
+    return {"Content": debug_page_string,
+            "Status": "Successful"}
+
 
 @app.route("/debug/job-list/json")
 def debug_get_job_list():
@@ -3615,6 +3672,8 @@ def setup_pharos_tools(app):
     # Flask will run it twice to enable the "reload" feature in debug mode
     ResourceManager(db_name).setup()
     ResourceManager(db_name).initialize_pharos_tools()
+    t = Thread(target =  thread_update_kernel)
+    t.start()
     # if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     #     ResourceManager(db_name).initialize_pharos_tools()
     #     tool_list = ResourceManager(db_name).get_all_tools()

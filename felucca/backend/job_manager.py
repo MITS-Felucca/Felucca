@@ -98,6 +98,19 @@ class JobManager(object):
             self.task_id_to_job_id[task.task_id] = new_job.job_id
         ResourceManager(db_name).update_job_status(new_job.job_id, Status.Running)
 
+    def kill_all_jobs(self):
+        """Kill all running or pending jobs. Called when the kernel needs to be updated.
+        """
+        logger = Logger().get()
+        logger.debug(f"Start killing all jobs.")
+        logger.debug(f"There are {len(self.job_metadata)} jobs at present.")
+
+        try:
+            for job_id in self.job_metadata:
+                self.kill_job(job_id)
+        except Exception as e:
+            logger.error(f"Something wrong when killing all jobs. Exception: {e}")
+
     def kill_job(self, job_id):
         """Kill all unfinished tasks of this job.
 
@@ -110,6 +123,7 @@ class JobManager(object):
         try:
             job = self.job_metadata[job_id]
             if job.finished_count == len(job.tasks):
+                self.job_metadata.pop(job_id, None)
                 logger.debug(f"Job({job_id}) has finished. Skipped killing.")
                 return
 
@@ -120,6 +134,8 @@ class JobManager(object):
                     killed_count += 1
 
             ResourceManager().update_job_status(job_id, Status.Killed)
+
+            self.job_metadata.pop(job_id, None)
 
             logger.debug(f"Killed {killed_count} tasks of Job({job_id}).")
 

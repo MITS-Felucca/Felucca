@@ -44,6 +44,16 @@ class ResourceManager(object):
             job.tasks = self.db_manager.get_tasks_by_job_id(job.job_id)
         return job_list
 
+    def get_all_metadata(self):
+        is_updating_kernel = self.get_updating_kernel()
+        kernel_metadata = self.get_kernel_metadata()
+        metadata_json = {
+            "Is_Updating_Kernel": is_updating_kernel,
+            "Docker_Directory": kernel_metadata['docker_directory'],
+            "Digest": kernel_metadata['digest']
+        }
+        return metadata_json
+
     def get_all_tools(self):
         """Return the schemas of all tools with id
 
@@ -100,6 +110,20 @@ class ResourceManager(object):
 
         return job_list
 
+    def get_kernel_metadata(self):
+        """Get the metadata of kernel(docker image).
+
+        Return:
+            metadata (dict)
+        """
+        docker_directory = self.db_manager.get_metadata_field("docker_directory")
+        digest = self.db_manager.get_metadata_field("digest")
+        metadata = {
+            "docker_directory": docker_directory,
+            "digest": digest
+        }
+        return metadata
+
     def get_log_file(self, task_id, filename):
         """Return an log file of a task
 
@@ -124,6 +148,15 @@ class ResourceManager(object):
         """
         return self.db_manager.get_output_file(task_id, filename)
 
+    def get_status(self, task_id):
+        """Get the status string of the task.
+        Args:
+            task_id (String): The id of the task
+        Returns:
+            status (String): The name of the status
+        """
+        return self.db_manager.get_task_status_by_id(task_id).name
+
     def get_stderr(self, task_id):
         """Return the stderr of a task
 
@@ -145,6 +178,17 @@ class ResourceManager(object):
             stdout (String): the stdout
         """
         return self.db_manager.get_stdout(task_id)
+
+    def get_status(self, task_id):
+        """Get the status string of the task.
+
+        Args:
+            task_id (String): The id of the task
+
+        Returns:
+            status (String): The name of the status
+        """
+        return self.db_manager.get_task_status_by_id(task_id).name
 
     def get_tool_by_id(self, tool_id):
         """Get the schema of the specific tool.
@@ -318,6 +362,20 @@ class ResourceManager(object):
         self.db_manager.save_result(task_id, output, stdout, stderr)
         return
 
+    def set_kernel_metadata(self, docker_directory, digest):
+        """Update the metadata of kernel(docker image).
+
+        Args:
+            docker_directory (String): The dockerhub registry of the image
+            digest (String): The digest of the image
+
+        Return:
+            is_successful (boolean)
+        """
+        is_successful_directory = self.db_manager.set_metadata_field("docker_directory", docker_directory)
+        is_successful_digest = self.db_manager.set_metadata_field("digest", digest)
+        return is_successful_directory and is_successful_digest
+
     def set_updating_kernel(self, new_value):
         """Set the status of metadata field "is_updating_kernel"
 
@@ -339,6 +397,24 @@ class ResourceManager(object):
         self.db_manager.update_job_status(job_id, new_status)
         return
 
+    def update_stdout(self, task_id, stdout):
+        """Update the stdout & stderr of the task.
+
+        Args:
+            task_id (String): The id of the task
+            stdout (String): The new stdout
+        """
+        self.db_manager.update_stdout(task_id, stdout)
+
+    def update_stderr(self, task_id, stderr):
+        """Update the stderr & stderr of the task.
+
+        Args:
+            task_id (String): The id of the task
+            stderr (String): The new stderr
+        """
+        self.db_manager.update_stderr(task_id, stderr)
+
     def update_task_status(self, task_id, new_status):
         """Update the status of a task
 
@@ -359,6 +435,14 @@ class ResourceManager(object):
         self.db_manager.update_tool(tool_id, new_schema)
 
     class DatabaseManager(object):
+
+        initial_metadata = {
+            "has_initialized_pharos": False,
+            "is_updating_kernel": False,
+            "docker_directory": "",
+            "digest": ""
+        }
+
         def __init__(self, db_name="felucca"):
             super().__init__()
             self.db_name = db_name
@@ -374,11 +458,7 @@ class ResourceManager(object):
             logger = Logger().get()
             if "metadata" not in self.__db.list_collection_names() or self.__metadata_collection.count_documents({}) == 0:
                 # Not initialized
-                metadata = {
-                    "has_initialized_pharos": False,
-                    "is_updating_kernel": False
-                }
-                self.__metadata_collection.insert_one(metadata)
+                self.__metadata_collection.insert_one(self.initial_metadata)
                 logger.debug("DatabaseManager is initialized.")
 
         def get_all_jobs_without_tasks(self):
@@ -699,6 +779,28 @@ class ResourceManager(object):
                              f" Exception: {e}")
                 return []
 
+        def get_task_status_by_id(self, task_id):
+            """Get the status of the task.
+
+            Args:
+                task_id (String): The id of the task
+
+            Return:
+                status (Status): The status of the task
+            """
+            logger = Logger().get()
+            logger.debug(f"start get_task_status_by_id, task_id:{task_id}")
+            try:
+                # Find the task using id
+                field = {"status"}
+                condition = {"_id": ObjectId(task_id)}
+                task_doc = self.__tasks_collection.find_one(condition, field)
+
+                return Status(task_doc['status'])
+            except Exception as e:
+                logger.error(f"something wrong in get_task_status_by_id, Exception: {e}")
+                return None
+
         def get_tool_by_id(self, tool_id):
             """Get the schema of the specific tool.
 
@@ -1017,9 +1119,6 @@ class ResourceManager(object):
                 except Exception as e:
                     logger.error(f"Problem when storing file {output_file_path}. Exception{e}")
 
-            # TODO:Deal with excessively large stdout & stderr
-
-
             try:
                 # Update the output fields of the task
                 condition = {"_id": task_id}
@@ -1029,11 +1128,11 @@ class ResourceManager(object):
 
             # Only update when the parameters are non-empty
             update_stdout = False
-            if stdout is not None and stdout != "":
-                update_stdout = True
+            # if stdout is not None and stdout != "":
+            #     update_stdout = True
             update_stderr = False
-            if stderr is not None and stderr != "":
-                update_stderr = True
+            # if stderr is not None and stderr != "":
+            #     update_stderr = True
 
             # Store the id of the old results and insert the new one
             if update_stdout:
@@ -1072,6 +1171,8 @@ class ResourceManager(object):
             All fields at present:
             1. has_initialized_pharos(bool)
             2. is_updating_kernel(bool)
+            3. docker_directory(String)
+            4. digest(String)
 
             Args:
                 field_name (String): The key of the field
@@ -1121,6 +1222,115 @@ class ResourceManager(object):
             except Exception as e:
                 logger.error(f"Failed when updating job status. Exception: {e}")
 
+        def update_stderr(self, task_id, stderr):
+            """Append the stderr of the task.
+
+            Args:
+                task_id (String): The id of the task
+                stderr (String): The new stderr
+            """
+            try:
+                logger = Logger().get()
+                logger.debug(f"start update_stderr task_id:{task_id}")
+
+                # Cast task_id from String to ObjectId first
+                task_id = ObjectId(task_id)
+            except Exception as e:
+                logger.error(f"Problem with the parameters: {e}")
+                return
+
+            try:
+                # Update the output fields of the task
+                condition = {"_id": task_id}
+                task = self.__tasks_collection.find_one(condition)
+            except Exception as e:
+                logger.error(f"Error when searching for task with id {task_id}")
+                return
+
+            # Only update when the parameters are non-empty
+            update_stderr = False
+            if stderr is not None and stderr != "":
+                update_stderr = True
+
+            if not update_stderr:
+                return
+
+            # Store the id of the old results and insert the new one
+            if update_stderr:
+                old_stderr_id = task['stderr']
+                if old_stderr_id is not None:
+                    old_stderr = self.__fs.get(old_stderr_id).read().decode('utf-8')
+                    stderr = old_stderr + stderr
+                new_stderr_id = self.__fs.put(stderr, encoding='utf-8')
+
+            try:
+                if update_stderr and new_stderr_id:
+                    task["stderr"] = new_stderr_id
+                    update_result = self.__tasks_collection.update_one(condition,
+                                                                       {"$set": task})
+                    if update_result.modified_count != 1:
+                        raise RuntimeError("Failed when updating data in database.")
+
+                    # Remove the old stderr after update
+                    if update_stderr and old_stderr_id is not None:
+                        self.__fs.delete(old_stderr_id)
+            except Exception as e:
+                logger.error(f"Error when updating stderr of Task {task_id}")
+
+        def update_stdout(self, task_id, stdout):
+            """Append the stdout of the task.
+
+            Args:
+                task_id (String): The id of the task
+                stdout (String): The new stdout
+            """
+            try:
+                logger = Logger().get()
+                logger.debug(f"start update_stdout task_id:{task_id}")
+
+                # Cast task_id from String to ObjectId first
+                task_id = ObjectId(task_id)
+            except Exception as e:
+                logger.error(f"Problem with the parameters: {e}")
+                return
+
+            try:
+                # Update the output fields of the task
+                condition = {"_id": task_id}
+                task = self.__tasks_collection.find_one(condition)
+            except Exception as e:
+                logger.error(f"Error when searching for task with id {task_id}")
+                return
+
+            # Only update when the parameters are non-empty
+            update_stdout = False
+            if stdout is not None and stdout != "":
+                update_stdout = True
+
+            if not update_stdout:
+                return
+
+            # Store the id of the old results and insert the new one
+            if update_stdout:
+                old_stdout_id = task['stdout']
+                if old_stdout_id is not None:
+                    old_stdout = self.__fs.get(old_stdout_id).read().decode('utf-8')
+                    stdout = old_stdout + stdout
+                new_stdout_id = self.__fs.put(stdout, encoding='utf-8')
+
+            try:
+                if update_stdout and new_stdout_id:
+                    task["stdout"] = new_stdout_id
+                    update_result = self.__tasks_collection.update_one(condition,
+                                                                       {"$set": task})
+                    if update_result.modified_count != 1:
+                        raise RuntimeError("Failed when updating data in database.")
+
+                    # Remove the old stdout after update
+                    if update_stdout and old_stdout_id is not None:
+                        self.__fs.delete(old_stdout_id)
+            except Exception as e:
+                logger.error(f"Error when updating stdout of Task {task_id}")
 
         def update_task_status(self, task_id, new_status):
             """Update the status of a task

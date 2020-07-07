@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, Validators, FormControlName, FormArray } from '@angular/forms';
 
@@ -9,6 +9,7 @@ import { ArgumentType } from '../argument-type.enum'
 @Component({
   selector: 'app-edit-tool',
   templateUrl: './edit-tool.component.html',
+  encapsulation: ViewEncapsulation.None,
   styleUrls: ['./edit-tool.component.css']
 })
 export class EditToolComponent implements OnInit {
@@ -92,7 +93,7 @@ export class EditToolComponent implements OnInit {
       isRequired: new FormControl(''),
       defaultValue: new FormControl(''),
       argumentType: new FormControl('', Validators.required)
-    }));
+    }, this.argumentValidator));
   }
 
   deleteArgument(classIndex: number, argumentIndex: number): void {
@@ -120,6 +121,22 @@ export class EditToolComponent implements OnInit {
         this.router.navigate(['tool-list']);
       });
     }
+  }
+
+  argumentValidator(formGroup: FormGroup) {
+    let errors = {};
+    if (formGroup.get('fullName').value === '' && formGroup.get('abbreviation').value === '') {
+      errors['emptyKey'] = true;
+    }
+
+    if (formGroup.get('argumentType').value === ArgumentType.OutputFile && formGroup.get('defaultValue').value === '') {
+      errors['emptyDefaultValue'] = true;
+    }
+
+    if (JSON.stringify(errors) === '{}') {
+      return null;
+    }
+    return errors;
   }
 }
   

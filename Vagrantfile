@@ -23,11 +23,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # build a new image with flask
   config.vm.provision "file", source: "./DockerFile", destination: "~/docker/DockerFile"
+  config.vm.provision "file", source: "./DockerFile_for_updating", destination: "~/docker/DockerFile_for_updating"
   config.vm.provision "file", source: "./felucca/backend/container_server.py", destination: "~/docker/container_server.py"
   config.vm.provision "file", source: "./felucca/backend/common/status.py", destination: "~/docker/status.py"
   config.vm.provision "file", source: "./tests/sample_output/oo.exe", destination: "~/docker/oo.exe"
   config.vm.provision "shell", inline: "docker build ./docker -t felucca/pharos:latest -f ./docker/DockerFile"
-
+  config.vm.provider "virtualbox" do |vb|
+      vb.memory = "4096"
+      vb.cpus = 2
+  end
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
