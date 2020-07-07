@@ -341,8 +341,9 @@ class ExecutionManager(object):
             
             logger.debug(f"kill all current tes because of updating")
             #try killing all the tasks currently running
-            for task_id in list(self.id_to_task_container):
-                self.kill_task(self, task_id)
+            
+            # for task_id in list(self.id_to_task_container):
+            #     self.kill_task(task_id)
 
             fname="/home/vagrant/docker/DockerFile_for_updating"
             path = os.path.dirname(fname)
@@ -352,8 +353,8 @@ class ExecutionManager(object):
                 built_image, build_output = client.images.build(path=path, dockerfile=fname, tag="felucca/pharos:latest", rm=True, buildargs={"BASE_IMAGE":BASE_IMAGE})
                 for line in build_output:
                     print(line)
-            except:
-                logger.error(f"update kernel fail, use previous kernel")
+            except Exception as e:
+                logger.error("update kernel fail, use previous kernel Error:" + str(e))
             else:    
                 logger.debug(f"update kernel successfully, the new felucca/pharos:latest is based on {BASE_IMAGE}")
                 keep_list = ["felucca/temp:latest","felucca/pharos:latest"]

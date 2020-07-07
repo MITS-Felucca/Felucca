@@ -83,7 +83,7 @@ def update_kernel():
     """
     if ResourceManager(db_name).get_updating_kernel() is True:
         return {"Status": "Currently the Pharos toolset is updating. Try later please."}
-    BASE_IMAGE = request.form['Content']
+    BASE_IMAGE = request.get_json()['Content']
     t = Thread(target =  thread_update_kernel,args = (BASE_IMAGE, ))
     t.start()
     return {"Status": "ok"}

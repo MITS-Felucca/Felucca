@@ -48,9 +48,9 @@ class ResourceManager(object):
         is_updating_kernel = self.get_updating_kernel()
         kernel_metadata = self.get_kernel_metadata()
         metadata_json = {
-            "is_updating_kernel": is_updating_kernel,
-            "docker_directory": kernel_metadata['docker_directory'],
-            "digest": kernel_metadata['digest']
+            "Is_Updating_Kernel": is_updating_kernel,
+            "Docker_Directory": kernel_metadata['docker_directory'],
+            "Digest": kernel_metadata['digest']
         }
         return metadata_json
 
