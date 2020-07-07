@@ -2,6 +2,7 @@ import json
 import os
 import base64
 import sys
+import time
 from datetime import datetime
 from flask import abort
 from flask import Flask
@@ -19,6 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../tests/sample_o
 
 app = Flask(__name__)
 db_name = "test"
+debug_page_string = ""
 
 # db_name = "felucca"
 
@@ -170,6 +172,20 @@ def kill_task(task_id):
 def get_metadata():
     return ResourceManager(db_name).get_all_metadata()
 
+@app.route("/intermediate-result/stdout", methods=['POST'])
+def save_realtime_stdout():
+    Thread(target=lambda task_id, stdout: ResourceManager(db_name).update_stdout(task_id, stdout),
+           args=(request.form['task_id'], request.form['stdout'], )).start()
+    # print("New stdout: " + request.form['stdout'])
+    return {"status": "ok"}
+
+@app.route("/intermediate-result/stderr", methods=['POST'])
+def save_realtime_stderr():
+    Thread(target=lambda task_id, stderr: ResourceManager(db_name).update_stderr(task_id, stderr),
+           args=(request.form['task_id'], request.form['stderr'], )).start()
+    # print("New stderr: " + request.form['stderr'])
+    return {"status": "ok"}
+
 @app.route("/result", methods=['POST'])
 def get_result():
     status = request.form['status']
@@ -258,6 +274,23 @@ def debug_get_pharos_metadata():
         "Docker_Directory": "test_dir",
         "Digest": "!$%@MF123BSDFHJSKADFN"
     }
+
+
+@app.route("/debug/task/<task_id>/stdout/json", methods=['GET'])
+def debug_get_stdout(task_id):
+    global debug_page_string
+    debug_page_string += task_id + " " + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + "\n"
+    return {"Content": debug_page_string,
+            "Status": "Running"}
+
+
+@app.route("/debug/task/<task_id>/stderr/json", methods=['GET'])
+def debug_get_stderr(task_id):
+    global debug_page_string
+    debug_page_string += task_id + " " + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + "\n"
+    return {"Content": debug_page_string,
+            "Status": "Successful"}
+
 
 @app.route("/debug/job-list/json")
 def debug_get_job_list():
