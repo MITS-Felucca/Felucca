@@ -22,6 +22,11 @@ class ResourceManager(object):
         self.db_manager = self.DatabaseManager(self.db_name)
 
     def setup(self):
+        """Initialize the metadata.
+
+        Returns:
+            is_initialized: Is the database initialized.
+        """
         return self.db_manager.setup()
 
     def get_all_jobs_without_tasks(self):
@@ -350,7 +355,7 @@ class ResourceManager(object):
 
         return job
 
-    def save_result(self, task_id, output, stdout, stderr):
+    def save_result(self, task_id, output):
         """Save the result of the task specified by task_id
 
         Args:
@@ -359,7 +364,7 @@ class ResourceManager(object):
             stdout (String): The stdout of the task
             stderr (String): The stderr of the task
         """
-        self.db_manager.save_result(task_id, output, stdout, stderr)
+        self.db_manager.save_result(task_id, output)
         return
 
     def set_kernel_metadata(self, docker_directory, digest):
@@ -1089,15 +1094,12 @@ class ResourceManager(object):
                 logger.error(f"Something wrong in remove_tasks_by_job_id,"
                              f" Exception: {e}")
 
-        def save_result(self, task_id, output, stdout, stderr):
-            """Save the result of the task specified by task_id
+        def save_result(self, task_id, output):
+            """Save the result files of the task specified by task_id
 
             Args:
                 task_id (String): The id of the specific task
                 output (List of String): Each entry is a path of an output file
-                log (List of String): Each entry in log is the path of an log file
-                stdout (String): The stdout of the task
-                stderr (String): The stderr of the task
             """
 
             try:
@@ -1128,28 +1130,8 @@ class ResourceManager(object):
             except Exception as e:
                 logger.error(f"Error when searching for task with id {task_id}")
 
-            # Only update when the parameters are non-empty
-            update_stdout = False
-            # if stdout is not None and stdout != "":
-            #     update_stdout = True
-            update_stderr = False
-            # if stderr is not None and stderr != "":
-            #     update_stderr = True
-
-            # Store the id of the old results and insert the new one
-            if update_stdout:
-                old_stdout_id = task['stdout']
-                new_stdout_id = self.__fs.put(stdout, encoding='utf-8')
-            if update_stderr:
-                old_stderr_id = task['stderr']
-                new_stderr_id = self.__fs.put(stderr, encoding='utf-8')
-
             try:
                 task["output_files"] = output_dict
-                if update_stdout and new_stdout_id:
-                    task["stdout"] = new_stdout_id
-                if update_stderr and new_stderr_id:
-                    task["stderr"] = new_stderr_id
 
                 update_result = self.__tasks_collection.update_one(condition,
                                                                    {"$set": task})
@@ -1157,16 +1139,6 @@ class ResourceManager(object):
                     logger.error(f"save result failed")
             except Exception as e:
                 logger.error(f"something wrong in save_result, Exception: {e}")
-
-            try:
-                # Remove the old stdour & stderr after update
-                if update_stdout and old_stdout_id is not None:
-                    self.__fs.delete(old_stdout_id)
-                if update_stderr and old_stderr_id is not None:
-                    self.__fs.delete(old_stderr_id)
-            except Exception as e:
-                logger.error(f"Error when deleting old results. Exception: {e}")
-
 
         def set_metadata_field(self, field_name, new_value):
             """Set the value of single field in metadata.

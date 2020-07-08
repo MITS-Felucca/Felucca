@@ -94,32 +94,10 @@ def task_execute():
             status = Status.Failed.name
 
         requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
-                                                                          'status': status,
-                                                                          'stdout': "",
-                                                                          'stderr': ""})
+                                                                          'status': status})
     except Exception as e:
         requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
-                                                                              'status': Status.Error.name,
-                                                                              'stderr': str(e)})
-    return
-
-    try:
-        completed_process = subprocess.run(command_line_input, shell=True, capture_output=True)
-    except Exception as e:
-        requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
-                                                                              'status': Status.Error.name,
-                                                                              'stderr': str(e)})
-        return
-
-    status = Status.Successful.name
-    if completed_process.returncode != 0:
-        status = Status.Failed.name
-
-    requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
-                                                                          'status': status,
-                                                                          'stderr': completed_process.stderr,
-                                                                          'stdout': completed_process.stdout})
-
+                                                                              'status': Status.Error.name})
 
 def get_command_line_input():
     """Get the command line from backend using task id.

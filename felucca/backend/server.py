@@ -191,9 +191,7 @@ def save_realtime_stderr():
 def get_result():
     status = request.form['status']
     ExecutionManager().save_result(request.form['task_id'],
-                                   status,
-                                   request.form['stderr'],
-                                   None if status == 'Error' else request.form['stdout'])
+                                   status)
     JobManager().finish_task(request.form['task_id'])
     return {'is_received': True}
 
