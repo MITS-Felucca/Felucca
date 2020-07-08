@@ -138,5 +138,27 @@ export class EditToolComponent implements OnInit {
     }
     return errors;
   }
+
+  onFileChange(event) {
+    let reader = new FileReader();
+
+    if (event.target.files && event.target.files.length) {
+      reader.onload = () => {
+        try {
+          let schema = JSON.parse(<string> reader.result);
+          this.metadata = new FormGroup ({
+            toolName: new FormControl(schema.toolName, Validators.required),
+            programName: new FormControl(schema.programName, Validators.required),
+            isPharos: new FormControl(schema.isPharos),
+            argumentClasses: new FormArray([])
+          });
+          this.fromSchema(schema);
+        } catch (SyntaxError) {
+          alert('JSON parse Error: ' + SyntaxError.message);
+          event.srcElement.value = '';
+        }
+      };
+      reader.readAsText(event.target.files[0]);
+    }
+  }
 }
-  

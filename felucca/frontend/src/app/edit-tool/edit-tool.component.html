@@ -1,5 +1,6 @@
 <div>
   <h2> Tool Metadata </h2>
+  <input type="file" *ngIf="operation === 'create'" (change) = "onFileChange($event)">
   <form *ngIf="metadata" (ngSubmit) = "onSubmit()" [formGroup]="metadata">
     <div class="input-group mb-3">
       <div class="input-group-prepend" >

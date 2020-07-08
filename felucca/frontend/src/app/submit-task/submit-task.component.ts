@@ -26,7 +26,6 @@ export class SubmitTaskComponent implements OnChanges {
   }
 
   onFileChange(event, key: string) {
-    console.log("called" + key);
     let reader = new FileReader();
 
     if (event.target.files && event.target.files.length) {
