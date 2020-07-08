@@ -598,9 +598,9 @@ class TestResourceManager(unittest.TestCase):
 
         metadata = self.manager.get_all_metadata()
         metadata_json = {
-            "is_updating_kernel": False,
-            "docker_directory": docker_directory,
-            "digest": digest
+            "Is_Updating_Kernel": False,
+            "Docker_Directory": docker_directory,
+            "Digest": digest
         }
         self.assertEqual(metadata, metadata_json)
 

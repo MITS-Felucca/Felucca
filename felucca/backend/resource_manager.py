@@ -22,7 +22,7 @@ class ResourceManager(object):
         self.db_manager = self.DatabaseManager(self.db_name)
 
     def setup(self):
-        self.db_manager.setup()
+        return self.db_manager.setup()
 
     def get_all_jobs_without_tasks(self):
         """Return all jobs as Job objects without their tasks
@@ -460,6 +460,8 @@ class ResourceManager(object):
                 # Not initialized
                 self.__metadata_collection.insert_one(self.initial_metadata)
                 logger.debug("DatabaseManager is initialized.")
+                return False
+            return True
 
         def get_all_jobs_without_tasks(self):
             """Return all jobs as Job objects without their tasks
@@ -1258,7 +1260,7 @@ class ResourceManager(object):
             # Store the id of the old results and insert the new one
             if update_stderr:
                 old_stderr_id = task['stderr']
-                if old_stderr_id is not None:
+                if old_stderr_id is not None and self.__fs.exists(old_stderr_id):
                     old_stderr = self.__fs.get(old_stderr_id).read().decode('utf-8')
                     stderr = old_stderr + stderr
                 new_stderr_id = self.__fs.put(stderr, encoding='utf-8')
@@ -1272,7 +1274,7 @@ class ResourceManager(object):
                         raise RuntimeError("Failed when updating data in database.")
 
                     # Remove the old stderr after update
-                    if update_stderr and old_stderr_id is not None:
+                    if old_stderr_id is not None and self.__fs.exists(old_stderr_id):
                         self.__fs.delete(old_stderr_id)
             except Exception as e:
                 logger.error(f"Error when updating stderr of Task {task_id}")
@@ -1310,13 +1312,16 @@ class ResourceManager(object):
             if not update_stdout:
                 return
 
-            # Store the id of the old results and insert the new one
-            if update_stdout:
-                old_stdout_id = task['stdout']
-                if old_stdout_id is not None:
-                    old_stdout = self.__fs.get(old_stdout_id).read().decode('utf-8')
-                    stdout = old_stdout + stdout
-                new_stdout_id = self.__fs.put(stdout, encoding='utf-8')
+            try:
+                # Store the id of the old results and insert the new one
+                if update_stdout:
+                    old_stdout_id = task['stdout']
+                    if old_stdout_id is not None and self.__fs.exists(old_stdout_id):
+                        old_stdout = self.__fs.get(old_stdout_id).read().decode('utf-8')
+                        stdout = old_stdout + stdout
+                    new_stdout_id = self.__fs.put(stdout, encoding='utf-8')
+            except Exception as e:
+                logger.error(f"Error when getting old stdout of Task {task_id}")
 
             try:
                 if update_stdout and new_stdout_id:
@@ -1327,7 +1332,7 @@ class ResourceManager(object):
                         raise RuntimeError("Failed when updating data in database.")
 
                     # Remove the old stdout after update
-                    if update_stdout and old_stdout_id is not None:
+                    if old_stdout_id is not None and self.__fs.exists(old_stdout_id):
                         self.__fs.delete(old_stdout_id)
             except Exception as e:
                 logger.error(f"Error when updating stdout of Task {task_id}")

@@ -129,7 +129,7 @@ def submit_job():
         return {"Status": "Currently the Pharos toolset is updating. Try later please."}
 
     request_json = request.get_json()
-    print(request.get_json())
+    # print(request.get_json())
     job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
     thread = Thread(target=submit_job_through_job_manager, args=(job, ))
     thread.start()
@@ -156,6 +156,7 @@ def get_job_list():
     """Test command: curl --request GET http://localhost:5000/job-list/json
     """
     job_list = ResourceManager(db_name).get_job_list()
+    print(JobManager().job_metadata)
     return {"Job_List": job_list}
 
 @app.route("/kill-job/<job_id>", methods=['GET'])
@@ -3670,10 +3671,11 @@ def setup_pharos_tools(app):
     # Remove the check for non-debug mode
     # It means "Only run when app has been loaded"
     # Flask will run it twice to enable the "reload" feature in debug mode
-    ResourceManager(db_name).setup()
-    ResourceManager(db_name).initialize_pharos_tools()
-    t = Thread(target =  thread_update_kernel)
-    t.start()
+    is_initialized = ResourceManager(db_name).setup()
+    if is_initialized == False:
+        ResourceManager(db_name).initialize_pharos_tools()
+        t = Thread(target =  thread_update_kernel)
+        t.start()
     # if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     #     ResourceManager(db_name).initialize_pharos_tools()
     #     tool_list = ResourceManager(db_name).get_all_tools()
