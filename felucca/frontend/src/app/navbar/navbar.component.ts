@@ -79,7 +79,7 @@ export class NavbarComponent {
       this.isUpdating = data.isUpdating;
       this.dockerDirectory = data.dockerDirectory;
       this.digest = data.digest;
-      this.shortDigest = this.digest.substring(0,this.digest.length/2);
+      this.shortDigest = this.digest.substring(0,12);
     });
   }
 

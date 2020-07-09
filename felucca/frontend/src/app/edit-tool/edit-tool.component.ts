@@ -158,6 +158,7 @@ export class EditToolComponent implements OnInit {
           this.fromSchema(schema);
         } catch (SyntaxError) {
           alert('JSON parse Error: ' + SyntaxError.message);
+          this.fileName = '';
           event.srcElement.value = '';
         }
       };
