@@ -157,7 +157,7 @@ class TestResourceManager(unittest.TestCase):
         output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
         log_file_list = ["../../sample_output/facts", "../../sample_output/results"]
 
-        self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.save_result(task_id, output_file_list)
         self.manager.update_stdout(task_id, stdout)
         self.manager.update_stderr(task_id, stderr)
 
@@ -318,7 +318,7 @@ class TestResourceManager(unittest.TestCase):
         stderr = "sample stderr"
         output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
 
-        self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.save_result(task_id, output_file_list)
         self.manager.update_stdout(task_id, stdout)
         self.manager.update_stderr(task_id, stderr)
 
@@ -418,7 +418,7 @@ class TestResourceManager(unittest.TestCase):
         stdout = "sample stdout"
         stderr = ""
         output_file_list = ["../../sample_output/output.json", "../../sample_output/facts", "../../sample_output/results"]
-        self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.save_result(task_id, output_file_list)
         self.manager.update_stdout(task_id, stdout)
         self.manager.update_stderr(task_id, stderr)
 
@@ -561,7 +561,7 @@ class TestResourceManager(unittest.TestCase):
         stderr = "sample stderr"
         output_file_list = [output_file_path, results_file_path, facts_file_path]
 
-        self.manager.save_result(task_id, output_file_list, stdout, stderr)
+        self.manager.save_result(task_id, output_file_list)
         self.manager.update_stdout(task_id, stdout)
         self.manager.update_stderr(task_id, stderr)
 
