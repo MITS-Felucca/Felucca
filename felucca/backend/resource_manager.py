@@ -17,8 +17,8 @@ class ResourceManager(object):
     """
 
     def __init__(self, db_name="felucca"):
-        self.db_name = "test"
-        # self.db_name = db_name
+        # self.db_name = "test"
+        self.db_name = db_name
         self.db_manager = self.DatabaseManager(self.db_name)
 
     def setup(self):
@@ -155,8 +155,10 @@ class ResourceManager(object):
 
     def get_status(self, task_id):
         """Get the status string of the task.
+
         Args:
             task_id (String): The id of the task
+
         Returns:
             status (String): The name of the status
         """
@@ -183,17 +185,6 @@ class ResourceManager(object):
             stdout (String): the stdout
         """
         return self.db_manager.get_stdout(task_id)
-
-    def get_status(self, task_id):
-        """Get the status string of the task.
-
-        Args:
-            task_id (String): The id of the task
-
-        Returns:
-            status (String): The name of the status
-        """
-        return self.db_manager.get_task_status_by_id(task_id).name
 
     def get_tool_by_id(self, tool_id):
         """Get the schema of the specific tool.
