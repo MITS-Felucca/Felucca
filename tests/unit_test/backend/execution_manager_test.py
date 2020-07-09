@@ -1,7 +1,7 @@
 import os
 import sys
 import requests
-
+import docker
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../felucca/backend'))
 import unittest
 from execution_manager import ExecutionManager
@@ -14,21 +14,18 @@ class TestTask(unittest.TestCase):
     def setUp(self):
         self.execution_manager = ExecutionManager()
         
-    def test_output(self):
+    def test_running_output(self):
         #test execution manager to run a right command
-        task_true_id = "test_true"
-        requests.get('http://%s:%s/test_new_execution/true/%s' % (SERVER_IP, SERVER_PORT, task_true_id))
-        #test execution manager to run a wrong command
-        task_false_id = "test_false"
-        requests.get('http://%s:%s/test_new_execution/false/%s' % (SERVER_IP, SERVER_PORT, task_false_id))
+        requests.get('http://%s:%s/test_EM_running' % (SERVER_IP, SERVER_PORT))
         sleep(30)
-        self.assertTrue(os.path.exists("/tmp/Felucca/result/%s/facts"  % (task_true_id)))
-        self.assertTrue(os.path.exists("/tmp/Felucca/result/%s/output.json"% (task_true_id) ))
-        self.assertTrue(os.path.exists("/tmp/Felucca/result/%s/results"% (task_true_id) ))
-        self.assertFalse(os.path.exists("/tmp/Felucca/result/%s/facts"  % (task_false_id)))
-        self.assertFalse(os.path.exists("/tmp/Felucca/result/%s/output.json"% (task_false_id) ))
-        self.assertFalse(os.path.exists("/tmp/Felucca/result/%s/results"% (task_false_id) ))
-        
+        self.assertTrue(os.path.exists("/tmp/Felucca/result/thisisatrueinputcmd_task/facts"))
+        self.assertTrue(os.path.exists("/tmp/Felucca/result/thisisatrueinputcmd_task/output.json"))
+        self.assertTrue(os.path.exists("/tmp/Felucca/result/thisisatrueinputcmd_task/results"))
+        self.assertFalse(os.path.exists("/tmp/Felucca/result/thisisafalseinputcmdtask/facts"))
+        self.assertFalse(os.path.exists("/tmp/Felucca/result/thisisafalseinputcmdtask/output.json"))
+        self.assertFalse(os.path.exists("/tmp/Felucca/result/thisisafalseinputcmdtask/results"))
+    def test_updating_kernal(self):
+        pass
 
 if __name__ == '__main__':  
     unittest.main()

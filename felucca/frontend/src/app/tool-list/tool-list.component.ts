@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Schema } from '../schema'
 import { SchemaService } from '../schema.service';
 import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { saveAs } from 'file-saver';
 
 
 @Component({
@@ -93,6 +94,11 @@ export class ToolListComponent implements OnInit {
     this.schemaService.getSchemas().subscribe(schemas => {
       this.schemas = schemas;
     });
+  }
+
+  downloadSchema(index: number): void {
+    let blob = new Blob([JSON.stringify(this.schemas[index], null, ' ')], {type: "text/json;charset=utf-8"});
+    saveAs(blob, this.schemas[index].toolName + ".json");
   }
 
 }

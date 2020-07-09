@@ -18,6 +18,7 @@ export class EditToolComponent implements OnInit {
   metadata: FormGroup;
   toolID: string;
   argumentType = ArgumentType;
+  fileName: string;
 
   constructor(private schemaService: SchemaService, 
               private route: ActivatedRoute,
@@ -25,7 +26,7 @@ export class EditToolComponent implements OnInit {
 
   ngOnInit() {
     this.operation = this.route.snapshot.paramMap.get('operation');
-  
+    this.fileName = '';
     if (this.operation === 'create') {
       this.metadata = new FormGroup ({
         toolName: new FormControl("", Validators.required), 
@@ -138,5 +139,30 @@ export class EditToolComponent implements OnInit {
     }
     return errors;
   }
+
+  onFileChange(event) {
+    let reader = new FileReader();
+
+    if (event.target.files && event.target.files.length) {
+      reader.onload = () => {
+        try {
+          const [file] = event.target.files;
+          this.fileName = file.name;
+          let schema = JSON.parse(<string> reader.result);
+          this.metadata = new FormGroup ({
+            toolName: new FormControl(schema.toolName, Validators.required),
+            programName: new FormControl(schema.programName, Validators.required),
+            isPharos: new FormControl(schema.isPharos),
+            argumentClasses: new FormArray([])
+          });
+          this.fromSchema(schema);
+        } catch (SyntaxError) {
+          alert('JSON parse Error: ' + SyntaxError.message);
+          this.fileName = '';
+          event.srcElement.value = '';
+        }
+      };
+      reader.readAsText(event.target.files[0]);
+    }
+  }
 }
-  

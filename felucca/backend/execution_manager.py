@@ -23,7 +23,7 @@ class ExecutionManager(object):
     def __init__(self):
         self.id_to_task_container = {}
 
-    def save_result(self, task_id, status, stderr, stdout):
+    def save_result(self, task_id, status):
         """save the result from container to the database
 
         Args:
@@ -42,7 +42,7 @@ class ExecutionManager(object):
                 container = self.id_to_task_container[task_id][1]
             except Exception as e:
                 logger.info(f"exception for finding container correspoding to {task_id}, status:{status} maybe the container is forced killed before, {e}")
-                ResourceManager().save_result(task_id, [], stdout, stderr)
+                ResourceManager().save_result(task_id, [])
                 ResourceManager().update_task_status(task_id, Status.Killed)
             else:
                 self.id_to_task_container.pop(task_id, None)
@@ -70,7 +70,7 @@ class ExecutionManager(object):
                     logger.debug(f"for task:{task_id} execute and exit normally")
                 except Exception as e:
                     logger.error(f"exception at copying result out of container and extrating the file for {task_id}, {e}")
-                    ResourceManager().save_result(task_id, [], stdout, stderr)
+                    ResourceManager().save_result(task_id, [])
                     ResourceManager().update_task_status(task_id, Status.Failed)
                     container.stop()
                     container.remove()
@@ -78,13 +78,13 @@ class ExecutionManager(object):
                     for index in range(len(output_path)):
                         output_path[index] = os.path.join(path, output_path[index])
                         print(output_path[index])
-                    ResourceManager().save_result(task_id, output_path, stdout, stderr)
+                    ResourceManager().save_result(task_id, output_path)
                     ResourceManager().mark_task_as_finished(task_id)
                     JobManager().finish_task(task_id)
                     container.stop()
                     container.remove()
         elif status == Status.Failed.name:
-            ResourceManager().save_result(task_id, [], stdout, stderr)
+            ResourceManager().save_result(task_id, [])
             ResourceManager().update_task_status(task_id, Status.Failed)
             JobManager().finish_task(task_id)
             try:

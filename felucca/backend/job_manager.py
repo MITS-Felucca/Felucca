@@ -106,7 +106,8 @@ class JobManager(object):
         logger.debug(f"There are {len(self.job_metadata)} jobs at present.")
 
         try:
-            for job_id in self.job_metadata:
+            job_id_list = list(self.job_metadata.keys())
+            for job_id in job_id_list:
                 self.kill_job(job_id)
         except Exception as e:
             logger.error(f"Something wrong when killing all jobs. Exception: {e}")
