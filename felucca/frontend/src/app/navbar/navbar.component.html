@@ -21,8 +21,8 @@
       {{this.dockerDirectory}}
     </span>
     <span class="navbar-brand mb-0 h1" style="margin-right:8px">Digest</span>
-    <span class="navbar-text" style="margin-right:8px">
-      {{this.digest}}
+    <span class="navbar-text" style="margin-right:8px" ngbTooltip="{{this.digest}}" [openDelay]="300" [closeDelay]="2000" tooltipClass="my-custom-class">
+      {{this.shortDigest}}
     </span>
     <button *ngIf="!this.isUpdating" class="btn btn-outline-success my-2 my-sm-0" type="submit" (click)="updatePharos()" [disabled]="this.isUpdating">Update Pharos</button>
     <span *ngIf="this.isUpdating" class="navbar-brand mb-0 h1">Pharos Updating...</span>
