@@ -22,8 +22,8 @@ app = Flask(__name__)
 db_name = "test"
 debug_page_string = ""
 
-# db_name = "felucca"
 
+    
 @app.route("/")
 def hello():
     return "Hello World!"
@@ -93,10 +93,9 @@ def update_kernel():
 def thread_update_kernel(BASE_IMAGE = "seipharos/pharos:latest"):
     JobManager().kill_all_jobs()
     ExecutionManager().update_kernel(BASE_IMAGE)
-
-
-@app.route("/test_new_execution/<task_type>/<task_id>",methods=['GET','POST'])
-def test_new_execution(task_type, task_id):
+    
+@app.route("/test_EM_running",methods=['GET'])
+def test_EM_running():
     """this is used for testing new execution manager after reconstrction, it will start a thread to load the json and run the cmd
 
     Args:
@@ -106,9 +105,49 @@ def test_new_execution(task_type, task_id):
     To use this method, we should put the "input.json" and "input_wrong.json" at sample_output" folder in advance
     """
     
-    t = Thread(target = thread_test_new_execution, args = (task_type, task_id, ))
+    t = Thread(target = thread_test_EM_running, args = ("true", ))
     t.start()
-    return ("start testing: task_type:{task_type} task_id:{task_id}\n")
+    t = Thread(target = thread_test_EM_running, args = ("false", ))
+    t.start()
+    return {"Status": "ok"}
+def thread_test_EM_running(task_type):
+    
+    """this is the implementation for testing new execution manager
+
+    """
+    if task_type == "false":
+        with open("/vagrant/tests/sample_output/input_wrong.json",'r') as f:
+            json_data = json.load(f)
+        job = Job.from_json(json_data)
+        job.job_id = "thisisafalseinputcmdtaskjob6"
+        task = job.tasks[0]
+        task.task_id = "thisisafalseinputcmdtask"
+    else:
+        with open("/vagrant/tests/sample_output/input.json",'r') as f:
+            json_data = json.load(f)
+        job = Job.from_json(json_data)
+        job.job_id = "thisisatrueinputcmd_job6"
+        task = job.tasks[0]
+        task.task_id = "thisisatrueinputcmd_task"
+
+    file_dict = {}
+    folder_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
+
+    if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+    for input_flag, content in json_data["Tasks"][0]["Files"].items():
+        filename = json_data["Tasks"][0]["Input_File_Args"][input_flag] #oo.exe
+        file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
+
+        with open(file_path, "wb") as f:
+            byte_stream = base64.b64decode(content.encode('utf-8'))
+            f.write(byte_stream)
+    #this is the simulation for RM changing the task.files from task.files = {"-f":exe_str } to task.files = {"-f": path } 
+        file_dict[filename] = file_path
+        print(f"file_path: {file_path}")
+    task.files = file_dict
+    ExecutionManager().submit_task(task)
 
 @app.route("/clean-all", methods=['GET'])
 def clean_all():
@@ -3664,7 +3703,6 @@ def allow_cross_domain(response: Response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Headers'] = 'content-type'
     return response
-
 def setup_pharos_tools(app):
     # Remove the check for non-debug mode
     # It means "Only run when app has been loaded"
@@ -3678,45 +3716,10 @@ def setup_pharos_tools(app):
     #     ResourceManager(db_name).initialize_pharos_tools()
     #     tool_list = ResourceManager(db_name).get_all_tools()
     #     print(len(tool_list))
-setup_pharos_tools(app)
-
-def thread_test_new_execution(task_type, task_id):
-    """this is the implementation for testing new execution manager
-
-    """
-    if task_type == "false":
-        with open("/home/vagrant/new-felucca/tests/sample_output/input_wrong.json",'r') as f:
-            json_data = json.load(f)
-        job = Job.from_json(json_data)
-        job.job_id = "job_id_false"
-        task = job.tasks[0]
-        task.task_id = task_id
-    else:
-        with open("/home/vagrant/new-felucca/tests/sample_output/input.json",'r') as f:
-            json_data = json.load(f)
-        job = Job.from_json(json_data)
-        job.job_id = "job_id_for_true"
-        task = job.tasks[0]
-        task.task_id = task_id
-
-    file_dict = {}
-    folder_path = os.path.join("/tmp/Felucca", f"{task.task_id}")
-
-    if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-
-    for input_flag, content in json_data["Tasks"][0]["Files"].items():
-        filename = json_data["Tasks"][0]["Input_File_Args"][input_flag] #oo.exe
-        file_path = os.path.join("/tmp/Felucca", f"{task.task_id}/{filename}")
-
-        with open(file_path, "wb") as f:
-            byte_stream = base64.b64decode(content.encode('utf-8'))
-            f.write(byte_stream)
-    #this is the simulation for RM changing the task.files from task.files = {"-f":exe_str } to task.files = {"-f": path } 
-        file_dict[filename] = file_path
-        print(f"file_path: {file_path}")
-    task.files = file_dict
-    ExecutionManager().submit_task(task)
     
+# db_name = "felucca"
+setup_pharos_tools(app)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
+    
+
