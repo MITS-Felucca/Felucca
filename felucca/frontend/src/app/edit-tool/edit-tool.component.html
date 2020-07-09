@@ -1,6 +1,22 @@
 <div>
-  <h2> Tool Metadata </h2>
-  <input type="file" *ngIf="operation === 'create'" (change) = "onFileChange($event)">
+  <div style="margin-top:20px">
+    <div style="float:left">
+      <h2> Tool Metadata </h2>
+    </div>
+
+  <div *ngIf="operation === 'create'" style="width:300px;float:right;">
+    <div class="custom-file">
+      <input #fileInput type="file" class="custom-file-input" (change) = "onFileChange($event)">
+      <label class="custom-file-label" for="customFile" style="margin:0px 0px 0px 0px">{{ fileName === '' ? 'Import from JSON File' : fileName }}</label>
+    </div>
+    <!-- <div style="width:10%;float:right;">
+    <button type="button" class="close" aria-label="Close" style="padding: 5px 5px" (click)="fileClear(argument.key)">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    </div> -->
+  </div>
+  </div>
+
   <form *ngIf="metadata" (ngSubmit) = "onSubmit()" [formGroup]="metadata">
     <div class="input-group mb-3">
       <div class="input-group-prepend" >
@@ -110,4 +126,3 @@
     <button [disabled]="!metadata.valid" class="btn btn-success btn-lg float-right rounded-lg" type="submit" style="width:150px">Save</button> 
   </form>
 </div>
-

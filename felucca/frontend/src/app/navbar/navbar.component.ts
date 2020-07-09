@@ -28,7 +28,7 @@ import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
         <div class="input-group-prepend">
           <span class="input-group-text" id="basic-addon1">Docker Directroy</span>
         </div>
-        <input [(ngModel)] = "dockerDir" type="text" class="form-control" placeholder="Docker Directroy" aria-describedby="basic-addon1">
+        <input [(ngModel)] = "dockerDir" type="text" class="form-control" placeholder="seipharos/pharos:latest" aria-describedby="basic-addon1">
       </div>
     </div>
     <div class="modal-footer">
@@ -49,7 +49,9 @@ export class UpdatePharosComponent {
               private schemaService: SchemaService,) {
   }
   update() {
-    console.log(this.dockerDir);
+    if (!this.dockerDir) {
+      this.dockerDir = "seipharos/pharos:latest";
+    }
     this.schemaService.updatePharos(this.dockerDir).subscribe();
     this.activeModal.close('Close click');
   }
@@ -65,6 +67,7 @@ export class NavbarComponent {
   isUpdating: boolean = true;
   dockerDirectory: string;
   digest: string;
+  shortDigest: string;
 
   constructor (private modalService: NgbModal,
                private schemaService: SchemaService) {
@@ -76,6 +79,7 @@ export class NavbarComponent {
       this.isUpdating = data.isUpdating;
       this.dockerDirectory = data.dockerDirectory;
       this.digest = data.digest;
+      this.shortDigest = this.digest.substring(0,this.digest.length/2);
     });
   }
 
