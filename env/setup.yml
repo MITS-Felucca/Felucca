@@ -2,8 +2,8 @@
 - hosts: all
   become: yes  # This means that all tasks will be executed with sudo
   vars:
-    venv_path: /home/vagrant/env/venv
-    requirements_path: /vagrant/env/requirements.txt
+    venv_path: /tmp/Felucca/env/venv
+    requirements_path: env/requirements.txt
   roles:
     - role: python
     - role: mongodb
