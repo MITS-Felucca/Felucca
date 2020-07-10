@@ -18,6 +18,11 @@ pipeline {
         sleep 5
       }
     }
-
+    
+    stage('Deploy') {
+      if (env.BRANCH_NAME == 'master'){
+        sleep 5
+      }
+    }
   }
 }
