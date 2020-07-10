@@ -1,7 +1,6 @@
 pipeline {
   agent any
   stages {
-    if (env.BRANCH_NAME == 'master') {
       stage('SonarQube') {
         steps {
           sleep 5
@@ -21,24 +20,7 @@ pipeline {
       }
       
       stage('Deploy') {
-        steps {
-          sleep 5
-        }
-      }
-    } else {
-      stage('SonarQube') {
-        steps {
-          sleep 5
-        }
-      }
-
-      stage('Unit Test') {
-        steps {
-          sleep 5
-        }
-      }
-
-      stage('Doc Generation') {
+        when { branch 'master' }
         steps {
           sleep 5
         }
