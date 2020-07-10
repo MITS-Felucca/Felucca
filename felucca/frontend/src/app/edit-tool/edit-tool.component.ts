@@ -139,4 +139,3 @@ export class EditToolComponent implements OnInit {
     return errors;
   }
 }
-  
