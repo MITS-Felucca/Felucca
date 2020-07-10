@@ -7,7 +7,7 @@ pipeline {
       }
     }
 
-    stage('Integration Test') {
+    stage('Test') {
       steps {
         sleep 5
       }
