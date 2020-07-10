@@ -1,12 +1,13 @@
 import os
 import tarfile
 import docker
+import sys
 from threading import Thread
 from common.singleton import Singleton
 from resource_manager import ResourceManager
 from status import Status
 from logger import Logger
-
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 CONTAINER_PORT = '5000'
 
 @Singleton
@@ -346,11 +347,14 @@ class ExecutionManager(object):
             #     self.kill_task(task_id)
 
             fname="/home/vagrant/docker/DockerFile_for_updating"
-            path = os.path.dirname(fname)
+            
+            rel_fname="../../DockerFile_for_updating"
+            abs_fname = os.path.abspath(rel_fname)
+            base_dir = os.path.dirname(fname)
 
             logger.debug(f"build new image felucca/pharos:latest from {BASE_IMAGE}")
             try:
-                built_image, build_output = client.images.build(path=path, dockerfile=fname, tag="felucca/pharos:latest", rm=True, buildargs={"BASE_IMAGE":BASE_IMAGE})
+                built_image, build_output = client.images.build(path=base_dir, dockerfile=abs_fname, tag="felucca/pharos:latest", rm=True, buildargs={"BASE_IMAGE":BASE_IMAGE})
                 for line in build_output:
                     print(line)
             except Exception as e:
