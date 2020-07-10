@@ -68,7 +68,7 @@ def test_EM_running():
     Example test command: curl “http://0.0.0.0:5000/test_new_execution/true/toytest"
     To use this method, we should put the "input.json" and "input_wrong.json" at sample_output" folder in advance
     """
-
+    
     t = Thread(target = thread_test_EM_running, args = ("true", ))
     t.start()
     t = Thread(target = thread_test_EM_running, args = ("false", ))
@@ -82,14 +82,14 @@ def thread_test_EM_running(task_type):
 
     """
     if task_type == "false":
-        with open("/vagrant/tests/sample_output/input_wrong.json",'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../../tests/sample_output/input_wrong.json'),'r') as f:
             json_data = json.load(f)
         job = Job.from_json(json_data)
         job.job_id = "thisisafalseinputcmdtaskjob6"
         task = job.tasks[0]
         task.task_id = "thisisafalseinputcmdtask"
     else:
-        with open("/vagrant/tests/sample_output/input.json",'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '../../tests/sample_output/input.json'),'r') as f:
             json_data = json.load(f)
         job = Job.from_json(json_data)
         job.job_id = "thisisatrueinputcmd_job6"
