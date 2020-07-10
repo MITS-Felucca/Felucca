@@ -20,8 +20,10 @@ pipeline {
     }
     
     stage('Deploy') {
-      if (env.BRANCH_NAME == 'master'){
-        sleep 5
+      if (env.BRANCH_NAME == 'master') {
+        steps {
+          sleep 5
+        }
       }
     }
   }
