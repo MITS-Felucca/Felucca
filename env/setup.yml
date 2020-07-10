@@ -3,7 +3,7 @@
   become: yes  # This means that all tasks will be executed with sudo
   vars:
     venv_path: /tmp/Felucca/env/venv
-    requirements_path: {{playbook_dir}}/requirements.txt
+    requirements_path: '{{playbook_dir}}'/requirements.txt
   roles:
     - role: python
     - role: mongodb
