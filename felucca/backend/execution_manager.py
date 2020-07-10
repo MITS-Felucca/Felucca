@@ -346,11 +346,10 @@ class ExecutionManager(object):
             # for task_id in list(self.id_to_task_container):
             #     self.kill_task(task_id)
 
-            fname="/home/vagrant/docker/DockerFile_for_updating"
-            
-            rel_fname="../../DockerFile_for_updating"
-            abs_fname = os.path.abspath(rel_fname)
-            base_dir = os.path.dirname(fname)
+
+            fname = os.path.join(os.path.dirname(__file__), '../../DockerFile_for_updating')
+            abs_fname = os.path.abspath(fname)
+            base_dir = os.path.dirname(abs_fname)
 
             logger.debug(f"build new image felucca/pharos:latest from {BASE_IMAGE}")
             try:
