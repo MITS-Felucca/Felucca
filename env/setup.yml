@@ -2,16 +2,9 @@
 - hosts: all
   become: yes  # This means that all tasks will be executed with sudo
   vars:
-    venv_path: /tmp/Felucca/env/venv
-    requirements_path: "{{playbook_dir}}/requirements.txt"
+    venv_path: /home/vagrant/env/venv
+    requirements_path: /vagrant/env/requirements.txt
   roles:
     - role: python
     - role: mongodb
     - role: angularjs
-  tasks:
-    - name: install docker
-      become: yes
-      script: ./install_docker.sh
-    - name: start mongod
-      become: yes
-      script: ./mongodb.sh
