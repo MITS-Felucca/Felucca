@@ -6,14 +6,12 @@ pipeline {
         script {
           // requires SonarQube Scanner 2.8+
           scannerHome = tool 'SonarQube Scanner'
+          withSonarQubeEnv('SonarQube Server') {
+            sh "${scannerHome}/bin/sonar-scanner -v"
+          }
         }
-        withSonarQubeEnv('SonarQube Scanner') {
-          echo "${scannerHome}/bin/sonar-scanner"
-        }
+        sleep 5
       }
-      // steps {
-      //   sleep 5
-      // }
     }
 
     stage('Test') {
