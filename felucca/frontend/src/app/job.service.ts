@@ -8,11 +8,12 @@ import { Job } from './job'
 import { Task } from './task'
 import { Status } from './status.enum'
 import { TaskInfo } from './task-info';
+import { environment } from "./environment";
 
 @Injectable()
 export class JobService {
 
-  private backEndURL = 'http://localhost:5000';
+  private backEndURL = environment.backendUrl;
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
