@@ -20,7 +20,6 @@ pipeline {
     }
 
     stage('Deploy') {
-      when { branch 'deployment' }
       steps {
         sh 'fetch.sh'
         sh 'cp felucca.service /etc/systemd/system/felucca.service'
