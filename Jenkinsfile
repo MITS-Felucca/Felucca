@@ -23,7 +23,7 @@ pipeline {
       steps {
         sh 'chmod 0744 ./fetch.sh'
         sh './fetch.sh'
-        sh 'chmod 0744 /var/lib/felucca.sh'
+        sh 'chmod 0744 /var/tmp/Felucca/felucca.sh'
         sh 'sudo cp felucca.service /etc/systemd/system/felucca.service'
         sh 'sudo chmod 0644 /etc/systemd/system/felucca.service'
         sh 'sudo systemctl daemon-reload'
