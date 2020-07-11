@@ -3,8 +3,17 @@ pipeline {
   stages {
     stage('SonarQube') {
       steps {
-        sleep 5
+        script {
+          // requires SonarQube Scanner 2.8+
+          scannerHome = tool 'SonarQube Scanner'
+        }
+        withSonarQubeEnv('SonarQube Scanner') {
+          echo "${scannerHome}/bin/sonar-scanner"
+        }
       }
+      // steps {
+      //   sleep 5
+      // }
     }
 
     stage('Test') {
