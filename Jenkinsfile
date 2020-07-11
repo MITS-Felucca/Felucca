@@ -39,7 +39,7 @@ pipeline {
 
     stage('Test') {
       steps {
-        sh """source /tmp/Felucca/env/venv/bin/activate
+        sh """. /tmp/Felucca/env/venv/bin/activate
         python3 tests/unit_test/backend/*.py
         deactivate
         """
