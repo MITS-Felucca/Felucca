@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if [ ! -d "/var/lib/Felucca" ]; then
-    sudo git clone https://github.com/MITS-Felucca/Felucca.git /var/lib/Felucca
+if [ ! -d "/var/tmp/Felucca" ]; then
+    git clone https://github.com/MITS-Felucca/Felucca.git /var/tmp/Felucca
 else
-    sudo git pull -C /var/lib/Felucca
+    git pull -C /var/tmp/Felucca
 fi
 
 
