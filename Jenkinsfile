@@ -41,7 +41,8 @@ pipeline {
       steps {
         sh """. /tmp/Felucca/env/venv/bin/activate
         cd tests/unit_test/backend
-        python3 *.py
+        python3 resource_manager_test.py
+        python3 job_manager_test.py
         deactivate
         """
       }
