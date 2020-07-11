@@ -6,9 +6,9 @@ pipeline {
         script {
           // requires SonarQube Scanner 2.8+
           scannerHome = tool 'SonarQube Scanner'
-        }
-        withSonarQubeEnv('SonarQube Scanner') {
-          sh "echo ${scannerHome}/bin/sonar-scanner"
+          withSonarQubeEnv('SonarQube Scanner') {
+            sh "${scannerHome}/bin/sonar-scanner -v"
+          }
         }
         sleep 5
       }
