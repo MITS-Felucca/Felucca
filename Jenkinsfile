@@ -23,10 +23,10 @@ pipeline {
             // sh 'coverage xml'
 
             // Run Pylint.
-            sh script:'pylint --rcfile=pylint.cfg felucca/backend > pylint.report --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}"', returnStatus:true
+            sh script:'python3 -m pylint --rcfile=pylint.cfg felucca/backend > pylint.report --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}"', returnStatus:true
 
             // Run Pycodestyle (PEP8 checks).
-            sh script:'pycodestyle felucca/backend > pep8.report', returnStatus:true
+            sh script:'python3 -m pycodestyle felucca/backend > pep8.report', returnStatus:true
       }
       post {
           always{
