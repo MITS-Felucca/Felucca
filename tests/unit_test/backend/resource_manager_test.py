@@ -467,7 +467,7 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_all_tools()
 
         # Insert a sample schema
-        with open("/vagrant/felucca/backend/pharos_schema/ooanalyzer.json") as f:
+        with open("../../../felucca/backend/pharos_schema/ooanalyzer.json") as f:
             schema_json = json.loads(f.read())
         self.manager.insert_new_tool(schema_json)
 
