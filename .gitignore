@@ -6,3 +6,4 @@
 .vagrant/
 result/
 *.tar
+/doc/build/

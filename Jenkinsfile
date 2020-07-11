@@ -16,12 +16,6 @@ pipeline {
 
     stage('PyLint') {
       steps {
-            // Run my project tests.
-            // sh 'coverage run manage.py tests'
-
-            // Dump coverage metrics to XML.
-            // sh 'coverage xml'
-
             // Run Pylint.
             sh script:'python3 -m pylint --rcfile=pylint.cfg felucca/backend > pylint.report --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}"', returnStatus:true
 
