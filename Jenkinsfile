@@ -20,9 +20,12 @@ pipeline {
     }
 
     stage('Deploy') {
-      when { branch 'master' }
+      when { branch 'deployment' }
       steps {
-        sleep 5
+        sh 'fetch.sh'
+        sh 'cp felucca.service /etc/systemd/system/felucca.service'
+        sh 'chmod 0644 /etc/systemd/system/felucca.service'
+        sh 'systemctl restart felucca'
       }
     }
   }
