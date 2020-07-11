@@ -39,7 +39,9 @@ pipeline {
 
     stage('Test') {
       steps {
-        sleep 1
+        sh 'source /tmp/Felucca/env/venv/bin/activate'
+        sh 'python3 tests/unit_test/backend/*.py'
+        sh 'deactivate'
       }
     }
 
