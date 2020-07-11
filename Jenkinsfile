@@ -26,6 +26,7 @@ pipeline {
         sh './fetch.sh'
         sh 'sudo cp felucca.service /etc/systemd/system/felucca.service'
         sh 'sudo chmod 0644 /etc/systemd/system/felucca.service'
+        sh 'sudo systemctl daemon-reload'
         sh 'sudo systemctl restart felucca'
       }
     }
