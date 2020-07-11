@@ -496,7 +496,7 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_tool_by_id(tool_id)
 
         # Initialize Pharos tools
-        self.manager.initialize_pharos_tools('/vagrant/felucca/backend/pharos_schema')
+        self.manager.initialize_pharos_tools('../../../felucca/backend/pharos_schema')
 
         tool_list = self.manager.get_all_tools()
 
