@@ -33,13 +33,13 @@ case $1 in
             echo "$SERVICE_NAME backend stoping ..."
             kill $PID;
             echo "$SERVICE_NAME backend stopped ..."
-            rm $PID_PATH_NAME
+            rm $BACKEND_PATH_NAME
         else
             echo "$SERVICE_NAME backend is not running ..."
         fi
 
         if [ -f $FRONTEND_PATH_NAME ]; then
-            PID=$(cat $PID_PATH_NAME);
+            PID=$(cat $FRONTEND_PATH_NAME);
             echo "$SERVICE_NAME frontend stoping ..."
             kill $PID;
             echo "$SERVICE_NAME frontend stopped ..."
