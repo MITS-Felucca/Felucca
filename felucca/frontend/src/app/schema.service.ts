@@ -8,12 +8,13 @@ import { Schema } from './schema';
 import { ArgumentClass } from './argument-class';
 import { Argument } from './argument';
 import { ArgumentType } from './argument-type.enum';
+import { environment } from "../environments/environment";
 
 
 @Injectable()
 export class SchemaService {
 
-  private backEndURL = 'http://localhost:5000';
+  private backEndURL = environment.backendUrl;
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })

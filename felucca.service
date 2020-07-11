@@ -4,9 +4,8 @@ Description = Felucca Service
 [Service]
 User = jenkins
 Type = forking
-ExecStart = /var/lib/Felucca/felucca.sh start
-ExecStop = /var/lib/Felucca/felucca.sh stop
-ExecReload =  /var/lib/Felucca/felucca.sh stop && sleep 1 && /var/lib/Felucca/felucca.sh start
+ExecStart = /tmp/Felucca/felucca.sh start
+ExecStop = /tmp/Felucca/felucca.sh stop
 
 [Install]
 WantedBy=multi-user.target
