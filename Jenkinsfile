@@ -23,14 +23,14 @@ pipeline {
             // sh 'coverage xml'
 
             // Run Pylint.
-            catchError {
-              sh 'pylint --rcfile=pylint.cfg felucca/backend > pylint.report'
-            }
+            // catchError {
+              sh script:'pylint --rcfile=pylint.cfg felucca/backend > pylint.report', returnStatus:true
+            // }
 
             // Run Pycodestyle (PEP8 checks).
-            catchError {
-              sh 'pycodestyle felucca/backend > pep8.report'
-            }
+            // catchError {
+              sh script:'pycodestyle felucca/backend > pep8.report', returnStatus:true
+            // }
       }
       post {
           always{
