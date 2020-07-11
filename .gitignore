@@ -7,3 +7,4 @@
 result/
 *.tar
 /doc/build/
+/doc/source/*.rst
