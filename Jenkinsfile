@@ -8,12 +8,10 @@ pipeline {
           scannerHome = tool 'SonarQube Scanner'
         }
         withSonarQubeEnv('SonarQube Scanner') {
-          echo "${scannerHome}/bin/sonar-scanner"
+          sh "echo ${scannerHome}/bin/sonar-scanner"
         }
+        sleep 5
       }
-      // steps {
-      //   sleep 5
-      // }
     }
 
     stage('Test') {
