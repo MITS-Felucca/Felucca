@@ -27,24 +27,26 @@ pipeline {
 
             // Run Pycodestyle (PEP8 checks).
             sh 'pycodestyle my_project > pep8.report'
-        }
-        post {
-            always{
-                // Generate JUnit, PEP8, Pylint and Coverage reports.
-                // junit 'reports/*junit.xml'
-                recordIssues(
-                    tool: pep8(pattern: 'pep8.report'),
-                    unstableTotalAll: 200,
-                    failedTotalAll: 220
-                )
-                recordIssues(
-                    tool: pyLint(pattern: 'pylint.report'),
-                    unstableTotalAll: 20,
-                    failedTotalAll: 30
-                )
-                // cobertura coberturaReportFile: 'reports/coverage.xml'
-            }
-        }
+      }
+      post {
+          always{
+              // Generate JUnit, PEP8, Pylint and Coverage reports.
+              // junit 'reports/*junit.xml'
+              recordIssues enabledForFailure: true, tool: pyLint(pattern: 'pylint.report')
+              recordIssues enabledForFailure: true, tool: pep8(pattern: 'pep8.report')
+              // recordIssues(
+              //     tool: pep8(pattern: 'pep8.report'),
+              //     unstableTotalAll: 200,
+              //     failedTotalAll: 220
+              // )
+              // recordIssues(
+              //     tool: pyLint(pattern: 'pylint.report'),
+              //     unstableTotalAll: 20,
+              //     failedTotalAll: 30
+              // )
+              // cobertura coberturaReportFile: 'reports/coverage.xml'
+          }
+      }
     }
 
     stage('Test') {
