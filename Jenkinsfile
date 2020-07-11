@@ -7,7 +7,7 @@ pipeline {
           // requires SonarQube Scanner 2.8+
           scannerHome = tool 'SonarQube Scanner'
           withSonarQubeEnv('SonarQube Server') {
-            sh "${scannerHome}/bin/sonar-scanner -v"
+            sh "${scannerHome}/bin/sonar-scanner -Dproject.settings=.sonar-project.properties"
           }
         }
         sleep 5
