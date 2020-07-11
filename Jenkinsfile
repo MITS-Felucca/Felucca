@@ -26,7 +26,7 @@ pipeline {
             sh 'pylint --rcfile=pylint.cfg felucca/backend > pylint.report'
 
             // Run Pycodestyle (PEP8 checks).
-            sh 'pycodestyle my_project > pep8.report'
+            sh 'pycodestyle felucca/backend > pep8.report'
       }
       post {
           always{
