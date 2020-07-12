@@ -20,7 +20,7 @@ case $1 in
 
         if [ ! -f $FRONTEND_PATH_NAME ]; then
             cd ${WORK_PATH}/felucca/frontend &&
-            nohup ng serve --host=0.0.0.0 --disable-host-check >> frontend.out 2>&1  &
+            nohup ng serve --host=0.0.0.0 --environment=production --disable-host-check >> frontend.out 2>&1  &
             echo $! > $FRONTEND_PATH_NAME
             echo "$SERVICE_NAME frontend started ..."
         else
