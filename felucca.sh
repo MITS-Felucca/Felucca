@@ -17,10 +17,10 @@ case $1 in
             echo "$SERVICE_NAME backend is already running ..."
         fi
 
-        echo "Starting frontend ..."s
+        echo "Starting frontend ..."
         if [ ! -f $FRONTEND_PATH_NAME ]; then
             cd /var/tmp/Felucca/felucca/frontend &&
-            nohup ng serve --host=0.0.0.0 --environment=production --disable-host-check >> frontend.out 2>&1  &
+            nohup ng serve --host=0.0.0.0 --configuration=production --disable-host-check >> frontend.out 2>&1  &
             echo $! > $FRONTEND_PATH_NAME
             echo "$SERVICE_NAME frontend started ..."
         else
