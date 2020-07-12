@@ -2,7 +2,6 @@
 SERVICE_NAME=felucca
 FRONTEND_PATH_NAME=/tmp/Felucca/frontend-pid
 BACKEND_PATH_NAME=/tmp/Felucca/backend-pid
-WORK_PATH=$(dirname $(readlink -f $0))
 
 case $1 in
     start)
@@ -10,7 +9,7 @@ case $1 in
         echo "Starting backend ..."
         if [ ! -f $BACKEND_PATH_NAME ]; then
             . /tmp/Felucca/env/venv/bin/activate &&
-            cd ${WORK_PATH}/felucca/backend &&
+            cd /var/tmp/felucca/backend &&
             nohup python3 server.py >> backend.out 2>&1 &
             echo $! > $BACKEND_PATH_NAME
             echo "$SERVICE_NAME backend started ..."
@@ -18,8 +17,9 @@ case $1 in
             echo "$SERVICE_NAME backend is already running ..."
         fi
 
+        echo "Starting frontend ..."
         if [ ! -f $FRONTEND_PATH_NAME ]; then
-            cd ${WORK_PATH}/felucca/frontend &&
+            cd /var/tmp/felucca/frontend &&
             nohup ng serve --host=0.0.0.0 --environment=production --disable-host-check >> frontend.out 2>&1  &
             echo $! > $FRONTEND_PATH_NAME
             echo "$SERVICE_NAME frontend started ..."
