@@ -8,7 +8,7 @@ import { Job } from './job'
 import { Task } from './task'
 import { Status } from './status.enum'
 import { TaskInfo } from './task-info';
-import { environment } from "./environment";
+import { environment } from "../environments/environment";
 
 @Injectable()
 export class JobService {

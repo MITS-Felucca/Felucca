@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, interval } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { environment } from './environment'
+import { environment } from '../environments/environment'
 
 @Injectable()
 export class FileService {

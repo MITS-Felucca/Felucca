@@ -8,7 +8,7 @@ import { Schema } from './schema';
 import { ArgumentClass } from './argument-class';
 import { Argument } from './argument';
 import { ArgumentType } from './argument-type.enum';
-import { environment } from "./environment";
+import { environment } from "../environments/environment";
 
 
 @Injectable()
