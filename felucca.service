@@ -6,7 +6,6 @@ User = jenkins
 Type = forking
 ExecStart = /var/tmp/Felucca/felucca.sh start
 ExecStop = /var/tmp/Felucca/felucca.sh stop
-ExecReload = /var/tmp/Felucca/felucca.sh stop && sleep 1 && /var/tmp/Felucca/felucca.sh start
 
 [Install]
 WantedBy=multi-user.target

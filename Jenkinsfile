@@ -3,19 +3,19 @@ pipeline {
   stages {
     stage('SonarQube') {
       steps {
-        sleep 5
+        sleep 1
       }
     }
 
     stage('Test') {
       steps {
-        sleep 5
+        sleep 1
       }
     }
 
     stage('Doc Generation') {
       steps {
-        sleep 5
+        sleep 1
       }
     }
 
@@ -27,7 +27,9 @@ pipeline {
         sh 'sudo cp felucca.service /etc/systemd/system/felucca.service'
         sh 'sudo chmod 0644 /etc/systemd/system/felucca.service'
         sh 'sudo systemctl daemon-reload'
-        sh 'sudo systemctl reload felucca'
+        sh 'sudo systemctl stop felucca'
+        sleep 1
+        sh 'sudo systemctl start felucca'
       }
     }
   }
