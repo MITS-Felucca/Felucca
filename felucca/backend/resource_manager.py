@@ -17,8 +17,7 @@ class ResourceManager(object):
     """
 
     def __init__(self, db_name="felucca"):
-        self.db_name = "felucca"
-        # self.db_name = db_name
+        self.db_name = db_name
         self.db_manager = self.DatabaseManager(self.db_name)
 
     def setup(self):

@@ -4,8 +4,8 @@ from resource_manager import ResourceManager
 from execution_manager import ExecutionManager
 from logger import Logger
 
-db_name = 'test'
-# db_name = 'felucca'
+# db_name = 'test'
+db_name = 'felucca'
 
 @Singleton
 class JobManager(object):
@@ -46,7 +46,7 @@ class JobManager(object):
         logger = Logger().get()
 
         try:
-            ResourceManager(db_name).mark_job_as_finished(job_id)
+            ResourceManager().mark_job_as_finished(job_id)
 
             job = self.job_metadata[job_id]
             for task in job.tasks:
@@ -79,7 +79,7 @@ class JobManager(object):
             # Check if all tasks of the job have finished
             if job.finished_count == len(job.tasks):
                 self.finish_job(job_id)
-                # ResourceManager(db_name).update_job_status(job_id, Status.Finished)
+                # ResourceManager().update_job_status(job_id, Status.Finished)
         except Exception as e:
             logger.error(f"something wrong in finish_task, Exception: {e}")
 
@@ -96,7 +96,7 @@ class JobManager(object):
         self.job_metadata[new_job.job_id] = new_job
         for task in new_job.tasks:
             self.task_id_to_job_id[task.task_id] = new_job.job_id
-        ResourceManager(db_name).update_job_status(new_job.job_id, Status.Running)
+        ResourceManager().update_job_status(new_job.job_id, Status.Running)
 
     def kill_all_jobs(self):
         """Kill all running or pending jobs. Called when the kernel needs to be updated.
