@@ -30,7 +30,7 @@ case $1 in
 
         echo "Starting doc server ..."
         if [ ! -f $DOC_PATH_NAME ]; then
-            cd /var/tmp/Felucca/doc/build/html &&
+            cd /tmp/Felucca/doc/build/html &&
             nohup python3 -m http.server 8888 >> doc_server.out 2>&1  &
             echo $! > $DOC_PATH_NAME
             echo "$SERVICE_NAME doc server started ..."
