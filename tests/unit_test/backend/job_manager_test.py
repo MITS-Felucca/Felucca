@@ -21,6 +21,7 @@ class TestJobManager(unittest.TestCase):
         # Use "test" database for unit tests instead of "felucca"
         self.resource_manager = ResourceManager("test")
         self.job_manager = JobManager()
+        self.job_manager.db_name = "test"
 
     def test_job_status(self):
         self.resource_manager.remove_all_jobs_and_tasks()

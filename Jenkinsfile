@@ -42,6 +42,7 @@ pipeline {
     }
 
     stage('Fetch') {
+      when {branch 'master'}
       steps {
         sh 'chmod 0744 ./fetch.sh'
         sh './fetch.sh'
@@ -49,12 +50,17 @@ pipeline {
     }
 
     stage('Doc Generation') {
+      when {branch 'master'}
       steps {
-        sh 'cd /var/tmp/Felucca/doc &&  sphinx-apidoc -o ./source ../felucca/backend'
+        sh """. /tmp/Felucca/env/venv/bin/activate
+        cd /var/tmp/Felucca/doc &&  sphinx-apidoc -o ./source ../felucca/backend
+        deactivate
+        """
       }
     }
 
     stage('Deploy') {
+      when {branch 'master'}
       steps {
         sh '/tmp/Felucca/mongodb.sh'
         sh 'sudo cp felucca.service /etc/systemd/system/felucca.service'
@@ -66,9 +72,9 @@ pipeline {
       }
     }
   }
-  // post {
-  //   always {
-  //     cleanWs()
-  //   }
-  // }
+  post {
+    always {
+      cleanWs()
+    }
+  }
 }
