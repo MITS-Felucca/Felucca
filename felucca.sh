@@ -2,6 +2,7 @@
 SERVICE_NAME=felucca
 FRONTEND_PATH_NAME=/tmp/Felucca/frontend-pid
 BACKEND_PATH_NAME=/tmp/Felucca/backend-pid
+DOC_PATH_NAME=/tmp/Felucca/doc-server-pid
 
 case $1 in
     start)
@@ -25,6 +26,16 @@ case $1 in
             echo "$SERVICE_NAME frontend started ..."
         else
             echo "$SERVICE_NAME frontend is already running ..."
+        fi
+
+        echo "Starting doc server ..."
+        if [ ! -f $DOC_PATH_NAME ]; then
+            cd /var/tmp/Felucca/doc/build/html &&
+            nohup python3 -m http.server 8888 >> doc_server.out 2>&1  &
+            echo $! > $DOC_PATH_NAME
+            echo "$SERVICE_NAME doc server started ..."
+        else
+            echo "$SERVICE_NAME doc server is already running ..."
         fi
     ;;
     stop)
@@ -50,6 +61,18 @@ case $1 in
             rm -f $FRONTEND_PATH_NAME
         else
             echo "$SERVICE_NAME frontend is not running ..."
+        fi
+
+        if [ -f $DOC_PATH_NAME ]; then
+            PID=$(cat $DOC_PATH_NAME);
+            echo "$SERVICE_NAME doc server stoping ..."
+            echo "killing $PID"
+            kill $PID
+            echo "$SERVICE_NAME doc server stopped ..."
+            echo "$DOC_PATH_NAME"
+            rm -f $DOC_PATH_NAME
+        else
+            echo "$SERVICE_NAME doc server is not running ..."
         fi
     ;;
 esac

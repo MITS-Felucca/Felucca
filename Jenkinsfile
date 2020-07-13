@@ -3,14 +3,13 @@ pipeline {
   stages {
     stage('SonarQube') {
       steps {
-        // script {
-        //   // requires SonarQube Scanner 2.8+
-        //   scannerHome = tool 'SonarQube Scanner'
-        //   withSonarQubeEnv('SonarQube Server') {
-        //     sh "${scannerHome}/bin/sonar-scanner"
-        //   }
-        // }
-        sleep 1
+        script {
+          // requires SonarQube Scanner 2.8+
+          scannerHome = tool 'SonarQube Scanner'
+          withSonarQubeEnv('SonarQube Server') {
+            sh "${scannerHome}/bin/sonar-scanner"
+          }
+        }
       }
     }
 
@@ -42,16 +41,21 @@ pipeline {
       }
     }
 
+    stage('Fetch') {
+      steps {
+        sh 'chmod 0744 ./fetch.sh'
+        sh './fetch.sh'
+      }
+    }
+
     stage('Doc Generation') {
       steps {
-        sleep 1
+        sh 'cd /var/tmp/Felucca/doc &&  sphinx-apidoc -o ./source ../felucca/backend'
       }
     }
 
     stage('Deploy') {
       steps {
-        sh 'chmod 0744 ./fetch.sh'
-        sh './fetch.sh'
         sh '/tmp/Felucca/mongodb.sh'
         sh 'sudo cp felucca.service /etc/systemd/system/felucca.service'
         sh 'sudo chmod 0644 /etc/systemd/system/felucca.service'
