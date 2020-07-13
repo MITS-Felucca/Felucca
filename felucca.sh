@@ -2,7 +2,7 @@
 SERVICE_NAME=felucca
 FRONTEND_PATH_NAME=/tmp/Felucca/frontend-pid
 BACKEND_PATH_NAME=/tmp/Felucca/backend-pid
-WORK_PATH=$(dirname $(readlink -f $0))
+DOC_PATH_NAME=/tmp/Felucca/doc-server-pid
 
 case $1 in
     start)
@@ -10,42 +10,69 @@ case $1 in
         echo "Starting backend ..."
         if [ ! -f $BACKEND_PATH_NAME ]; then
             . /tmp/Felucca/env/venv/bin/activate &&
-            cd ${WORK_PATH}/felucca/backend &&
-            nohup python3 server.py 2>&1&
-                        echo $! > $BACKEND_PATH_NAME
+            cd /var/tmp/Felucca/felucca/backend &&
+            nohup python3 server.py >> backend.out 2>&1 &
+            echo $! > $BACKEND_PATH_NAME
             echo "$SERVICE_NAME backend started ..."
         else
             echo "$SERVICE_NAME backend is already running ..."
         fi
 
+        echo "Starting frontend ..."
         if [ ! -f $FRONTEND_PATH_NAME ]; then
-            cd ${WORK_PATH}/felucca/frontend &&
-            nohup ng serve --host=0.0.0.0 --disable-host-check 2>&1&
-                        echo $! > $FRONTEND_PATH_NAME
+            cd /var/tmp/Felucca/felucca/frontend &&
+            nohup ng serve --host=0.0.0.0 --configuration=production --disable-host-check >> frontend.out 2>&1  &
+            echo $! > $FRONTEND_PATH_NAME
             echo "$SERVICE_NAME frontend started ..."
         else
             echo "$SERVICE_NAME frontend is already running ..."
+        fi
+
+        echo "Starting doc server ..."
+        if [ ! -f $DOC_PATH_NAME ]; then
+            cd /var/tmp/Felucca/doc/build/html &&
+            nohup python3 -m http.server 8888 >> doc_server.out 2>&1  &
+            echo $! > $DOC_PATH_NAME
+            echo "$SERVICE_NAME doc server started ..."
+        else
+            echo "$SERVICE_NAME doc server is already running ..."
         fi
     ;;
     stop)
         if [ -f $BACKEND_PATH_NAME ]; then
             PID=$(cat $BACKEND_PATH_NAME);
             echo "$SERVICE_NAME backend stoping ..."
-            kill $PID;
+            echo "killing $PID"
+            kill $PID
             echo "$SERVICE_NAME backend stopped ..."
-            rm $PID_PATH_NAME
+            echo "$BACKEND_PATH_NAME"
+            rm -f $BACKEND_PATH_NAME
         else
             echo "$SERVICE_NAME backend is not running ..."
         fi
 
         if [ -f $FRONTEND_PATH_NAME ]; then
-            PID=$(cat $PID_PATH_NAME);
+            PID=$(cat $FRONTEND_PATH_NAME);
             echo "$SERVICE_NAME frontend stoping ..."
-            kill $PID;
+            echo "killing $PID"
+            kill $PID
             echo "$SERVICE_NAME frontend stopped ..."
-            rm $FRONTEND_PATH_NAME
+            echo "$FRONTEND_PATH_NAME"
+            rm -f $FRONTEND_PATH_NAME
         else
             echo "$SERVICE_NAME frontend is not running ..."
+        fi
+
+        if [ -f $DOC_PATH_NAME ]; then
+            PID=$(cat $DOC_PATH_NAME);
+            echo "$SERVICE_NAME doc server stoping ..."
+            echo "killing $PID"
+            kill $PID
+            echo "$SERVICE_NAME doc server stopped ..."
+            echo "$DOC_PATH_NAME"
+            rm -f $DOC_PATH_NAME
+        else
+            echo "$SERVICE_NAME doc server is not running ..."
         fi
     ;;
 esac

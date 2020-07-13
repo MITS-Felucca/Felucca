@@ -6,3 +6,6 @@
 .vagrant/
 result/
 *.tar
+/doc/build/
+/doc/source/*.rst
+!/doc/source/index.rst

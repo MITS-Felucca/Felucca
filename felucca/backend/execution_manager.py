@@ -311,7 +311,6 @@ class ExecutionManager(object):
         ResourceManager().set_updating_kernel(True)
         client = docker.from_env()
         
-        
         #pull the BASE_IMAGE FROM docker hub
         
         #handle different possible forms of input image name
@@ -354,18 +353,14 @@ class ExecutionManager(object):
             logger.debug(f"build new image felucca/pharos:latest from {BASE_IMAGE}")
             try:
                 built_image, build_output = client.images.build(path=base_dir, dockerfile=abs_fname, tag="felucca/pharos:latest", rm=True, buildargs={"BASE_IMAGE":BASE_IMAGE})
+                
                 for line in build_output:
                     print(line)
             except Exception as e:
                 logger.error("update kernel fail, use previous kernel Error:" + str(e))
             else:    
                 logger.debug(f"update kernel successfully, the new felucca/pharos:latest is based on {BASE_IMAGE}")
-                keep_list = ["felucca/temp:latest","felucca/pharos:latest"]
-                for image in client.images.list():
-                    for image_name in image.attrs['RepoTags']:
-                        if image_name not in keep_list:
-                            client.images.remove(image_name)
-                            
+                client.images.remove(f"{repository}:{tag}")
             #remove all the image with <none> tag
             client.images.prune()
 

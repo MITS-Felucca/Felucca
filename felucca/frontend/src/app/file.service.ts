@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, interval } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { environment } from '../environments/environment'
 
 @Injectable()
 export class FileService {
 
-  private backEndURL = 'http://localhost:5000';
+  private backEndURL = environment.backendUrl;
 
   constructor(private http: HttpClient) { }
 

@@ -21,7 +21,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../tests/sample_o
 
 
 app = Flask(__name__)
-db_name = config.DATABASE_NAME
 debug_page_string = ""
 
 
@@ -45,7 +44,7 @@ def update_kernel():
     Test command: curl http://localhost:5000/pharos -X POST -d "Content=seipharos/pharos:latest"
                   curl http://localhost:5000/pharos -X POST -d "Content=ubuntu"
     """
-    if ResourceManager(db_name).get_updating_kernel() is True:
+    if ResourceManager().get_updating_kernel() is True:
         return {"Status": "Currently the Pharos toolset is updating. Try later please."}
     BASE_IMAGE = request.get_json()['Content']
     t = Thread(target =  thread_update_kernel,args = (BASE_IMAGE, ))
@@ -133,12 +132,12 @@ def submit_job_through_job_manager(job):
 def submit_job():
     """Test command: curl -H "Content-Type: application/json" --request POST -d @/vagrant/tests/sample_output/input.json http://localhost:5000/job"
     """
-    if ResourceManager(db_name).get_updating_kernel() is True:
+    if ResourceManager().get_updating_kernel() is True:
         return {"Status": "Currently the Pharos toolset is updating. Try later please."}
 
     request_json = request.get_json()
     # print(request.get_json())
-    job = ResourceManager(db_name).save_new_job_and_tasks(request_json)
+    job = ResourceManager().save_new_job_and_tasks(request_json)
     thread = Thread(target=submit_job_through_job_manager, args=(job, ))
     thread.start()
     return {"Status": "ok"}
@@ -157,7 +156,7 @@ def get_job(id):
         6. Run "curl --request GET http://localhost:5000/clean-all" after use
         7. Remember to modify the name of the database
     """
-    job_dict = ResourceManager(db_name).get_job_info(id)
+    job_dict = ResourceManager().get_job_info(id)
     return job_dict
 
 
@@ -165,7 +164,7 @@ def get_job(id):
 def get_job_list():
     """Test command: curl --request GET http://localhost:5000/job-list/json
     """
-    job_list = ResourceManager(db_name).get_job_list()
+    job_list = ResourceManager().get_job_list()
     print(JobManager().job_metadata)
     return {"Job_List": job_list}
 
@@ -184,19 +183,19 @@ def kill_task(task_id):
 
 @app.route("/pharos/metadata", methods=['GET'])
 def get_metadata():
-    return ResourceManager(db_name).get_all_metadata()
+    return ResourceManager().get_all_metadata()
 
 
 @app.route("/intermediate-result/stdout", methods=['POST'])
 def save_realtime_stdout():
-    Thread(target=lambda task_id, stdout: ResourceManager(db_name).update_stdout(task_id, stdout),
+    Thread(target=lambda task_id, stdout: ResourceManager().update_stdout(task_id, stdout),
            args=(request.form['task_id'], request.form['stdout'], )).start()
     return {"status": "ok"}
 
 
 @app.route("/intermediate-result/stderr", methods=['POST'])
 def save_realtime_stderr():
-    Thread(target=lambda task_id, stderr: ResourceManager(db_name).update_stderr(task_id, stderr),
+    Thread(target=lambda task_id, stderr: ResourceManager().update_stderr(task_id, stderr),
            args=(request.form['task_id'], request.form['stderr'], )).start()
     return {"status": "ok"}
 
@@ -219,7 +218,7 @@ def get_task(task_id):
 @app.route("/task/<task_id>/output/<file_name>/json", methods=['GET'])
 def get_task_file(task_id, file_name):
     print(task_id)
-    file = ResourceManager(db_name).get_output_file(task_id,file_name)
+    file = ResourceManager().get_output_file(task_id,file_name)
     if file is None:
         abort(404)
     return {"Content": file}
@@ -228,11 +227,11 @@ def get_task_file(task_id, file_name):
 @app.route("/task/<task_id>/stdout/json", methods=['GET'])
 def get_stdout(task_id):
     print(task_id)
-    stdout = ResourceManager(db_name).get_stdout(task_id)
+    stdout = ResourceManager().get_stdout(task_id)
     if stdout is None:
         abort(404)
     else:
-        status_str = ResourceManager(db_name).get_status(task_id)
+        status_str = ResourceManager().get_status(task_id)
         return {
             "Status": status_str,
             "Content": stdout
@@ -242,11 +241,11 @@ def get_stdout(task_id):
 @app.route("/task/<task_id>/stderr/json", methods=['GET'])
 def get_stderr(task_id):
     print(task_id)
-    stderr = ResourceManager(db_name).get_stderr(task_id)
+    stderr = ResourceManager().get_stderr(task_id)
     if stderr is None:
         abort(404)
     else:
-        status_str = ResourceManager(db_name).get_status(task_id)
+        status_str = ResourceManager().get_status(task_id)
         return {
             "Status": status_str,
             "Content": stderr
@@ -255,13 +254,13 @@ def get_stderr(task_id):
 
 @app.route("/tool-list/json", methods=["GET"])
 def get_tool_list():
-    tool_list = ResourceManager(db_name).get_all_tools()
+    tool_list = ResourceManager().get_all_tools()
     return {"Schemas": tool_list}
 
 
 @app.route("/tool/<tool_id>/json", methods=["GET"])
 def get_single_tool(tool_id):
-    tool = ResourceManager(db_name).get_tool_by_id(tool_id)
+    tool = ResourceManager().get_tool_by_id(tool_id)
     if tool is None:
         abort(404)
     else:
@@ -271,20 +270,20 @@ def get_single_tool(tool_id):
 @app.route("/tool", methods=["POST"])
 def insert_new_tool():
     request_json = request.get_json()
-    ResourceManager(db_name).insert_new_tool(request_json)
+    ResourceManager().insert_new_tool(request_json)
     return {"Status": "ok"}
 
 
 @app.route("/tool/<tool_id>/delete", methods=["GET"])
 def remove_tool(tool_id):
-    ResourceManager(db_name).remove_tool_by_id(tool_id)
+    ResourceManager().remove_tool_by_id(tool_id)
     return {"Status": "ok"}
 
 
 @app.route("/tool/<tool_id>", methods=["POST"])
 def update_tool(tool_id):
     request_json = request.get_json()
-    ResourceManager(db_name).update_tool(tool_id, request_json)
+    ResourceManager().update_tool(tool_id, request_json)
     return {"Status": "ok"}
 
 
@@ -300,14 +299,14 @@ def setup_pharos_tools(app):
     # Remove the check for non-debug mode
     # It means "Only run when app has been loaded"
     # Flask will run it twice to enable the "reload" feature in debug mode
-    is_initialized = ResourceManager(db_name).setup()
+    is_initialized = ResourceManager().setup()
     if is_initialized == False:
-        ResourceManager(db_name).initialize_pharos_tools()
+        ResourceManager().initialize_pharos_tools()
         t = Thread(target =  thread_update_kernel)
         t.start()
     # if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-    #     ResourceManager(db_name).initialize_pharos_tools()
-    #     tool_list = ResourceManager(db_name).get_all_tools()
+    #     ResourceManager().initialize_pharos_tools()
+    #     tool_list = ResourceManager().get_all_tools()
     #     print(len(tool_list))
 
 

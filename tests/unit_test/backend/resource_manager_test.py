@@ -467,7 +467,7 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_all_tools()
 
         # Insert a sample schema
-        with open("/vagrant/felucca/backend/pharos_schema/ooanalyzer.json") as f:
+        with open("../../../felucca/backend/pharos_schema/ooanalyzer.json") as f:
             schema_json = json.loads(f.read())
         self.manager.insert_new_tool(schema_json)
 
@@ -496,7 +496,7 @@ class TestResourceManager(unittest.TestCase):
         self.manager.remove_tool_by_id(tool_id)
 
         # Initialize Pharos tools
-        self.manager.initialize_pharos_tools('/vagrant/felucca/backend/pharos_schema')
+        self.manager.initialize_pharos_tools('../../../felucca/backend/pharos_schema')
 
         tool_list = self.manager.get_all_tools()
 
