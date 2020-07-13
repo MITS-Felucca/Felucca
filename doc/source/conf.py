@@ -60,5 +60,5 @@ html_static_path = ['_static']
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('./../../felucca'))
-sys.path.insert(0, os.path.abspath('./../../felucca/backend'))
+sys.path.insert(0, os.path.abspath('/var/tmp/Felucca/felucca'))
+sys.path.insert(0, os.path.abspath('/var/tmp/Felucca/felucca/backend'))

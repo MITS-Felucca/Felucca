@@ -53,7 +53,13 @@ pipeline {
       when {branch 'master'}
       steps {
         sh """. /tmp/Felucca/env/venv/bin/activate
-        cd /var/tmp/Felucca/doc &&  sphinx-apidoc -o /tmp/Felucca/doc/source ../felucca/backend
+        mkdir -p /tmp/Felucca/doc/build
+        mkdir -p /tmp/Felucca/doc/source
+        cp /var/tmp/Felucca/doc/source/* /tmp/Felucca/doc/source
+        cd /var/tmp/Felucca/doc\
+          && sphinx-apidoc -o /tmp/Felucca/doc/source ../felucca/backend\
+          && make html
+        rm /tmp/Felucca/doc/source/*
         deactivate
         """
       }
