@@ -2,66 +2,84 @@
   <div class="card-header bg-primary text-white">
     {{schema.toolName}}
   </div>
-  <div class="card-body">
-    <h6 class="card-subtitle mb-2 text-muted">{{schema.isPharos == true ? "Pharos Tool" : "Not Pharos Tool"}}</h6>
-  <form (ngSubmit) = "onSubmit()" [formGroup]="form">
-    <div class="card shadow p-3 mb-5 bg-white rounded" *ngFor="let argumentClass of schema.argumentClasses">
-      <div class="card-body">
-          <div class="p-3 mb-2 bg-info text-white">
-        {{argumentClass.name}}
-      </div>
-      <table class="table table-striped" style="width: 100%">
-        <colgroup>
-        <col span="1" style="width: 20%;">
-        <col span="1" style="width: 55%;">
-        <col span="1" style="width: 25%;">
-      </colgroup>
-    
-      <thead>
-        <th class="argument">Argument</th>
-        <th class="comment">Comment</th>
-        <th class="input">Input</th>
-      </thead>
-      <tbody>
-        <tr *ngFor="let argument of argumentClass.arguments">
-          <td> 
-            <span *ngIf="argument.abbreviation !== ''">
-              {{argument.abbreviation}}
-            </span>
-            <span *ngIf="argument.fullName !== '' && argument.abbreviation === ''">
-              {{argument.fullName}}
-            </span>
-            <span *ngIf="argument.fullName !== '' && argument.abbreviation !== ''">
-              ({{argument.fullName}})
-            </span>
-          </td>
-          <td> {{argument.description}} </td>
-          <td [ngSwitch]="argument.argumentType">
-            <div *ngSwitchCase="argumentType.InputFile" style="width:100%;height:100%">
-              <div class="custom-file" style="width:90%;float:left;">
-                <input #fileInput type="file" class="custom-file-input" (change) = "onFileChange($event, argument.key)">
-                
-                <label class="custom-file-label" for="customFile" style="margin:0px 0px 0px 0px">{{ this.form.get(['inputFile', argument.key]).value === '' ? 'Choose a file' : this.form.get(['inputFile', argument.key]).value }}</label>
-              </div>
-              <div style="width:10%;float:right;">
-              <button type="button" class="close" aria-label="Close" style="padding: 5px 5px" (click)="fileClear(argument.key)">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              </div>
-            </div>
-            <div formGroupName="outputFile">
-              <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
-            </div>
-            <div formGroupName="inputFlag">
-              <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFlag" type="checkbox">
-            </div>
-            <div formGroupName="inputText">
-              <input [formControlName]="argument.key" type="text" *ngSwitchCase="argumentType.InputText" class="form-control" placeholder="argument" aria-describedby="basic-addon1">
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="card-body">
+      <h6 class="card-subtitle mb-2 text-muted">{{schema.isPharos == true ? "Pharos Tool" : "Not Pharos Tool"}}</h6>
+    <form (ngSubmit) = "onSubmit()" [formGroup]="form">
+      <div class="card shadow p-3 mb-5 bg-white rounded" *ngFor="let argumentClass of schema.argumentClasses">
+        <div class="card-body">
+            <div class="p-3 mb-2 bg-info text-white">
+          {{argumentClass.name}}
+        </div>
+        <table class="table table-striped" style="width: 100%">
+          <colgroup>
+            <col span="1" style="width: 15%;">
+            <col span="1" style="width: 55%;">
+            <col span="1" style="width: 10%;">
+            <col span="1" style="width: 20%;">
+          </colgroup>
+
+          <thead>
+            <th class="argument">Argument</th>
+            <th class="comment">Comment</th>
+            <th class="type">Type</th>
+            <th class="input">Input</th>
+          </thead>
+          <tbody>
+            <tr *ngFor="let argument of argumentClass.arguments">
+              <td>
+                <span *ngIf="argument.abbreviation !== ''">
+                  {{argument.abbreviation}}
+                </span>
+                <span *ngIf="argument.fullName !== '' && argument.abbreviation === ''">
+                  {{argument.fullName}}
+                </span>
+                <span *ngIf="argument.fullName !== '' && argument.abbreviation !== ''">
+                  ({{argument.fullName}})
+                </span>
+              </td>
+              <td> {{argument.description}} </td>
+
+              <td [ngSwitch]="argument.argumentType">
+                <div *ngSwitchCase="argumentType.InputFile">
+                  Input File
+                </div>
+                <div *ngSwitchCase="argumentType.OutputFile">
+                  Output File
+                </div>
+                <div *ngSwitchCase="argumentType.InputFlag">
+                  Input Flag
+                </div>
+                <div *ngSwitchCase="argumentType.InputText">
+                  Input Text
+                </div>
+              </td>
+
+              <td [ngSwitch]="argument.argumentType">
+                <div *ngSwitchCase="argumentType.InputFile" style="width:100%;height:100%">
+                  <div class="custom-file" style="width:90%;float:left;">
+                    <input #fileInput type="file" class="custom-file-input" (change) = "onFileChange($event, argument.key)">
+
+                    <label class="custom-file-label" for="customFile" style="margin:0px 0px 0px 0px">{{ this.form.get(['inputFile', argument.key]).value === '' ? 'Choose a file' : this.form.get(['inputFile', argument.key]).value }}</label>
+                  </div>
+                  <div style="width:10%;float:right;">
+                  <button type="button" class="close" aria-label="Close" style="padding: 5px 5px" (click)="fileClear(argument.key)">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                  </div>
+                </div>
+                <div formGroupName="outputFile">
+                  <input [formControlName]="argument.key" *ngSwitchCase="argumentType.OutputFile" type="checkbox">
+                </div>
+                <div formGroupName="inputFlag">
+                  <input [formControlName]="argument.key" *ngSwitchCase="argumentType.InputFlag" type="checkbox">
+                </div>
+                <div formGroupName="inputText">
+                  <input [formControlName]="argument.key" type="text" *ngSwitchCase="argumentType.InputText" class="form-control" placeholder="argument" aria-describedby="basic-addon1">
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
