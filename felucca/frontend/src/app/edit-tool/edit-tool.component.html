@@ -96,7 +96,19 @@
                     </td>
                     <td>
                         <div class="form-group">
-                          <select class="form-control" formControlName="argumentType" ngbTooltip="Input_Text_Arg: with arg                                      eg: -P [ --path ] arg.                                             Input_Flag_Args: only flag                                   eg: -h [ --help ].                                                    Input_File_Args: input file arg                              eg: -f [ --file ] arg.                                                Output_File_Args: output file arg(need name)  eg: -O [ --out_file ] arg.                                       " [openDelay]="300" [closeDelay]="300" tooltipClass="my-custom-class">
+                          <ng-template #list>
+                            <div class="d-flex flex-column" style="text-align:left; width:300px;">
+                              <span>Input_Text_Arg: with arg</span>
+                              <span>eg: -P [ --path ] arg.</span>
+                              <span>Input_Flag_Args: only flag</span>
+                              <span>eg: -h [ --help ].</span>
+                              <span>Input_File_Args: input file arg</span>
+                              <span>eg: -f [ --file ] arg.</span>
+                              <span>Output_File_Args: output file arg(need name)</span>
+                              <span>eg: -O [ --out_file ] arg.</span>                                     
+                            </div>
+                        </ng-template>
+                          <select class="form-control" formControlName="argumentType" [openDelay]="300" [closeDelay]="300"  [ngbTooltip]="list" tooltipClass="my-custom-class">
                             <option *ngFor="let type of argumentType | keyvalue" [ngValue]="type.value"> {{type.value}}</option>
                           </select>
                           <input *ngIf="argument.get('argumentType').value === 'Output_File_Args'" class="form-control" formControlName="defaultValue" placeholder="File Name"  type="text" style="margin-top:10px">
