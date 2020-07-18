@@ -14,7 +14,7 @@
   </thead>
     <tbody>
       <tr *ngFor="let job of jobs" routerLink="/job-info/{{job.jobID}}">
-        <th>{{job.jobID}}</th>
+        <th scope="row">{{job.jobID}}</th>
         <td>{{job.jobName}}</td>
         <td>{{job.comment}}</td>
         <td>{{job.createdTime | date: 'medium'}}</td>
