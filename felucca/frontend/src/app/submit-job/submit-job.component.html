@@ -14,16 +14,16 @@
   </div>
   <div>
     <h4>Task List</h4>
-    <table class="table table-striped">
+    <table class="table table-striped" summary="Tasks Table">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Tool Name</th>
-          <th>Input File Arguments</th>
-          <th>Input Text Arguments</th>
-          <th>Input Flag Arguments</th>
-          <th>Output File Arguments</th>
-          <th>Operations</th>
+          <th scope="col">ID</th>
+          <th scope="col">Tool Name</th>
+          <th scope="col">Input File Arguments</th>
+          <th scope="col">Input Text Arguments</th>
+          <th scope="col">Input Flag Arguments</th>
+          <th scope="col">Output File Arguments</th>
+          <th scope="col">Operations</th>
         </tr>
       </thead>
       <tbody *ngIf='tasks.length > 0'>
