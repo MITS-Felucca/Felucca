@@ -941,7 +941,6 @@ class ResourceManager(object):
                                                                   {"$set": job})
                 if update_result.modified_count != 1:
                     raise RuntimeError(self.UPDATE_ERROR)
-                pass
             except Exception as e:
                 logger.error(f"something wrong in mark_job_as_finished, "
                              f"Exception: {e}")
@@ -1208,23 +1207,22 @@ class ResourceManager(object):
                 return
 
             # Only update when the parameters are non-empty
-            update_stderr = False
-            if stderr is not None and stderr != "":
-                update_stderr = True
-
-            if not update_stderr:
+            if stderr is None or stderr == "":
                 return
 
             # Store the id of the old results and insert the new one
-            if update_stderr:
+            try:
                 old_stderr_id = task['stderr']
                 if old_stderr_id is not None and self.__fs.exists(old_stderr_id):
                     old_stderr = self.__fs.get(old_stderr_id).read().decode('utf-8')
                     stderr = old_stderr + stderr
                 new_stderr_id = self.__fs.put(stderr, encoding='utf-8')
+            except Exception as e:
+                logger.error(f"Problem when dealing with GridFS: {e}")
+                return
 
             try:
-                if update_stderr and new_stderr_id:
+                if new_stderr_id:
                     task["stderr"] = new_stderr_id
                     update_result = self.__tasks_collection.update_one(condition,
                                                                        {"$set": task})
