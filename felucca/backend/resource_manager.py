@@ -265,7 +265,6 @@ class ResourceManager(object):
             job_id (String): the id of the job
         """
         self.db_manager.mark_job_as_finished(job_id)
-        return
 
     def mark_task_as_finished(self, task_id):
         """Mark a task as "Successful" and update its "finished_time"
@@ -274,13 +273,11 @@ class ResourceManager(object):
             task_id (String): the id of the task
         """
         self.db_manager.mark_task_as_finished(task_id)
-        return
 
     def remove_all_jobs_and_tasks(self):
         """Remove all the jobs and tasks (Only used in unit tests)
         """
         self.db_manager.remove_all_jobs_and_tasks()
-        return
 
     def remove_all_tools(self):
         """Remove all tools (Only for collection "test")
@@ -355,7 +352,6 @@ class ResourceManager(object):
             stderr (String): The stderr of the task
         """
         self.db_manager.save_result(task_id, output)
-        return
 
     def set_kernel_metadata(self, docker_directory, digest):
         """Update the metadata of kernel(docker image).
@@ -390,7 +386,6 @@ class ResourceManager(object):
             new_status (Status): the new status of the job
         """
         self.db_manager.update_job_status(job_id, new_status)
-        return
 
     def update_stdout(self, task_id, stdout):
         """Update the stdout & stderr of the task.
@@ -418,7 +413,6 @@ class ResourceManager(object):
             new_status (Status): the new status of the task
         """
         self.db_manager.update_task_status(task_id, new_status)
-        return
 
     def update_tool(self, tool_id, new_schema):
         """Update the schema of the tool.
@@ -437,6 +431,8 @@ class ResourceManager(object):
             "docker_directory": "",
             "digest": ""
         }
+
+        UPDATE_ERROR = "update_result.modified_count != 1"
 
         def __init__(self, db_name="felucca"):
             super().__init__()
@@ -571,11 +567,11 @@ class ResourceManager(object):
                 field = {"log_files": 1}
                 task_doc = self.__tasks_collection.find_one(condition, field)
                 if task_doc is None:
-                    raise Exception(f"The task of {task_id} does not exist.")
+                    raise LookupError(f"The task of {task_id} does not exist.")
 
                 # Find the file in the task
                 if filename not in task_doc["log_files"]:
-                    raise Exception(f"The file named {filename} of task {task_id}"
+                    raise LookupError(f"The file named {filename} of task {task_id}"
                                      " does not exist.")
                 file_id = task_doc["log_files"][filename]
                 return self.__fs.get(file_id).read().decode('utf-8')
@@ -629,11 +625,11 @@ class ResourceManager(object):
                 field = {"output_files": 1}
                 task_doc = self.__tasks_collection.find_one(condition, field)
                 if task_doc is None:
-                    raise Exception(f"The task of {task_id} does not exist.")
+                    raise LookupError(f"The task of {task_id} does not exist.")
 
                 # Find the file in the task
                 if filename not in task_doc["output_files"]:
-                    raise Exception(f"The file named {filename} of task {task_id}"
+                    raise LookupError(f"The file named {filename} of task {task_id}"
                                      " does not exist.")
                 file_id = task_doc["output_files"][filename]
                 return self.__fs.get(file_id).read().decode('utf-8')
@@ -659,7 +655,7 @@ class ResourceManager(object):
                 field = {"stderr": 1}
                 task_doc = self.__tasks_collection.find_one(condition, field)
                 if task_doc is None:
-                    raise Exception(f"The task of {task_id} does not exist.")
+                    raise LookupError(f"The task of {task_id} does not exist.")
 
                 stderr_id = task_doc['stderr']
                 if stderr_id is None:
@@ -690,7 +686,7 @@ class ResourceManager(object):
                 field = {"stdout": 1}
                 task_doc = self.__tasks_collection.find_one(condition, field)
                 if task_doc is None:
-                    raise Exception(f"The task of {task_id} does not exist.")
+                    raise LookupError(f"The task of {task_id} does not exist.")
 
                 stdout_id = task_doc['stdout']
                 if stdout_id is None:
@@ -921,7 +917,7 @@ class ResourceManager(object):
 
             try:
                 # Insert the new tool
-                result = self.__tools_collection.insert_one(new_tool_dict)
+                self.__tools_collection.insert_one(new_tool_dict)
             except Exception as e:
                 logger.error(f"Failed when inserting a new tool. Exception: {e}")
 
@@ -944,7 +940,7 @@ class ResourceManager(object):
                 update_result = self.__jobs_collection.update_one(condition,
                                                                   {"$set": job})
                 if update_result.modified_count != 1:
-                    raise Exception("update_result.modified_count != 1")
+                    raise RuntimeError(self.UPDATE_ERROR)
                 pass
             except Exception as e:
                 logger.error(f"something wrong in mark_job_as_finished, "
@@ -973,7 +969,7 @@ class ResourceManager(object):
                 update_result = self.__tasks_collection.update_one(condition,
                                 {"$set": task})
                 if update_result.modified_count != 1:
-                    raise Exception("update_result.modified_count != 1")
+                    raise RuntimeError(self.UPDATE_ERROR)
             except Exception as e:
                 logger.error(f"something wrong in mark_task_as_finished, "
                              f"Exception: {e}")
@@ -1078,8 +1074,8 @@ class ResourceManager(object):
                 delete_result = self.__tools_collection.delete_one(
                                      {"_id": ObjectId(tool_id)})
 
-                if delete_result.deleted_count is not 1:
-                    raise Exception("Delete failed")
+                if delete_result.deleted_count != 1:
+                    raise RuntimeError("Delete failed")
             except Exception as e:
                 logger.error(f"Something wrong in remove_tasks_by_job_id,"
                              f" Exception: {e}")
@@ -1182,7 +1178,7 @@ class ResourceManager(object):
                 update_result = self.__jobs_collection.update_one(condition,
                                                                   {"$set": job})
                 if update_result.modified_count != 1:
-                    raise Exception("update_result.modified_count != 1")
+                    raise RuntimeError(self.UPDATE_ERROR)
             except Exception as e:
                 logger.error(f"Failed when updating job status. Exception: {e}")
 
@@ -1267,26 +1263,21 @@ class ResourceManager(object):
                 return
 
             # Only update when the parameters are non-empty
-            update_stdout = False
-            if stdout is not None and stdout != "":
-                update_stdout = True
-
-            if not update_stdout:
+            if stdout is None or stdout == "":
                 return
 
             try:
                 # Store the id of the old results and insert the new one
-                if update_stdout:
-                    old_stdout_id = task['stdout']
-                    if old_stdout_id is not None and self.__fs.exists(old_stdout_id):
-                        old_stdout = self.__fs.get(old_stdout_id).read().decode('utf-8')
-                        stdout = old_stdout + stdout
-                    new_stdout_id = self.__fs.put(stdout, encoding='utf-8')
+                old_stdout_id = task['stdout']
+                if old_stdout_id is not None and self.__fs.exists(old_stdout_id):
+                    old_stdout = self.__fs.get(old_stdout_id).read().decode('utf-8')
+                    stdout = old_stdout + stdout
+                new_stdout_id = self.__fs.put(stdout, encoding='utf-8')
             except Exception as e:
                 logger.error(f"Error when getting old stdout of Task {task_id}")
 
             try:
-                if update_stdout and new_stdout_id:
+                if new_stdout_id:
                     task["stdout"] = new_stdout_id
                     update_result = self.__tasks_collection.update_one(condition,
                                                                        {"$set": task})
@@ -1318,7 +1309,7 @@ class ResourceManager(object):
                 update_result = self.__tasks_collection.update_one(condition,
                                                                    {"$set": task})
                 if update_result.modified_count != 1:
-                    raise Exception("update_result.modified_count != 1")
+                    raise RuntimeError(self.UPDATE_ERROR)
             except Exception as e:
                 logger.error(f"something wrong in update_task_status,"
                              f" Exception: {e}")
@@ -1346,7 +1337,7 @@ class ResourceManager(object):
                 update_result = self.__tools_collection.update_one(condition,
                                                                    {"$set": tool})
                 if update_result.modified_count != 1:
-                    raise Exception("update_result.modified_count != 1")
+                    raise RuntimeError(self.UPDATE_ERROR)
             except Exception as e:
                 logger.error(f"something wrong in update_tool,"
                              f" Exception: {e}")
