@@ -32,7 +32,11 @@ A system providing Pharos tools as a web service
 1. Click `Submit job` button in header.
 2. Type the name and comment of your job, job name is required for each job.
 
-![image.png](https://cdn.nlark.com/yuque/0/2020/png/1766657/1594851137018-84e44bb2-97e2-4647-995c-489720372254.png#align=left&display=inline&height=538&margin=%5Bobject%20Object%5D&name=image.png&originHeight=538&originWidth=1903&size=45551&status=done&style=none&width=1903)
+<p align="center">
+    <img src="https://github.com/MITS-Felucca/Felucca/blob/document/image/job-submission-start.png">
+    <br>
+    <em>Starting Job Submission</em>
+</p>
 
 3. Choose a tool in the tool list, after you choose a tool, its argument form would appear below.
 4. Then, you need to specify the argument of this execution. The save would be disabled until you finish all the required arguments. Note that for different types of argument, its input meaning is different. 
@@ -41,23 +45,40 @@ A system providing Pharos tools as a web service
    3. For input flag type argument, the checkbox means if you want to include this flag in this execution.
    4. For input text type argument, if you type something in the input text area, it would be given to the tool in this execution. 
 
-![image.png](https://cdn.nlark.com/yuque/0/2020/png/1766657/1594851313584-2fe8771b-b537-4f49-bf3c-345b59686237.png#align=left&display=inline&height=854&margin=%5Bobject%20Object%5D&name=image.png&originHeight=854&originWidth=1884&size=106938&status=done&style=none&width=1884)
+<p align="center">
+    <img src="https://github.com/MITS-Felucca/Felucca/blob/document/image/task-arguments.png">
+    <br>
+    <em>Arguments of each task</em>
+</p>
 
 5. After you finish specifying the arguments, click `Save` . Then you could view and confirm your task argument in the list below.
 
-![image.png](https://cdn.nlark.com/yuque/0/2020/png/1766657/1594851649867-80955cf6-e301-4800-bc1d-c52983c82420.png#align=left&display=inline&height=543&margin=%5Bobject%20Object%5D&name=image.png&originHeight=543&originWidth=1893&size=54514&status=done&style=none&width=1893)
+<p align="center">
+    <img src="https://github.com/MITS-Felucca/Felucca/blob/document/image/save-arguments.png">
+    <br>
+    <em>Save the task arguments</em>
+</p>
 
 6. If everything is ok, click `Submit` . Then a popup would show and tells you if your submission is successful or not.
 7. Back to the Dashboard, you could find your job in the job list.
 
-![image.png](https://cdn.nlark.com/yuque/0/2020/png/1766657/1594851681547-138f3b8a-07bd-4221-aad1-9bd861d4756c.png#align=left&display=inline&height=119&margin=%5Bobject%20Object%5D&name=image.png&originHeight=119&originWidth=1891&size=20359&status=done&style=none&width=1891)
+<p align="center">
+    <img src="https://github.com/MITS-Felucca/Felucca/blob/document/image/job-information.png">
+    <br>
+    <em>Basic information of a job</em>
+</p>
 
 
 #### 2. submit a job with multiple tasks
 
 1. You could also add more than one task inside a single job. All you need to do is to choose tool again after you save your first task.
 
-![image.png](https://cdn.nlark.com/yuque/0/2020/png/1766657/1594853364246-6a2d1a35-6215-4e21-8085-b8568bf2eddd.png#align=left&display=inline&height=730&margin=%5Bobject%20Object%5D&name=image.png&originHeight=730&originWidth=1903&size=66443&status=done&style=none&width=1903)
+<p align="center">
+    <img src="https://github.com/MITS-Felucca/Felucca/blob/document/image/job-with-multiple-tasks.png">
+    <br>
+    <em>Job with multiple tasks</em>
+</p>
+
 ### Job Information
 #### 1. Check the status of job and tasks
 
@@ -75,15 +96,28 @@ A system providing Pharos tools as a web service
    - `Error` : A task is error if some internal error happen inside Felucca, which means this task cannot be executed.
    - `Killed` : A task is killed if user manually kills this task or kills the job it belong.
 
-![image.png](https://cdn.nlark.com/yuque/0/2020/png/1766657/1594854466348-2fdd7c0d-d912-4a0a-892a-2ee74350e847.png#align=left&display=inline&height=843&margin=%5Bobject%20Object%5D&name=image.png&originHeight=843&originWidth=1908&size=95252&status=done&style=none&width=1908)
+<p align="center">
+    <img src="https://github.com/MITS-Felucca/Felucca/blob/document/image/job-info-page.png">
+    <br>
+    <em>Job information page</em>
+</p>
 
 #### 2. Check the standard output and error message in realtime.
 
 - After a task starts to run, you could check its output in realtime instead of waiting for it to finish. It may help you have a better understanding on what's going on inside this execution.
 - Just click `stdout` or `stderr` inside job information page of some task. Then, you could see the realtime output in the output display page. You could also download this output for further use.
 
-![image.png](https://cdn.nlark.com/yuque/0/2020/png/1766657/1594854632490-e5bb401f-9e84-4a69-b862-0d51c09c8356.png#align=left&display=inline&height=718&margin=%5Bobject%20Object%5D&name=image.png&originHeight=718&originWidth=1889&size=62285&status=done&style=none&width=1889)
-![image.png](https://cdn.nlark.com/yuque/0/2020/png/1766657/1594854723091-f05843b7-09cd-45fb-b7bb-d898b87a58d3.png#align=left&display=inline&height=934&margin=%5Bobject%20Object%5D&name=image.png&originHeight=934&originWidth=1884&size=213905&status=done&style=none&width=1884)
+<p align="center">
+    <img src="https://github.com/MITS-Felucca/Felucca/blob/document/image/job-info-page2.png">
+    <br>
+    <em>Job information page before finished</em>
+</p>
+
+<p align="center">
+    <img src="https://github.com/MITS-Felucca/Felucca/blob/document/image/realtime-output.png">
+    <br>
+    <em>Realtime stdout output</em>
+</p>
 
 
 #### 3. Check the output file of task
@@ -97,11 +131,16 @@ A system providing Pharos tools as a web service
 #### 1. kill a task
 
 - If you found a task behave unexpectedly, you could kill that task inside the job information page. Felucca would terminate the task and recycle all its resource, but its standard output and error message are reserved. Note that if a task is already finished (succeed or failed) by the time Felucca kills it, it will remain as its current status.
+
 #### 2. kill a job and all tasks inside
 
 - If you found a job behave unexpectedly, you also could kill that job. Killing a job is identical to killing all the tasks inside that job.
 
-![image.png](https://cdn.nlark.com/yuque/0/2020/png/1766657/1594858930535-4e6a3567-247d-48e7-8085-241e670862ac.png#align=left&display=inline&height=764&margin=%5Bobject%20Object%5D&name=image.png&originHeight=764&originWidth=1907&size=61580&status=done&style=none&width=1907)
+<p align="center">
+    <img src="https://github.com/MITS-Felucca/Felucca/blob/document/image/kill-task.png">
+    <br>
+    <em>Task Killed</em>
+</p>
 
 ## Tool Management
 ### Browse all available tools
@@ -213,8 +252,11 @@ During update process, submitting new jobs is not allowed. And the `Update Pharo
 <img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594948457199-b906fa41-35a3-49d7-bfd2-09c8a0b40dcd.png#align=left&display=inline&height=146&margin=%5Bobject%20Object%5D&name=image.png&originHeight=146&originWidth=622&size=9649&status=done&style=none&width=622">
 </p>
 
+
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594948690651-c0fc6fd0-4669-4398-8069-23d819b45b47.png#align=left&display=inline&height=152&margin=%5Bobject%20Object%5D&name=image.png&originHeight=152&originWidth=562&size=9111&status=done&style=none&width=562">
-</p>
+    <img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594948690651-c0fc6fd0-4669-4398-8069-23d819b45b47.png#align=left&display=inline&height=152&margin=%5Bobject%20Object%5D&name=image.png&originHeight=152&originWidth=562&size=9111&status=done&style=none&width=562">
+    <br>
+    <em>caption</em>
+    </p>
 
 
