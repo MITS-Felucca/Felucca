@@ -73,7 +73,7 @@ export class EditToolComponent implements OnInit {
           isRequired: new FormControl(argumentInfo.isRequired),
           defaultValue: new FormControl(argumentInfo.defaultValue),
           argumentType: new FormControl(argumentInfo.argumentType, Validators.required)
-        }));
+        }, this.argumentValidator));
       }
       (this.metadata.get('argumentClasses') as FormArray).push(new FormGroup({
         name: new FormControl(argumentClass.name, Validators.required),
