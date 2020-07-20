@@ -32,7 +32,7 @@ def hello():
 @app.route("/test/pharos", methods=['POST'])
 def update_pharos():
     request_json = request.get_json()
-    print(request.get_json())
+    print(request_json)
     print("udpatepharos")
     return {"Status": "ok"}
 
