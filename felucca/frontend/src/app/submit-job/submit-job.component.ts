@@ -1,5 +1,7 @@
 import { Component, OnInit, Input} from '@angular/core';
 import { Router } from '@angular/router';
+import { Title }     from '@angular/platform-browser';
+
 
 import { TaskInfo } from '../task-info'
 import { JobService } from '../job.service';
@@ -60,7 +62,10 @@ export class SubmitJobComponent implements OnInit{
 
   constructor(private jobService: JobService,
               private schemaService: SchemaService,
-              private modalService: NgbModal) { }
+              private modalService: NgbModal,
+              private titleService: Title) {
+                this.titleService.setTitle( "Felucca - Submit Job" );
+               }
 
   ngOnInit() {
     this.tasks = [];

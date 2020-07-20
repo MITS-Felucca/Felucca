@@ -10,7 +10,7 @@
           <div class="p-3 mb-2 bg-info text-white">
         {{argumentClass.name}}
       </div>
-      <table class="table table-striped" style="width: 100%">
+      <table class="table table-striped" style="width: 100%" summary="Task Argument Table">
         <colgroup>
         <col span="1" style="width: 20%;">
         <col span="1" style="width: 55%;">
@@ -18,9 +18,9 @@
       </colgroup>
     
       <thead>
-        <th class="argument">Argument</th>
-        <th class="comment">Comment</th>
-        <th class="input">Input</th>
+        <th scope="col" class="argument">Argument</th>
+        <th scope="col" class="comment">Comment</th>
+        <th scope="col" class="input">Input</th>
       </thead>
       <tbody>
         <tr *ngFor="let argument of argumentClass.arguments">

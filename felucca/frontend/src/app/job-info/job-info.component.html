@@ -33,7 +33,7 @@
   <div *ngIf="tasks">
     <h3> Tasks </h3>
     <div class="table-responsive">
-      <table class="table table-striped" style="width: 100%;height: 80px">
+      <table class="table table-striped" style="width: 100%;height: 80px" summary="Task Table">
         <colgroup>
           <col span="1" style="width: 5%;">
           <col span="1" style="width: 10%;">
@@ -45,13 +45,13 @@
         </colgroup>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Too Name</th>
-            <th >Arguments</th>
-            <th>Output</th>
-            <th>Finish Time</th>
-            <th>Status</th>
-            <th>Operations</th>
+            <th scope="col">ID</th>
+            <th scope="col">Too Name</th>
+            <th scope="col">Arguments</th>
+            <th scope="col">Output</th>
+            <th scope="col">Finish Time</th>
+            <th scope="col">Status</th>
+            <th scope="col">Operations</th>
           </tr>
         </thead>
         <tbody>

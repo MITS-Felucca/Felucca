@@ -1,5 +1,7 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Title }     from '@angular/platform-browser';
+
 
 import { Job } from '../job';
 import { Task } from '../task';
@@ -20,9 +22,11 @@ export class JobInfoComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private jobService: JobService,
-    private router: Router
-  ) {
-  }
+    private router: Router,
+    private titleService: Title) {
+      this.titleService.setTitle( "Felucca - Job Info" );
+    }
+
 
   ngOnInit() {
     this.jobID = this.route.snapshot.paramMap.get('jobID');
