@@ -147,14 +147,18 @@ A system providing Pharos tools as a web service
 By clicking on the `Tool List` button in the upper left corner, all available tools will be shown. Initially there are 10 tools from the current version of Pharos, which are manually added by us. 
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594947316602-3f5734dd-1542-4cf6-a6e2-509d9b8168c7.png#align=left&display=inline&height=829&margin=%5Bobject%20Object%5D&name=image.png&originHeight=829&originWidth=1353&size=66146&status=done&style=none&width=1353">
+<img src="image/tool_list.png">
+   <br>
+   <em>The list of available tools</em>
 </p>
 
 ### Edit the schema of existing tools
 For each tool, we use `schema` to store its metadata, including `Tool Name`, `Program Name`, `Parameters` etc. To edit a schema, just click the yellow `Edit` button under `Operation` column. Then we can modify the schema of the tool in the page like the figure below.
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594947087452-311841e5-0ec3-484e-9574-89032cf063b5.png#align=left&display=inline&height=902&margin=%5Bobject%20Object%5D&name=image.png&originHeight=902&originWidth=1341&size=85373&status=done&style=none&width=1341">
+<img src="image/schema_page.png">
+   <br>
+   <em>The schema of a tool</em>
 </p>
 
 To make the schema more clear, **parameters **can be organized into **classes**. Each class contains a list of parameters. Besides, each parameter contains its `Full Name`, `Abbreviation`, `Description`, `IsRequired` flag and its `Argument Type`. For the `Full Name` and `Abbreviation`, the parameter should have at least one of them to make it valid. They will be used during the construction of the command.
@@ -168,95 +172,130 @@ There are **four types** of parameters:
 The explanation of these four types will be shown in the hover as below.
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1595040812635-28437f92-9b40-4a17-9948-089aa10e57bc.png#align=left&display=inline&height=252&margin=%5Bobject%20Object%5D&name=image.png&originHeight=252&originWidth=344&size=13740&status=done&style=none&width=344">
+<img src="image/arg_hover.png">
+   <br>
+   <em>The explanation of four types of parameters</em>
 </p>
 
 After all modification, click the `Save` button in the bottom to save your work.
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594946578879-7c775b4f-bf44-408b-aad1-6818c9e3fb18.png#align=left&display=inline&height=320&margin=%5Bobject%20Object%5D&name=image.png&originHeight=320&originWidth=696&size=15265&status=done&style=none&width=696">
+<img src="image/edit_schema_save.png">
+   <br>
+   <em>Save after editing a schema</em>
 </p>
 
 ### Creating a new schema for new tools
 To create a new schema, just click the create the `Create` button in the upper right corner of the `Tool List` page. By default, it will **create a brand new one**("Start from scratch"). Then you can fill in the `Tool Name`, `Program Name`, `Parameters`.
 
+
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594946623847-c5434f3a-0ae3-47f0-8e9d-c7b6acb83fb5.png#align=left&display=inline&height=352&margin=%5Bobject%20Object%5D&name=image.png&originHeight=352&originWidth=572&size=18896&status=done&style=none&width=572">
+<img src="image/create_new_schema.png">
+   <br>
+   <em>Create a new schema</em>
 </p>
+
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594945536873-0f814e71-7536-4f2f-8424-ded6c72310ff.png#align=left&display=inline&height=466&margin=%5Bobject%20Object%5D&name=image.png&originHeight=466&originWidth=1364&size=33821&status=done&style=none&width=1364">
+<img src="image/empty_schema.png">
+   <br>
+   <em>The schema will be empty initially</em>
 </p>
 
 Other than that, you can click and **choose an existing tool as your starting point**. Under such a situation, it will automatically import all parameters of the chosen tool, leaving only the `Tool Name` and `Program Name` fields empty.
 
+
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594945624841-3b2ce66c-8992-4cb0-b38a-60f21f0ad382.png#align=left&display=inline&height=339&margin=%5Bobject%20Object%5D&name=image.png&originHeight=339&originWidth=327&size=16391&status=done&style=none&width=327">
+<img src="image/choosing_existing_tool.png">
+   <br>
+   <em>Choose an existing tool as the starting point</em>
 </p>
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594945690262-1dc247d9-84b9-4f64-b023-a5658cb130a6.png#align=left&display=inline&height=905&margin=%5Bobject%20Object%5D&name=image.png&originHeight=905&originWidth=1346&size=74266&status=done&style=none&width=1346">
+<img src="image/start_from_existing_tool.png">
+   <br>
+   <em>Create a new tool from an existing tool</em>
 </p>
 
 ### Export & Import Schemas
 In case that the service needs to be migrated, we provide a convenient way to **export **and **import **the schemas. By clicking the blue "Download" button, the schema will be **downloaded as a json file**. 
 
+
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594946159847-f4fea44a-a031-425d-aa86-dd20f8ef22ea.png#align=left&display=inline&height=194&margin=%5Bobject%20Object%5D&name=image.png&originHeight=194&originWidth=721&size=11095&status=done&style=none&width=721">
+<img src="image/export_schema.png">
+   <br>
+   <em>Export a schema as json file</em>
 </p>
 
 To **import a schema** from the exported files, create a new tool first. Then click the upper right `Browse` button to choose an exported json file. Seconds after that, all metadata of the exported tool will be loaded. Don't forget to click "`Save`" in the bottom to finish the import.
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594946627869-d47094db-94c4-4deb-b2c8-787576b8094e.png#align=left&display=inline&height=352&margin=%5Bobject%20Object%5D&name=image.png&originHeight=352&originWidth=572&size=18896&status=done&style=none&width=572">
+<img src="image/create_new_schema.png">
+   <br>
+   <em>Create a new schema first</em>
 </p>
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594946473991-0cdd6a50-95b9-410c-b719-8391efab31b3.png#align=left&display=inline&height=241&margin=%5Bobject%20Object%5D&name=image.png&originHeight=241&originWidth=572&size=13980&status=done&style=none&width=572">
+<img src="image/import_schema.png">
+   <br>
+   <em>Import a schema from an exported file</em>
 </p>
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594946798204-79c251b3-9fd3-4e49-88e4-f70b3d10469f.png#align=left&display=inline&height=877&margin=%5Bobject%20Object%5D&name=image.png&originHeight=877&originWidth=1330&size=79107&status=done&style=none&width=1330">
+<img src="image/imported_from_file.png">
+   <br>
+   <em>The schema imported from an exported file</em>
 </p>
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594946578879-7c775b4f-bf44-408b-aad1-6818c9e3fb18.png#align=left&display=inline&height=320&margin=%5Bobject%20Object%5D&name=image.png&originHeight=320&originWidth=696&size=15265&status=done&style=none&width=696">
+<img src="image/imported_from_file_save.png">
+   <br>
+   <em>Save the imported schema</em>
 </p>
 
 ### Remove tools
 To remove a tool, just click the `Remove` button in the tool list. After that, the tool will still exist until you confirm the deletion in the dialog.
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594946950388-c4fd7347-d234-4afd-b06e-5a09445010d0.png#align=left&display=inline&height=188&margin=%5Bobject%20Object%5D&name=image.png&originHeight=188&originWidth=704&size=10337&status=done&style=none&width=704">
+<img src="image/remove_tool.png">
+   <br>
+   <em>Remove a tool</em>
 </p>
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594946997112-cfb0b07b-19f1-44a6-b0b7-7d094fb815d1.png#align=left&display=inline&height=181&margin=%5Bobject%20Object%5D&name=image.png&originHeight=181&originWidth=515&size=9797&status=done&style=none&width=515">
+<img src="image/remove_tool_dialog.png">
+   <br>
+   <em>The dialog for confirmation before removing a tool</em>
 </p>
 
 ## Updating Pharos Docker Image
 Considering that _Pharos _keeps evolving, we provide a function to retrieve the latest _Pharos _docker image from _Docker Hub_. Normally, the registry and digest value of current docker image is shown in the top. You can click the `Update Pharos` button to update the docker image. 
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594948133693-bc3f7079-433d-4d72-b102-a8c1333a1d3e.png#align=left&display=inline&height=147&margin=%5Bobject%20Object%5D&name=image.png&originHeight=147&originWidth=588&size=13617&status=done&style=none&width=588">
+<img src="image/current_digest.png">
+   <br>
+   <em>The registry and digest of current version</em>
 </p>
 
 After that, a dialog will be shown and the registry of the new image is required. You can leave it empty, and it will use _seipharos/pharos:latest _as the default value. Remember that all running jobs will get killed once the update process begins.
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594948221269-6f121e92-7c89-4572-8323-0fbf140ea595.png#align=left&display=inline&height=275&margin=%5Bobject%20Object%5D&name=image.png&originHeight=275&originWidth=518&size=14607&status=done&style=none&width=518">
+<img src="image/update_pharos_dialog.png">
+   <br>
+   <em>The dialog for confirmation before updating Pharos</em>
 </p>
 
 During update process, submitting new jobs is not allowed. And the `Update Pharos` button is replaced by "Pharos Updating". When it finishes, the `Update Pharos` button will be back, and the digest value will be the one of the latest image.
 
 <p align="center">
-<img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594948457199-b906fa41-35a3-49d7-bfd2-09c8a0b40dcd.png#align=left&display=inline&height=146&margin=%5Bobject%20Object%5D&name=image.png&originHeight=146&originWidth=622&size=9649&status=done&style=none&width=622">
+   <img src="image/updating_pharos.png">
+   <br>
+   <em>Updating the latest image</em>
 </p>
 
-
 <p align="center">
-    <img src="https://cdn.nlark.com/yuque/0/2020/png/350676/1594948690651-c0fc6fd0-4669-4398-8069-23d819b45b47.png#align=left&display=inline&height=152&margin=%5Bobject%20Object%5D&name=image.png&originHeight=152&originWidth=562&size=9111&status=done&style=none&width=562">
+    <img src="image/updating_pharos_finished.png">
     <br>
-    <em>caption</em>
-    </p>
+    <em>After the updating finished</em>
+</p>
 
 
