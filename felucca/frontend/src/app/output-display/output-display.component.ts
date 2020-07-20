@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Title }     from '@angular/platform-browser';
+
 import { saveAs } from 'file-saver';
 import { FileService } from '../file.service';
 import { interval } from 'rxjs';
@@ -18,7 +20,10 @@ export class OutputDisplayComponent implements OnInit {
   status: Status;
 
   constructor(private route: ActivatedRoute, 
-              private fileService: FileService) { }
+              private fileService: FileService,
+              private titleService: Title) {
+                this.titleService.setTitle( "Felucca - Output" );
+               }
 
   ngOnInit() {
     this.taskID = this.route.snapshot.paramMap.get('taskID');

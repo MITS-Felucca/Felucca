@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, Validators, FormControlName, FormArray } from '@angular/forms';
+import { Title }     from '@angular/platform-browser';
 
 import { Schema } from '../schema'
 import { SchemaService } from '../schema.service';
@@ -22,7 +23,10 @@ export class EditToolComponent implements OnInit {
 
   constructor(private schemaService: SchemaService, 
               private route: ActivatedRoute,
-              private router: Router) { }
+              private router: Router,
+              private titleService: Title) {
+                this.titleService.setTitle( "Felucca - Edit Tool" );
+               }
 
   ngOnInit() {
     this.operation = this.route.snapshot.paramMap.get('operation');

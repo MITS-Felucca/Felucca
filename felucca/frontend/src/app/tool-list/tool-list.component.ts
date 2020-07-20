@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Title }     from '@angular/platform-browser';
+
 import { Schema } from '../schema'
 import { SchemaService } from '../schema.service';
 import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
@@ -56,7 +58,10 @@ export class ToolListComponent implements OnInit {
   chosenIndex: number;
   constructor(private schemaService: SchemaService, 
               private router: Router,
-              private modalService: NgbModal) { }
+              private modalService: NgbModal,
+              private titleService: Title) {
+                this.titleService.setTitle( "Felucca - Tool List" );
+              }
 
   ngOnInit() {
     this.getSchemas();

@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Title }     from '@angular/platform-browser';
+
 
 import { JobService } from '../job.service';
 import { Status } from '../status.enum'
@@ -18,8 +20,10 @@ export class JobListComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private jobService: JobService,
-    private router: Router
-  ) { }
+    private router: Router,
+    private titleService: Title) {
+      this.titleService.setTitle( "Felucca - Job List" );
+    }
 
   ngOnInit() {
     this.getJobList();

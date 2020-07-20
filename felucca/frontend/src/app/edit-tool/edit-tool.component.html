@@ -9,11 +9,6 @@
       <input #fileInput type="file" class="custom-file-input" (change) = "onFileChange($event)">
       <label class="custom-file-label" for="customFile" style="margin:0px 0px 0px 0px">{{ fileName === '' ? 'Import from JSON File' : fileName }}</label>
     </div>
-    <!-- <div style="width:10%;float:right;">
-    <button type="button" class="close" aria-label="Close" style="padding: 5px 5px" (click)="fileClear(argument.key)">
-      <span aria-hidden="true">&times;</span>
-    </button>
-    </div> -->
   </div>
   </div>
 
@@ -64,7 +59,7 @@
           </div>
 
           <div formArrayName="arguments">
-            <table class="table table-striped" style="width: 100%">
+            <table class="table table-striped" style="width: 100%" summary="Tool Argument Table">
               <colgroup>
                 <col span="1" style="width: 10%;">
                 <col span="1" style="width: 10%;">
@@ -75,13 +70,12 @@
 
               </colgroup>
               <thead>
-                <th>Full Name</th>
-                <th>Abbreviation</th>
-                <th>Description</th>
-                <th style="text-align: center;">isRequired</th>
-                <!-- <th>Default Value</th> -->
-                <th>Argument Type</th>
-                <th>Operation</th>
+                <th scope="col">Full Name</th>
+                <th scope="col">Abbreviation</th>
+                <th scope="col">Description</th>
+                <th scope="col" style="text-align: center;">isRequired</th>
+                <th scope="col">Argument Type</th>
+                <th scope="col">Operation</th>
               </thead>
               <tbody>
                 <tr *ngFor="let argument of getArgumentGroups(i).controls; index as j;" [formGroupName]="j" class="argument-group">
@@ -102,7 +96,19 @@
                     </td>
                     <td>
                         <div class="form-group">
-                          <select class="form-control" formControlName="argumentType" ngbTooltip="Input_Text_Arg: with arg                                      eg: -P [ --path ] arg.                                             Input_Flag_Args: only flag                                   eg: -h [ --help ].                                                    Input_File_Args: input file arg                              eg: -f [ --file ] arg.                                                Output_File_Args: output file arg(need name)  eg: -O [ --out_file ] arg.                                       " [openDelay]="300" [closeDelay]="300" tooltipClass="my-custom-class">
+                          <ng-template #list>
+                            <div class="d-flex flex-column" style="text-align:left; width:300px;">
+                              <span>Input_Text_Arg: with arg</span>
+                              <span>eg: -P [ --path ] arg.</span>
+                              <span>Input_Flag_Args: only flag</span>
+                              <span>eg: -h [ --help ].</span>
+                              <span>Input_File_Args: input file arg</span>
+                              <span>eg: -f [ --file ] arg.</span>
+                              <span>Output_File_Args: output file arg(need name)</span>
+                              <span>eg: -O [ --out_file ] arg.</span>                                     
+                            </div>
+                        </ng-template>
+                          <select class="form-control" formControlName="argumentType" [openDelay]="300" [closeDelay]="300"  [ngbTooltip]="list" tooltipClass="my-custom-class">
                             <option *ngFor="let type of argumentType | keyvalue" [ngValue]="type.value"> {{type.value}}</option>
                           </select>
                           <input *ngIf="argument.get('argumentType').value === 'Output_File_Args'" class="form-control" formControlName="defaultValue" placeholder="File Name"  type="text" style="margin-top:10px">
