@@ -98,6 +98,7 @@ def task_execute():
     except Exception as e:
         requests.post('http://%s:%s/result' % (SERVER_IP, SERVER_PORT), data={'task_id': task_id,
                                                                               'status': Status.Error.name})
+        print(e)
 
 def get_command_line_input():
     """Get the command line from backend using task id.
