@@ -1,3 +1,6 @@
+# Environment
+Required Ubuntu 18.04
+
 # Automated installation
 1. Install ansible
 ```
