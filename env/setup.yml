@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- hosts: localhost
+  connection: local
   become: yes  # This means that all tasks will be executed with sudo
   vars:
     venv_path: /tmp/Felucca/env/venv
@@ -9,6 +10,8 @@
     - role: mongodb
     - role: angularjs
   tasks:
+    - name: Add Docker GPG key
+      apt_key: url=https://download.docker.com/linux/ubuntu/gpg
     - name: install docker
       become: yes
       script: ./install_docker.sh
