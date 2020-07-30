@@ -5,6 +5,9 @@ A system providing Pharos tools as a web service
 
 [Automated static analysis tools for binary programs](https://github.com/cmu-sei/pharos.git)
 
+# Felucca Installation
+[Installation](https://github.com/MITS-Felucca/Felucca/blob/master/installation.md)
+
 # Felucca Quickstart
 
 ## Concept
