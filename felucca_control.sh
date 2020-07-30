@@ -3,7 +3,7 @@ SERVICE_NAME=felucca
 FRONTEND_PATH_NAME=/tmp/Felucca/frontend-pid
 BACKEND_PATH_NAME=/tmp/Felucca/backend-pid
 DOC_PATH_NAME=/tmp/Felucca/doc-server-pid
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR=$("$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )")
 
 case $1 in
     start)
@@ -29,15 +29,6 @@ case $1 in
             echo "$SERVICE_NAME frontend is already running ..."
         fi
 
-        echo "Starting doc server ..."
-        if [ ! -f $DOC_PATH_NAME ]; then
-            cd /tmp/Felucca/doc/build/html &&
-            nohup python3 -m http.server 8888 >> doc_server.out 2>&1  &
-            echo $! > $DOC_PATH_NAME
-            echo "$SERVICE_NAME doc server started ..."
-        else
-            echo "$SERVICE_NAME doc server is already running ..."
-        fi
     ;;
     stop)
         if [ -f $BACKEND_PATH_NAME ]; then
