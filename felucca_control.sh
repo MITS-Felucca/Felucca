@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 SERVICE_NAME=felucca
 FRONTEND_PATH_NAME=/tmp/Felucca/frontend-pid
 BACKEND_PATH_NAME=/tmp/Felucca/backend-pid
 DOC_PATH_NAME=/tmp/Felucca/doc-server-pid
-DIR=$("$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )")
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 case $1 in
     start)
