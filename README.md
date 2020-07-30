@@ -1,4 +1,6 @@
 # Felucca
+[![Quality Gate Status](http://54.84.171.25:9000/api/project_badges/measure?project=felucca%3Amits&metric=alert_status)](http://54.84.171.25:9000/dashboard?id=felucca%3Amits)
+
 A system providing Pharos tools as a web service
 
 [Automated static analysis tools for binary programs](https://github.com/cmu-sei/pharos.git)
